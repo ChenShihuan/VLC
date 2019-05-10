@@ -30,4 +30,5 @@
 *.out
 *.app
 
+# ignore the .vscode folder
 .vscode/
