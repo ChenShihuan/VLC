@@ -1,0 +1,843 @@
+//-----------------------------------【头文件包含部分】---------------------------------------  
+//      描述：包含程序所依赖的头文件
+//----------------------------------------------------------------------------------------------  
+#include <ros/ros.h>
+#include <iostream> //C++标准输入输出库  
+#include <image_transport/image_transport.h> /*image_transport 头文件用来在ROS系统中的话题上发布和订阅图象消息 */ 
+#include <cv_bridge/cv_bridge.h>  
+#include <sensor_msgs/image_encodings.h> /* ROS图象类型的编码函数 */  
+#include <opencv2/highgui/highgui.hpp>  
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>  
+#include <stdio.h>
+#include <string>
+#include <math.h>//对应下面的pow（平方）
+#include "std_msgs/String.h"
+#include <sstream>
+#include <fstream>
+#include <string>
+/////////////////////////////////////双灯视觉定位程序/////////////////////////////////////////////////////////
+
+#define pi 3.1415926
+
+//-----------------------------------【命名空间声明部分】--------------------------------------  
+//      描述：包含程序所使用的命名空间  
+//-----------------------------------------------------------------------------------------------  
+using namespace cv;
+using namespace std;
+
+//----------------------------------·【申明返回坐标的结构体】--------------------------------------------
+//      描述：坐标处理函数的结构体，用于放置坐标值  
+//----------------------------------------------------------------------------------------------- 
+struct XYZ{
+	double x;
+	double y;
+	double z;
+	};
+	
+struct XYZ pose_value;
+
+//-----------------------------------------------------------------------------------------------
+//**********************************************************************************************
+//
+//      *********************             【函数声明部分】              *******************
+//
+//**********************************************************************************************
+//-----------------------------------------------------------------------------------------------
+
+
+//-----------------------------------【threshold自动阈值】-----------------------------------------  
+//      描述：OpenCV中threshold自动阈值，类似matlab中的graythresh。为了二值化
+//-----------------------------------------------------------------------------------------------  
+double getThreshVal_Otsu_8u(const cv::Mat& _src)
+{
+	cv::Size size = _src.size();
+	if (_src.isContinuous())
+	{
+		size.width *= size.height;
+		size.height = 1;
+	}
+	const int N = 256;
+	int i, j, h[N] = { 0 };
+	for (i = 0; i < size.height; i++)
+	{
+		const uchar* src = _src.data + _src.step*i;
+		for (j = 0; j <= size.width - 4; j += 4)
+		{
+			int v0 = src[j], v1 = src[j + 1];
+			h[v0]++; h[v1]++;
+			v0 = src[j + 2]; v1 = src[j + 3];
+			h[v0]++; h[v1]++;
+		}
+		for (; j < size.width; j++)
+			h[src[j]]++;
+	}
+
+	double mu = 0, scale = 1. / (size.width*size.height);
+	for (i = 0; i < N; i++)
+		mu += i*h[i];
+
+	mu *= scale;
+	double mu1 = 0, q1 = 0;
+	double max_sigma = 0, max_val = 0;
+
+	for (i = 0; i < N; i++)
+	{
+		double p_i, q2, mu2, sigma;
+
+		p_i = h[i] * scale;
+		mu1 *= q1;
+		q1 += p_i;
+		q2 = 1. - q1;
+
+		if (std::min(q1, q2) < FLT_EPSILON || std::max(q1, q2) > 1. - FLT_EPSILON)
+			continue;
+
+		mu1 = (mu1 + i*p_i) / q1;
+		mu2 = (mu - q1*mu1) / q2;
+		sigma = q1*q2*(mu1 - mu2)*(mu1 - mu2);
+		if (sigma > max_sigma)
+		{
+			max_sigma = sigma;
+			max_val = i;
+		}
+	}
+
+	return max_val;
+}
+
+
+
+//将图片中的LED逐个进行分割
+void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& img_next)
+{
+	Mat temp1= _img.clone();
+	
+	//求xmin与xmax
+	int row1 = temp1.rows;//行数
+	int col1 = temp1.cols;//列
+	int j = 0;//注意是从0开始
+	while (j < col1)//j的初值为1
+	{
+		double sum1 = 0.0;
+		for (int i = 0;i < row1;i++)//注意没有等于号
+		{
+			uchar* data1 = temp1.ptr<uchar>(i);//ptr<uchar>(i)[j]访问第i行第j列的像素
+			sum1 = data1[j] + sum1;
+		}//将第j列的每一行加完
+		if (sum1>-0.000001 && sum1< 0.000001)//double类型，不能写==0
+		{
+			j++;
+		}
+		else
+		{
+			break;//跳出这个while循环
+		}
+
+	}
+	X_min = j;
+
+	while (j < col1)//j的初值为X_min 
+	{
+		double sum1 = 0.0;
+		for (int i = 0;i < row1;i++)
+		{
+			uchar* data1 = temp1.ptr<uchar>(i);//ptr<uchar>(i)[j]访问第i行第j列的像素
+			sum1 = data1[j] + sum1;
+		}//将第j列的每一行XXXXXX加完
+		if (sum1 != 0)
+		{
+			j++;
+		}
+		else
+		{
+			break;//跳出这个while循环
+		}
+	}
+	X_max = j;
+
+	//进行切割
+	Mat image_cut = temp1(Rect(X_min, 0, X_max - X_min, row1));
+	Mat temp = image_cut.clone();
+
+
+
+	//求ymin与ymax
+	int row = temp.rows;//行数
+	int col = temp.cols;//列
+	int i = 0;
+	while (i < row)//i的初值为1
+	{
+		double sum = 0.0;
+		uchar* data = temp.ptr<uchar>(i);
+		for (j = 0;j < col;j++)//对每一行中的每一列像素进行相加，ptr<uchar>(i)[j]访问第i行第j列的像素
+		{
+			sum = data[j] + sum;
+		}//最终获得第i行的列和
+		if (sum>-0.000001 && sum < 0.000001)
+		{
+			i++;
+		}
+		else
+		{
+			Y_min = i;
+			break;//跳出这个while循环
+		}
+	}
+	Y_min = i;
+
+	while (i <= row-16)//i的初值为Y_min
+	{
+		double sum = 0.0;
+		uchar* data = temp.ptr<uchar>(i);
+		for (j = 0;j < col;j++)//对每一行中的每一列像素进行相加，ptr<uchar>(i)[j]访问第i行第j列的像素
+		{
+			sum = data[j] + sum;
+		}//最终获得第i行的列和
+		if (sum != 0)
+		{
+			i++;
+		}
+		else
+		{
+			double sum6 = 0.0;
+			int iiii = i + 16;
+			uchar* data = temp.ptr<uchar>(iiii);
+			for (j = 0;j < col;j++)//对每一行中的每一列像素进行相加，ptr<uchar>(i)[j]访问第i行第j列的像素
+			{
+				sum6 = data[j] + sum6;
+			}//最终获得第i行之后20行，即iiii的列和
+			if (sum6 > -0.000001 && sum6 < 0.000001)//如果仍然为0，才跳出
+			{
+				Y_max = i;
+				goto logo;//跳出这个while循环
+			}
+			else//否则继续执行
+			{
+				i++;
+			}
+		}
+	}
+	logo:
+	Y_max = i;
+
+	//进行切割
+	Mat image_cut1 = temp(Rect(0, Y_min, col, Y_max - Y_min));
+	img_next = image_cut1.clone();   //clone函数创建新的图片 
+}
+
+
+
+//起到MATLAB中，bwareaopen的功能，去除连通区域少于n的部分
+void bwareaopen(Mat &data, int n)
+{
+	Mat labels, stats, centroids;
+	connectedComponentsWithStats(data, labels, stats, centroids, 8, CV_16U);
+	int regions_count = stats.rows - 1;
+	int regions_size, regions_x1, regions_y1, regions_x2, regions_y2;
+
+	for (int i = 1;i <= regions_count;i++)
+	{
+		regions_size = stats.ptr<int>(i)[4];
+		if (regions_size < n)
+		{
+			regions_x1 = stats.ptr<int>(i)[0];
+			regions_y1 = stats.ptr<int>(i)[1];
+			regions_x2 = regions_x1 + stats.ptr<int>(i)[2];
+			regions_y2 = regions_y1 + stats.ptr<int>(i)[3];
+
+			for (int j = regions_y1;j<regions_y2;j++)
+			{
+				for (int k = regions_x1;k<regions_x2;k++)
+				{
+					if (labels.ptr<ushort>(j)[k] == i)
+						data.ptr<uchar>(j)[k] = 0;
+				}
+			}
+		}
+	}
+}
+
+
+
+//实现对图像的细化
+void chao_thinimage(Mat &srcimage)//单通道、二值化后的图像  
+{
+	vector<Point> deletelist1;
+	int Zhangmude[9];
+	int nl = srcimage.rows;
+	int nc = srcimage.cols;
+	while (true)
+	{
+		for (int j = 1; j < (nl - 1); j++)
+		{
+			uchar* data_last = srcimage.ptr<uchar>(j - 1);
+			uchar* data = srcimage.ptr<uchar>(j);
+			uchar* data_next = srcimage.ptr<uchar>(j + 1);
+			for (int i = 1; i < (nc - 1); i++)
+			{
+				if (data[i] == 255)
+				{
+					Zhangmude[0] = 1;
+					if (data_last[i] == 255) Zhangmude[1] = 1;
+					else  Zhangmude[1] = 0;
+					if (data_last[i + 1] == 255) Zhangmude[2] = 1;
+					else  Zhangmude[2] = 0;
+					if (data[i + 1] == 255) Zhangmude[3] = 1;
+					else  Zhangmude[3] = 0;
+					if (data_next[i + 1] == 255) Zhangmude[4] = 1;
+					else  Zhangmude[4] = 0;
+					if (data_next[i] == 255) Zhangmude[5] = 1;
+					else  Zhangmude[5] = 0;
+					if (data_next[i - 1] == 255) Zhangmude[6] = 1;
+					else  Zhangmude[6] = 0;
+					if (data[i - 1] == 255) Zhangmude[7] = 1;
+					else  Zhangmude[7] = 0;
+					if (data_last[i - 1] == 255) Zhangmude[8] = 1;
+					else  Zhangmude[8] = 0;
+					int whitepointtotal = 0;
+					for (int k = 1; k < 9; k++)
+					{
+						whitepointtotal = whitepointtotal + Zhangmude[k];
+					}
+					if ((whitepointtotal >= 2) && (whitepointtotal <= 6))
+					{
+						int ap = 0;
+						if ((Zhangmude[1] == 0) && (Zhangmude[2] == 1)) ap++;
+						if ((Zhangmude[2] == 0) && (Zhangmude[3] == 1)) ap++;
+						if ((Zhangmude[3] == 0) && (Zhangmude[4] == 1)) ap++;
+						if ((Zhangmude[4] == 0) && (Zhangmude[5] == 1)) ap++;
+						if ((Zhangmude[5] == 0) && (Zhangmude[6] == 1)) ap++;
+						if ((Zhangmude[6] == 0) && (Zhangmude[7] == 1)) ap++;
+						if ((Zhangmude[7] == 0) && (Zhangmude[8] == 1)) ap++;
+						if ((Zhangmude[8] == 0) && (Zhangmude[1] == 1)) ap++;
+						if (ap == 1)
+						{
+							if ((Zhangmude[1] * Zhangmude[7] * Zhangmude[5] == 0) && (Zhangmude[3] * Zhangmude[5] * Zhangmude[7] == 0))
+							{
+								deletelist1.push_back(Point(i, j));
+							}
+						}
+					}
+				}
+			}
+		}
+		if (deletelist1.size() == 0) break;
+		for (size_t i = 0; i < deletelist1.size(); i++)
+		{
+			Point tem;
+			tem = deletelist1[i];
+			uchar* data = srcimage.ptr<uchar>(tem.y);
+			data[tem.x] = 0;
+		}
+		deletelist1.clear();
+
+		for (int j = 1; j < (nl - 1); j++)
+		{
+			uchar* data_last = srcimage.ptr<uchar>(j - 1);
+			uchar* data = srcimage.ptr<uchar>(j);
+			uchar* data_next = srcimage.ptr<uchar>(j + 1);
+			for (int i = 1; i < (nc - 1); i++)
+			{
+				if (data[i] == 255)
+				{
+					Zhangmude[0] = 1;
+					if (data_last[i] == 255) Zhangmude[1] = 1;
+					else  Zhangmude[1] = 0;
+					if (data_last[i + 1] == 255) Zhangmude[2] = 1;
+					else  Zhangmude[2] = 0;
+					if (data[i + 1] == 255) Zhangmude[3] = 1;
+					else  Zhangmude[3] = 0;
+					if (data_next[i + 1] == 255) Zhangmude[4] = 1;
+					else  Zhangmude[4] = 0;
+					if (data_next[i] == 255) Zhangmude[5] = 1;
+					else  Zhangmude[5] = 0;
+					if (data_next[i - 1] == 255) Zhangmude[6] = 1;
+					else  Zhangmude[6] = 0;
+					if (data[i - 1] == 255) Zhangmude[7] = 1;
+					else  Zhangmude[7] = 0;
+					if (data_last[i - 1] == 255) Zhangmude[8] = 1;
+					else  Zhangmude[8] = 0;
+					int whitepointtotal = 0;
+					for (int k = 1; k < 9; k++)
+					{
+						whitepointtotal = whitepointtotal + Zhangmude[k];
+					}
+					if ((whitepointtotal >= 2) && (whitepointtotal <= 6))
+					{
+						int ap = 0;
+						if ((Zhangmude[1] == 0) && (Zhangmude[2] == 1)) ap++;
+						if ((Zhangmude[2] == 0) && (Zhangmude[3] == 1)) ap++;
+						if ((Zhangmude[3] == 0) && (Zhangmude[4] == 1)) ap++;
+						if ((Zhangmude[4] == 0) && (Zhangmude[5] == 1)) ap++;
+						if ((Zhangmude[5] == 0) && (Zhangmude[6] == 1)) ap++;
+						if ((Zhangmude[6] == 0) && (Zhangmude[7] == 1)) ap++;
+						if ((Zhangmude[7] == 0) && (Zhangmude[8] == 1)) ap++;
+						if ((Zhangmude[8] == 0) && (Zhangmude[1] == 1)) ap++;
+						if (ap == 1)
+						{
+							if ((Zhangmude[1] * Zhangmude[3] * Zhangmude[5] == 0) && (Zhangmude[3] * Zhangmude[1] * Zhangmude[7] == 0))
+							{
+								deletelist1.push_back(Point(i, j));
+							}
+						}
+					}
+				}
+			}
+		}
+		if (deletelist1.size() == 0) break;
+		for (size_t i = 0; i < deletelist1.size(); i++)
+		{
+			Point tem;
+			tem = deletelist1[i];
+			uchar* data = srcimage.ptr<uchar>(tem.y);
+			data[tem.x] = 0;
+		}
+		deletelist1.clear();
+	}
+}
+
+
+
+//-----------------------------------【Get_coordinate()函数】------------------------------------
+//      描述：双灯定位，灰度图像传入
+//-----------------------------------------------------------------------------------------------  
+
+struct XYZ Get_coordinate(cv::Mat img)
+{
+
+	// 图像读取及判断
+	cv::Mat grayImage = img;
+	// cv::Mat grayImage = cv::imread("/home/chen/catkin_ws/src/image_screenshot_24.01.2019-2.png",0);
+	// resize(grayImage,grayImage,Size(800,600),0,0,INTER_NEAREST);
+	// imshow("grayImage", grayImage);
+
+	//将图像进行二值化
+	double m_threshold;//二值化阈值
+	Mat matBinary;//二值化图像
+	m_threshold = getThreshVal_Otsu_8u(grayImage);//获取自动阈值
+
+
+	threshold(grayImage, matBinary, m_threshold, 255, 0); // 二值化  
+	// imshow("matBinary", matBinary);
+	// cout<<"m_threshold="<< m_threshold << '\n';
+
+
+	Mat matBinary6 = matBinary.clone();
+
+	//先膨胀后腐蚀,闭运算
+	Mat element = getStructuringElement(MORPH_ELLIPSE, Size(20, 20));//定义结构元素,size要比单灯的大，才效果好
+	morphologyEx(matBinary, matBinary, MORPH_CLOSE, element);
+
+
+	//去除连通区域小于500的区域
+	bwareaopen(matBinary, 500);
+	//imshow("matBinary-1", matBinary);//用于分割的
+
+
+	//将LED分割开来
+	int Img_local_X1, Img_local_Y1, Img_local_X2, Img_local_Y2, Img_local_X3, Img_local_Y3;
+	Mat img1_next, matBinary11, img2_next, matBinary2, img3_next, matBinary3;
+	int X1_min, X1_max, Y1_min, Y1_max, X2_min, X2_max, Y2_min, Y2_max, X3_min, X3_max, Y3_min, Y3_max;
+
+	for (int ii = 1;ii < 4;ii++)
+	{
+		int X_min, X_max, Y_min, Y_max;
+		Mat img_next;
+		ls_LED(matBinary, X_min, X_max, Y_min, Y_max, img_next);
+
+		//获得LED1像素中心的位置
+		double Img_local_X = (X_max + X_min) / 2;
+		double Img_local_Y = (Y_max + Y_min) / 2;
+
+		//将原图中LED1部分的区域变黑
+		//获取图像的行列
+		double rowB = matBinary.rows;//二值化图像的行数
+		double colB = matBinary.cols;//二值化图像的列数
+		Mat matBinary1 = matBinary.clone();//定义一幅图像来放去除LED1的图
+
+
+		for (double i = 0;i < rowB;i++)
+		{
+			for (double j = 0;j < colB;j++)
+			{
+				double r = pow((i - Img_local_Y), 2) + pow((j - Img_local_X), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)计算x的y次方
+				if (r - 360 > 0)//将r扩大
+				{
+					//LED1圆外面像素重载为原图
+					matBinary1.at<uchar>(i, j) = matBinary.at<uchar>(i, j);
+				}
+				else
+				{
+					matBinary1.at<uchar>(i, j) = 0;//将第 i 行第 j 列像素值设置为255,二值化后为0和255
+				}
+			}
+		}
+		matBinary = matBinary1.clone();
+		bwareaopen(matBinary, 500);//去除连通区域小于500的区域,这是必须的，因为上面的圆很有可能清不掉
+		switch (ii)
+		{
+		case 1:
+			img1_next = img_next.clone();
+			Img_local_X1 = Img_local_X;
+			Img_local_Y1 = Img_local_Y;
+			matBinary11 = matBinary1.clone();
+			//框框
+			X1_min = X_min;
+			X1_max = X_max;
+			Y1_min = Y_min;
+			Y1_max = Y_max;
+			break;
+		case 2:
+			img2_next = img_next.clone();
+			Img_local_X2 = Img_local_X;
+			Img_local_Y2 = Img_local_Y;
+			matBinary2 = matBinary1.clone();
+			//框框
+			X2_min = X_min;
+			X2_max = X_max;
+			Y2_min = Y_min;
+			Y2_max = Y_max;
+			break;
+		case 3:
+			img3_next = img_next.clone();
+			Img_local_X3 = Img_local_X;
+			Img_local_Y3 = Img_local_Y;
+			matBinary3 = matBinary1.clone();
+			//框框
+			X3_min = X_min;
+			X3_max = X_max;
+			Y3_min = Y_min;
+			Y3_max = Y_max;
+			break;
+		}
+	}
+
+	//imshow("matBinary6", matBinary6);//对二值化的图进行的复制
+	//对三幅图像进行切割
+	Mat image_cut1 = matBinary6(Rect(X1_min, Y1_min, X1_max - X1_min, Y1_max - Y1_min));
+	Mat image_cut2 = matBinary6(Rect(X2_min, Y2_min, X2_max - X2_min, Y2_max - Y2_min));
+	Mat image_cut3 = matBinary6(Rect(X3_min, Y3_min, X3_max - X3_min, Y3_max - Y3_min));
+
+	// imshow("image_cut1", image_cut1);
+	// imshow("image_cut2", image_cut2);
+	// imshow("image_cut3", image_cut3);
+
+	//对上面三幅图做图像细化(有用，效果好)
+	chao_thinimage(image_cut1);
+	chao_thinimage(image_cut2);
+	chao_thinimage(image_cut3);
+
+	// imshow("image_cut1细化", image_cut1);
+	// imshow("image_cut2细化", image_cut2);
+	// imshow("image_cut3细化", image_cut3);
+
+	//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
+	vector<vector<Point> > contours1;
+	vector<Vec4i> hierarchy1;
+	findContours(image_cut1, contours1, hierarchy1, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+	int a = contours1.size();
+
+	vector<vector<Point> > contours2;
+	vector<Vec4i> hierarchy2;
+	findContours(image_cut2, contours2, hierarchy2, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+	int b = contours2.size();
+
+	vector<vector<Point> > contours3;
+	vector<Vec4i> hierarchy3;
+	findContours(image_cut3, contours3, hierarchy3, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+	int c = contours3.size();
+
+
+	cout << "a=" << a << '\n';
+	cout << "b=" << b << '\n';
+	cout << "c=" << c << '\n';
+
+	//条纹数最少的为第一盏灯
+	double ImgX1, ImgY1, ImgX2, ImgY2, ImgX3, ImgY3;
+	if (a < b && b < c)
+	{
+		ImgX1 = Img_local_X1;
+		ImgY1 = Img_local_Y1;
+		ImgX2 = Img_local_X2;
+		ImgY2 = Img_local_Y2;
+		ImgX3 = Img_local_X3;
+		ImgY3 = Img_local_Y3;
+		//cout << "第几种情况=" << "1" << '\n';
+	}
+
+	if (a < c && c < b)
+	{
+		ImgX1 = Img_local_X1;
+		ImgY1 = Img_local_Y1;
+		ImgX2 = Img_local_X3;
+		ImgY2 = Img_local_Y3;
+		ImgX3 = Img_local_X2;
+		ImgY3 = Img_local_Y2;
+		//cout << "第几种情况=" << "2" << '\n';
+	}
+
+	if (b < a && a < c)
+	{
+		ImgX1 = Img_local_X2;
+		ImgY1 = Img_local_Y2;
+		ImgX2 = Img_local_X1;
+		ImgY2 = Img_local_Y1;
+		ImgX3 = Img_local_X3;
+		ImgY3 = Img_local_Y3;
+		//cout << "第几种情况=" << "3" << '\n';
+	}
+
+	if (b < c && c < a)
+	{
+		ImgX1 = Img_local_X2;
+		ImgY1 = Img_local_Y2;
+		ImgX2 = Img_local_X3;
+		ImgY2 = Img_local_Y3;
+		ImgX3 = Img_local_X1;
+		ImgY3 = Img_local_Y1;
+		//cout << "第几种情况=" << "4" << '\n';
+	}
+
+	if (c < a && a < b)
+	{
+		ImgX1 = Img_local_X3;
+		ImgY1 = Img_local_Y3;
+		ImgX2 = Img_local_X1;
+		ImgY2 = Img_local_Y1;
+		ImgX3 = Img_local_X2;
+		ImgY3 = Img_local_Y2;
+		//cout << "第几种情况=" << "5" << '\n';
+	}
+
+	if (c < b && b < a)
+	{
+		ImgX1 = Img_local_X3;
+		ImgY1 = Img_local_Y3;
+		ImgX2 = Img_local_X2;
+		ImgY2 = Img_local_Y2;
+		ImgX3 = Img_local_X1;
+		ImgY3 = Img_local_Y1;
+		//cout << "第几种情况=" << "6" << '\n';
+	}
+
+
+	//计算位置坐标
+	//焦距
+	double f = 4;
+	//透镜焦点在image sensor上的位置(与图像的像素有关，此处直接取图像中心点)
+	//一个思路——目前使用的是无畸变镜头，可否直接将此焦点设置在图像Y轴的某个负值处，此处对应机器人中心点在挂灯平面的位置
+	double Center_X = (grayImage.size().width)*0.5;
+	double Center_Y = (grayImage.size().height)*0.5;
+	//三个LED灯具的真实位置
+	double x1 = -470;
+	double y1 = 470;
+	double x2 = -470;
+	double y2 = -470;
+	double x3 = 470;
+	double y3 = 470;
+
+	// 2			|
+	// (-,-)  |    (+,-)
+	// -----------------
+	// (-,+)	|    (+,+)
+	// 1    	|       3
+
+	//以数目最少的两盏LED灯来定位
+	double d_12 = sqrt(pow((ImgX1 - ImgX2),2) + pow((ImgY1 - ImgY2),2))*3.2e-3;
+	double D_12 = sqrt(pow((x1 - x2),2) + pow((y1 - y2),2));
+	double H = D_12 / d_12*f;
+	double X_r = ((ImgX1 + ImgX2) / 2 - Center_X)*3.2e-3*H / f;
+	double Y_r = ((ImgY1 + ImgY2) / 2 - Center_Y)*3.2e-3*H / f;
+	double X_c = (x1 + x2) / 2;
+	double Y_c = (y1 + y2) / 2;
+	double X = X_r;
+	double Y = Y_r;
+
+	// 计算角度
+	// cout << "ImgY2=" << ImgY2 << '\n';
+	// cout << "ImgY1=" << ImgY1 << '\n';
+	// cout << "ImgX2 =" << ImgX2 << '\n';
+	// cout << "ImgX1=" << ImgX1 << '\n';
+	double K1 = abs((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+	// cout << "K1=" << K1  << '\n';
+	double angle = atan(K1);
+	// cout << "angle1=" << angle / pi * 180 << '\n';
+
+	//由于对称性，要对角度做进一步处理
+	bool ABC = ImgY2 < ImgY1;
+	bool EFG = ImgX2 > ImgX1;
+	int ABCD = ABC * 2 + EFG;
+	// cout << "ABCD=" << ABCD << '\n';
+
+	switch (ABCD)
+	{
+	case 0:
+		angle = angle;
+		break;
+	case 1:
+		angle = pi - angle;
+		break;
+	case 2:
+		angle = 2 * pi - angle;
+		break;
+	case 3:
+		angle = angle + pi;
+		break;
+	}
+	// cout << "angle=" << angle / pi * 180 << '\n';
+		
+	double XX = X*cos(angle) - Y*sin(angle);
+	double YY = X*sin(angle) + Y*cos(angle);
+
+	XX = XX + X_c;
+	YY = YY + Y_c;
+
+	double xx = XX / 10;
+	double yy = YY / 10;
+	double zz = 190 - H / 10;
+
+	// imshow("test time", grayImage);
+
+	struct XYZ pose;
+	pose.x=xx;
+	pose.y=yy;
+	pose.z=zz;
+	// 等待用户按0键退出程序  
+	//waitKey(0);
+	return pose;
+}
+
+
+//////////////////////////////////////////OpenCV话题订阅//////////////////////////////////////////
+
+
+//static const std::string OUTPUT = "Output"; //定义输出窗口名称 
+
+
+//-----------------------------------【函数声明部分】-------------------------------------- 
+
+//-----------------------------------【IMAGE_LISTENER_and_LOCATOR对象】------------------------------------
+//            描述：接受话题“webcam/image_raw” 的图像
+//            来源: http://blog.csdn.net/robogreen/article/details/50488215
+//----------------------------------------------------------------------------------------------- 
+
+//定义一个转换的类  
+class IMAGE_LISTENER_and_LOCATOR  
+{  
+private:  
+    ros::NodeHandle nh_; //定义ROS句柄  
+    image_transport::ImageTransport it_; //定义一个image_transport实例  
+    image_transport::Subscriber image_sub_; //定义ROS图象接收器  
+    struct XYZ pose_value;
+  
+public:  
+    IMAGE_LISTENER_and_LOCATOR()  
+      :it_(nh_) //构造函数  
+    {  
+        image_sub_ = it_.subscribe("/camera/image_raw", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
+        // 初始化输入输出窗口  
+		// cv::namedWindow(INPUT);  
+		// cv::namedWindow(OUTPUT);  
+    }  
+    ~IMAGE_LISTENER_and_LOCATOR() //析构函数  
+    {  
+		// cv::destroyWindow(INPUT);  
+		// cv::destroyWindow(OUTPUT);  
+    }  
+    
+	//----------------------------【ROS和OpenCV的格式转换回调函数】--------------------------------------
+    //      描述：这是一个ROS和OpenCV的格式转换回调函数，将图象格式从sensor_msgs/Image  --->  cv::Mat 
+    //-----------------------------------------------------------------------------------------------
+    void convert_callback(const sensor_msgs::ImageConstPtr& msg)   
+    {  
+        cv_bridge::CvImagePtr cv_ptr; // 声明一个CvImage指针的实例  
+  
+        try  
+        {  
+            cv_ptr =  cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8); //将ROS消息中的图象信息提取，生成新cv类型的图象，复制给CvImage指针  
+        }  
+        catch(cv_bridge::Exception& e)  //异常处理  
+        {  
+            ROS_ERROR("cv_bridge exception: %s", e.what());  
+            return;  
+        }  
+  
+        image_process(cv_ptr->image); //得到了cv::Mat类型的图象，在CvImage指针的image中，将结果传送给处理函数     
+    }  
+    
+    //----------------------------------【图象处理主函数】----------------------------------------------
+    //      描述：这是图象处理主函数，一般会把图像处理的主要程序写在这个函数中。 
+    //-----------------------------------------------------------------------------------------------
+    void image_process(cv::Mat img)   
+    { 
+       ros::Publisher chatter_pub = nh_.advertise<std_msgs::String>("location", 1000); 
+       cv::Mat img_out;    
+	   ros::Rate loop_rate(60); //帧率
+
+		// string filename;
+		// filename = "VLC";
+		// ofstream fout (filename.c_str());
+	  /**
+	   * 以下为信息输出部分，暂时采用字符串格式输出。
+	   * A count of how many messages we have sent. This is used to create
+	   * a unique string for each message.
+	   */
+	  int count = 0;
+	  while (ros::ok())
+	  {
+		/**
+		 * This is a message object. You stuff it with data, and then publish it.
+		 */
+		std_msgs::String msg;
+
+		std::stringstream ss;
+		
+		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
+		// cv::imshow(OUTPUT, img_out);
+
+		pose_value=Get_coordinate(img_out);
+    
+		ss  << '\n'<< pose_value.x  << '\n'<<pose_value.y << '\n'<<pose_value.z<< count;
+		msg.data = ss.str();
+
+		ROS_INFO("%s", msg.data.c_str());
+
+		/**
+		 * The publish() function is how you send messages. The parameter
+		 * is the message object. The type of this object must agree with the type
+		 * given as a template parameter to the advertise<>() call, as was done
+		 * in the constructor above.
+		 */
+		chatter_pub.publish(msg);
+		// fout << msg << endl;
+		ros::spin();
+
+		loop_rate.sleep();
+		++count;
+	  }
+    }  
+}; 
+  
+
+
+//---------------------------------------【main()函数】------------------------------------------
+//      描述：主函数，发布定位信息
+//      rosrun vlc_locator publisher
+//----------------------------------------------------------------------------------------------- 
+
+  
+  
+//主函数  
+int main(int argc, char** argv)  
+{  	   
+    ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
+    IMAGE_LISTENER_and_LOCATOR obj;  
+    ros::spin();  
+} 
+  
+
+
+
