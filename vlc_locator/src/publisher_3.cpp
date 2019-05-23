@@ -457,8 +457,8 @@ struct XYZ Get_coordinate(cv::Mat img)
 	};
 
 	struct position P4 = {	// LED 序号
-		1000000,		// ID_max,最大条纹数目 
-		100000,		// ID_min，最小条纹数目
+		1,		// ID_max,最大条纹数目 
+		1,		// ID_min，最小条纹数目
 		490,	// LED灯具的真实位置,x坐标
 		-470,	// LED灯具的真实位置,y坐标
 	};	

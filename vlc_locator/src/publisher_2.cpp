@@ -63,7 +63,7 @@ struct position{// LED的位置，对应不同位置的灯具
 	};
 
 struct XYZ pose_value;
-
+Mat img_point;
 //-----------------------------------------------------------------------------------------------
 //**********************************************************************************************
 //
@@ -443,22 +443,22 @@ struct XYZ Get_coordinate(cv::Mat img)
 	};
 
 	struct position P2 = {	// LED 序号
-		500,		// ID_max,最大条纹数目 
-		400,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
+		6,		// ID_max,最大条纹数目 
+		4,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P3 = {	// LED 序号
 		3,		// ID_max,最大条纹数目 
 		2,		// ID_min，最小条纹数目
-		-490,	// LED灯具的真实位置,x坐标
-		460,	// LED灯具的真实位置,y坐标
+		470,	// LED灯具的真实位置,x坐标
+		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P4 = {	// LED 序号
-		100,		// ID_max,最大条纹数目 
-		100,		// ID_min，最小条纹数目
+		1,		// ID_max,最大条纹数目 
+		1,		// ID_min，最小条纹数目
 		490,	// LED灯具的真实位置,x坐标
 		-470,	// LED灯具的真实位置,y坐标
 	};	
@@ -472,9 +472,9 @@ struct XYZ Get_coordinate(cv::Mat img)
 
 	struct position P6 = {	//LED 序号
 		9,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
-		490,	// LED灯具的真实位置,x坐标
-		-470,	// LED灯具的真实位置,y坐标
+		7,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
+		0,	    // LED灯具的真实位置,y坐标
 	};
 
 
@@ -609,12 +609,12 @@ struct XYZ Get_coordinate(cv::Mat img)
 		}
 	}
 
-	// cout << "a="<< A.ID << '\n';
-	// cout << "b="<< B.ID << '\n';
-	// cout << "c="<< C.ID << '\n';
-	// cout << "d="<< D.ID << '\n';
-	// cout << "e="<< E.ID << '\n';
-	// cout << "f="<< F.ID << '\n';
+	cout << "a="<< A.ID << '\n';
+	cout << "b="<< B.ID << '\n';
+	cout << "c="<< C.ID << '\n';
+	cout << "d="<< D.ID << '\n';
+	cout << "e="<< E.ID << '\n';
+	cout << "f="<< F.ID << '\n';
 	// cout << "a=" << A.ID << '\n' << A.Img_local_X << '\n' << A.Img_local_Y << '\n'<<A.X << '\n' << A.Y << '\n';
 	// cout << "b=" << B.ID << '\n' << B.Img_local_X << '\n' << B.Img_local_Y << '\n'<<B.X << '\n' << B.Y << '\n';
 	// cout << "c=" << C.ID << C.Img_local_X << C.Img_local_Y << '\n';
@@ -643,7 +643,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 	double x2;
 	double y2;
 
-	if (A.ID<B.ID){
+	if (A.Y>B.Y){
 		ImgX1 = A.Img_local_X;
 		ImgY1 = A.Img_local_Y;
 		ImgX2 = B.Img_local_X;
@@ -665,7 +665,19 @@ struct XYZ Get_coordinate(cv::Mat img)
 		x2 = A.X;
 		y2 = A.Y;
 	}
-	
+
+	double alpha;
+
+	if (x1>x2){
+		alpha = -(3*pi/4);
+	}
+
+	else
+	{
+		alpha = -(pi/4);
+	}
+	cout << "alpha=" << alpha << '\n';
+
 
 	double d_12 = sqrt(pow((ImgX1 - ImgX2),2) + pow((ImgY1 - ImgY2),2))*3.2e-3;
 	double D_12 = sqrt(pow((x1 - x2),2) + pow((y1 - y2),2));
@@ -699,16 +711,16 @@ struct XYZ Get_coordinate(cv::Mat img)
 	switch (ABCD)
 	{
 	case 0:
-		angle = angle-(pi/4);
+		angle = angle + alpha;
 		break;
 	case 1:
-		angle = pi - angle-(pi/4);
+		angle = pi - angle + alpha;
 		break;
 	case 2:
-		angle = 2 * pi - angle-(pi/4);
+		angle = 2 * pi - angle + alpha;
 		break;
 	case 3:
-		angle = angle + pi-(pi/4);
+		angle = angle + pi + alpha;
 		break;
 	}
 	// cout << "angle=" << angle / pi * 180 << '\n';
@@ -730,15 +742,14 @@ struct XYZ Get_coordinate(cv::Mat img)
 	pose.y=yy;
 	pose.z=zz;
 	
-	pose.img_point = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/74.png", CV_LOAD_IMAGE_COLOR );
-    cv::flip(pose.img_point,pose.img_point,0);
+	pose.img_point = img_point;
 
     //-- 第一步:检测 Oriented FAST 角点位置
     //detector->detect ( img_1,keypoints_1 );
     //circle(img_1,(100,63),55,(255,0,0),-1);
-	double xxx=4*xx;
-	double yyy=4*yy;
-    circle(pose.img_point, Point(200+xxx, 350-yyy), 10, Scalar(0, 0, 255));
+	double xxx=5*xx;
+	double yyy=5*yy;
+    circle(pose.img_point, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
 	// circle(pose.img_point, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
     
     //-- 第二步:根据角点位置计算 BRIEF 描述子
@@ -882,7 +893,8 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-    ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
+    img_point = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
 } 
