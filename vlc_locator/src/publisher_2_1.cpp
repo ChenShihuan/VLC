@@ -615,78 +615,121 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// cout << "d="<< D.ID << '\n';
 	// cout << "e="<< E.ID << '\n';
 	// cout << "f="<< F.ID << '\n';
-	// cout << "a=" << A.ID << A.Img_local_X << A.Img_local_Y << A.X << A.Y << A.num << '\n';
-	// cout << "b=" << B.ID << B.Img_local_X << B.Img_local_Y << B.num << '\n';
-	// cout << "c=" << C.ID << C.Img_local_X << C.Img_local_Y << C.num << '\n';
-	// cout << "d=" << D.ID << D.Img_local_X << D.Img_local_Y << D.num << '\n';
-	// cout << "e=" << E.ID << E.Img_local_X << E.Img_local_Y << E.num << '\n';
-	// cout << "f=" << F.ID << F.Img_local_X << F.Img_local_Y << F.num << '\n';
+	// cout << "a=" << A.ID << '\n' << A.Img_local_X << '\n' << A.Img_local_Y << '\n'<<A.X << '\n' << A.Y << '\n';
+	// cout << "b=" << B.ID << '\n' << B.Img_local_X << '\n' << B.Img_local_Y << '\n'<<B.X << '\n' << B.Y << '\n';
+	// cout << "c=" << C.ID << C.Img_local_X << C.Img_local_Y << '\n';
+	// cout << "d=" << D.ID << D.Img_local_X << D.Img_local_Y << '\n';
+	// cout << "e=" << E.ID << E.Img_local_X << E.Img_local_Y << '\n';
+	// cout << "f=" << F.ID << F.Img_local_X << F.Img_local_Y << '\n';
 
 
 	// 计算位置坐标
 	// 焦距
-	double f = 4;
+	double f = 1.5;
 	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
-	// double Center_X = 396.5;
-	// double Center_Y = 332;
-	double Center_X = 395;
-	double Center_Y = 326;
-	// double Center_X = 400;
-	// double Center_Y = 300;
+	// double Center_X = 394;
+	// double Center_Y = 328.5;
+	// double Center_X = 395;
+	// double Center_Y = 326;
+	double Center_X = 400;
+	double Center_Y = 300;
+	// double Center_X = 391.8;
+	// double Center_Y = 328.7;
 
-	double ImgX1 = A.Img_local_X;
-	double ImgY1 = A.Img_local_Y;
-	double ImgX2 = B.Img_local_X;
-	double ImgY2 = B.Img_local_Y;
-	double ImgX3 = C.Img_local_X;
-	double ImgY3 = C.Img_local_Y;
-	double x1 = A.X;
-	double y1 = A.Y;
-	double x2 = B.X;
-	double y2 = B.Y;
-	double x3 = C.X;
-	double y3 = C.Y;
+	// 双灯定位
+	// 以数目最少的两盏LED灯来定位
+	// 是否必须要取ID最小？若必须，则需要遍历所有ID，若不必须，则只需要取ab两个灯具即可，
+	// 且前面的灯具检测循环只需要循环两次检测两个灯具就可以了
+	double ImgX1;
+	double ImgY1;
+	double ImgX2;
+	double ImgY2;
+	double x1;
+	double y1;
+	double x2;
+	double y2;
 
-	//三灯定位
-	double d_12 = sqrt(pow((ImgX1 - ImgX2), 2) + pow((ImgY1 - ImgY2), 2))*3.2e-3;
-	double d_13 = sqrt(pow((ImgX1 - ImgX3), 2) + pow((ImgY1 - ImgY3), 2))*3.2e-3;
-	double d_23 = sqrt(pow((ImgX2 - ImgX3), 2) + pow((ImgY2 - ImgY3), 2))*3.2e-3;
-	double D_12 = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
-	double D_13 = sqrt(pow((x1 - x3), 2) + pow((y1 - y3), 2));
-	double D_23 = sqrt(pow((x2 - x3), 2) + pow((y2 - y3), 2));
-	double H = (D_12 / d_12*f + D_13 / d_13*f + D_23 / d_23*f) / 3;//计算出高度
-	//cout << "H=" << H << '\n';
+	if (A.ID<B.ID){
+		ImgX1 = A.Img_local_X;
+		ImgY1 = A.Img_local_Y;
+		ImgX2 = B.Img_local_X;
+		ImgY2 = B.Img_local_Y;
+		x1 = A.X;
+		y1 = A.Y;
+		x2 = B.X;
+		y2 = B.Y;
+	}
 
-	//计算水平方向上摄像头到3个LED的距离
-	double d_1 = sqrt(pow((ImgX1 - Center_X), 2) + pow((ImgY1 - Center_Y), 2))*3.2e-3;
-	double d_2 = sqrt(pow((ImgX2 - Center_X), 2) + pow((ImgY2 - Center_Y), 2))*3.2e-3;
-	double d_3 = sqrt(pow((ImgX3 - Center_X), 2) + pow((ImgY3 - Center_Y), 2))*3.2e-3;
+	else
+	{
+		ImgX1 = B.Img_local_X;
+		ImgY1 = B.Img_local_Y;
+		ImgX2 = A.Img_local_X;
+		ImgY2 = A.Img_local_Y;
+		x1 = B.X;
+		y1 = B.Y;
+		x2 = A.X;
+		y2 = A.Y;
+	}
+	
 
-	//对应真实的距离
-	double D_1 = H / f*d_1;
-	double D_2 = H / f*d_2;
-	double D_3 = H / f*d_3;
+	double d_12 = sqrt(pow((ImgX1 - ImgX2),2) + pow((ImgY1 - ImgY2),2))*3.2e-3;
+	double D_12 = sqrt(pow((x1 - x2),2) + pow((y1 - y2),2));
+	double H = D_12 / d_12*f;
+	double X_r = ((ImgX1 + ImgX2) / 2 - Center_X)*3.2e-3*H / f;
+	double Y_r = ((ImgY1 + ImgY2) / 2 - Center_Y)*3.2e-3*H / f;
+	double X_c = (x1 + x2) / 2;
+	double Y_c = (y1 + y2) / 2;
+	double X = X_r;
+	double Y = Y_r;
 
-	double r1 = pow(D_1, 2);
-	double r2 = pow(D_2, 2);
-	double r3 = pow(D_3, 2);
+	// cout << "H=" << H << '\n';
 
-	//解出终端的位置坐标
-	double a1 = 2 * (x1 - x3);
-	double b1 = 2 * (y1 - y3);
-	double c1 = pow(x3, 2) - pow(x1, 2) + pow(y3, 2) - pow(y1, 2) - r3 + r1;
-	double a2 = 2 * (x2 - x3);
-	double b2 = 2 * (y2 - y3);
-	double c2 = pow(x3, 2) - pow(x2, 2) + pow(y3, 2) - pow(y2, 2) - r3 + r2;
+	// // 计算角度
+	// cout << "ImgY2=" << ImgY2 << '\n';
+	// cout << "ImgY1=" << ImgY1 << '\n';
+	// cout << "ImgX2 =" << ImgX2 << '\n';
+	// cout << "ImgX1=" << ImgX1 << '\n';
+	double K1 = abs((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+	// cout << "K1=" << K1  << '\n';
+	double angle = atan(K1);
+	// cout << "angle1=" << angle / pi * 180 << '\n';
 
-	double XX = (c2 * b1 - c1 * b2) / (a1*b2 - a2 * b1);
-	double YY = (c2 * a1 - c1 * a2) / (a2*b1 - a1 * b2);
+	//由于对称性，要对角度做进一步处理
+	bool ABC = ImgY2 < ImgY1;
+	bool EFG = ImgX2 > ImgX1;
+	int ABCD = ABC * 2 + EFG;
+	// ABCD = 3;
+	// cout << "ABCD=" << ABCD << '\n';
+
+	switch (ABCD)
+	{
+	case 0:
+		angle = angle-(pi/4);
+		break;
+	case 1:
+		angle = pi - angle-(pi/4);
+		break;
+	case 2:
+		angle = 2 * pi - angle-(pi/4);
+		break;
+	case 3:
+		angle = angle + pi-(pi/4);
+		break;
+	}
+	// cout << "angle=" << angle / pi * 180 << '\n';
+		
+	double XX = X*cos(angle) - Y*sin(angle);
+	double YY = X*sin(angle) + Y*cos(angle);
+
+	XX = XX + X_c;
+	YY = YY + Y_c;
 
 	double xx = XX / 10;
 	double yy = YY / 10;
-	// xx = xx*(f / H);
-	// yy = xx*(f / H);
 	double zz = 150 - H / 10;
+
+	// imshow("test time", grayImage);
 
 	struct XYZ pose;
 	pose.x=xx;
@@ -808,7 +851,7 @@ public:
 
 		pose_value=Get_coordinate(img_out);
 
-       	ss  << '\n'<< pose_value.x  << '\n'<<pose_value.y << count;
+       	ss  << '\n'<< pose_value.x  << '\n'<<pose_value.y << '\n'<<pose_value.z << count;
 		msg.data = ss.str();
 
 		ROS_INFO("%s", msg.data.c_str());

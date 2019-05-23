@@ -443,17 +443,17 @@ struct XYZ Get_coordinate(cv::Mat img)
 	};
 
 	struct position P2 = {	// LED 序号
-		500,		// ID_max,最大条纹数目 
-		400,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
+		6,		// ID_max,最大条纹数目 
+		4,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P3 = {	// LED 序号
 		3,		// ID_max,最大条纹数目 
 		2,		// ID_min，最小条纹数目
-		-490,	// LED灯具的真实位置,x坐标
-		460,	// LED灯具的真实位置,y坐标
+		470,	// LED灯具的真实位置,x坐标
+		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P4 = {	// LED 序号
@@ -472,9 +472,9 @@ struct XYZ Get_coordinate(cv::Mat img)
 
 	struct position P6 = {	//LED 序号
 		9,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
-		490,	// LED灯具的真实位置,x坐标
-		-470,	// LED灯具的真实位置,y坐标
+		7,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
+		0,	// LED灯具的真实位置,y坐标
 	};
 
 
@@ -610,12 +610,12 @@ struct XYZ Get_coordinate(cv::Mat img)
 		}
 	}
 
-	// cout << "a="<< A.ID << '\n';
-	// cout << "b="<< B.ID << '\n';
-	// cout << "c="<< C.ID << '\n';
-	// cout << "d="<< D.ID << '\n';
-	// cout << "e="<< E.ID << '\n';
-	// cout << "f="<< F.ID << '\n';
+	cout << "a="<< A.ID << '\n';
+	cout << "b="<< B.ID << '\n';
+	cout << "c="<< C.ID << '\n';
+	cout << "d="<< D.ID << '\n';
+	cout << "e="<< E.ID << '\n';
+	cout << "f="<< F.ID << '\n';
 	// cout << "a=" << A.ID << '\n' << A.Img_local_X << '\n' << A.Img_local_Y << '\n';
 	// cout << "b=" << B.ID << '\n' << B.Img_local_X << '\n' << B.Img_local_Y << '\n';
 	// cout << "c=" << C.ID << '\n' << C.Img_local_X << '\n' << C.Img_local_Y << '\n';
@@ -627,7 +627,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// 计算位置坐标
 	// 焦距
 	double f = 1.5;
-	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于2048x1536)
+	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
 	double Center_X = 394;
 	double Center_Y = 328.5;
 	// double Center_X = 395;
@@ -708,14 +708,14 @@ struct XYZ Get_coordinate(cv::Mat img)
 	pose.z=zz;
 	
 	pose.img_point = img_point;
-    cv::flip(pose.img_point,pose.img_point,0);
+    // cv::flip(pose.img_point,pose.img_point,0);
 
     //-- 第一步:检测 Oriented FAST 角点位置
     //detector->detect ( img_1,keypoints_1 );
     //circle(img_1,(100,63),55,(255,0,0),-1);
-	double xxx=4*xx;
-	double yyy=4*yy;
-    circle(pose.img_point, Point(200+xxx, 350-yyy), 10, Scalar(0, 0, 255));
+	double xxx=5*xx;
+	double yyy=5*yy;
+    circle(pose.img_point, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
 	// circle(pose.img_point, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
     
     //-- 第二步:根据角点位置计算 BRIEF 描述子
@@ -859,7 +859,7 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-	img_point = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/74.png", CV_LOAD_IMAGE_COLOR );
+	img_point = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
     ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();

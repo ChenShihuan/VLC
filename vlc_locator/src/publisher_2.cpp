@@ -609,8 +609,8 @@ struct XYZ Get_coordinate(cv::Mat img)
 		}
 	}
 
-	cout << "a="<< A.ID << '\n';
-	cout << "b="<< B.ID << '\n';
+	// cout << "a="<< A.ID << '\n';
+	// cout << "b="<< B.ID << '\n';
 	// cout << "c="<< C.ID << '\n';
 	// cout << "d="<< D.ID << '\n';
 	// cout << "e="<< E.ID << '\n';
@@ -626,11 +626,9 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// 计算位置坐标
 	// 焦距
 	double f = 1.5;
-	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于2048x1536)
-	// double Center_X = 1024;
-	// double Center_Y = 768;
-	double Center_X = 394;
-	double Center_Y = 328.5;
+	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
+	double Center_X = 397;
+	double Center_Y = 332.3;
 
 	// 双灯定位
 	// 以数目最少的两盏LED灯来定位
@@ -679,24 +677,24 @@ struct XYZ Get_coordinate(cv::Mat img)
 	double X = X_r;
 	double Y = Y_r;
 
-	cout << "H=" << H << '\n';
+	// cout << "H=" << H << '\n';
 
 	// 计算角度
-	cout << "ImgY2=" << ImgY2 << '\n';
-	cout << "ImgY1=" << ImgY1 << '\n';
-	cout << "ImgX2 =" << ImgX2 << '\n';
-	cout << "ImgX1=" << ImgX1 << '\n';
+	// cout << "ImgY2=" << ImgY2 << '\n';
+	// cout << "ImgY1=" << ImgY1 << '\n';
+	// cout << "ImgX2 =" << ImgX2 << '\n';
+	// cout << "ImgX1=" << ImgX1 << '\n';
 	double K1 = abs((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
 	// cout << "K1=" << K1  << '\n';
 	double angle = atan(K1);
-	cout << "angle1=" << angle / pi * 180 << '\n';
+	// cout << "angle1=" << angle / pi * 180 << '\n';
 
 	//由于对称性，要对角度做进一步处理
 	bool ABC = ImgY2 < ImgY1;
 	bool EFG = ImgX2 > ImgX1;
 	int ABCD = ABC * 2 + EFG;
 	// ABCD = 3;
-	cout << "ABCD=" << ABCD << '\n';
+	// cout << "ABCD=" << ABCD << '\n';
 
 	switch (ABCD)
 	{
@@ -713,7 +711,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		angle = angle + pi-(pi/4);
 		break;
 	}
-	cout << "angle=" << angle / pi * 180 << '\n';
+	// cout << "angle=" << angle / pi * 180 << '\n';
 		
 	double XX = X*cos(angle) - Y*sin(angle);
 	double YY = X*sin(angle) + Y*cos(angle);

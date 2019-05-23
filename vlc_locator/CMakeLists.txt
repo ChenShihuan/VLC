@@ -36,6 +36,15 @@ target_link_libraries(2333 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 add_executable(publisher_2 src/publisher_2.cpp)
 target_link_libraries(publisher_2 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
+add_executable(publisher_2_1 src/publisher_2_1.cpp)
+target_link_libraries(publisher_2_1 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
+
+add_executable(publisher_2_2 src/publisher_2_2.cpp)
+target_link_libraries(publisher_2_2 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
+
+add_executable(publisher_2_3 src/publisher_2_3.cpp)
+target_link_libraries(publisher_2_3 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
+
 add_executable(publisher_3 src/publisher_3.cpp)
 target_link_libraries(publisher_3 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 

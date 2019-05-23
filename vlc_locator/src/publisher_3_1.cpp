@@ -626,7 +626,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// 计算位置坐标
 	// 焦距
 	double f = 4;
-	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于2048x1536)
+	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
 	// double Center_X = 396.5;
 	// double Center_Y = 332;
 	// double Center_X = 395;
