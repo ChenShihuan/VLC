@@ -434,49 +434,49 @@ struct XYZ Get_coordinate(cv::Mat img)
 // 1 2/3 4/5 6/7     9/10     11/12
 {
 	struct LED unkonwn,A,B,C,D,E,F;
-	// cout << "111" << '\n';
+	struct XYZ pose;
+
 	struct position P1 = {	// LED 序号
-		5,		// ID_max,最大条纹数目 
-		4,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
+		7,		// ID_max,最大条纹数目 
+		6,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		1,		// ID_max,最大条纹数目 
-		1,		// ID_min，最小条纹数目
-		-470,	// LED灯具的真实位置,x坐标
-		940,	// LED灯具的真实位置,y坐标
-	};
-
-	struct position P3 = {	// LED 序号
-		7,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
-		0,	// LED灯具的真实位置,y坐标
-	};
-
-	struct position P4 = {	// LED 序号
-		10,		// ID_max,最大条纹数目 
+		9,		// ID_max,最大条纹数目 
 		8,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		0,	// LED灯具的真实位置,y坐标
-	};	
-
-	struct position P5 = {	// LED 序号
-		100,		// ID_max,最大条纹数目 
-		11,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
-		-940,	// LED灯具的真实位置,y坐标
 	};
 
-	struct position P6 = {	//LED 序号
+	struct position P3 = {	// LED 序号
 		3,		// ID_max,最大条纹数目 
 		2,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		-940,	// LED灯具的真实位置,y坐标
 	};
 
+	struct position P4 = {	// LED 序号
+		100,		// ID_max,最大条纹数目 
+		11,		// ID_min，最小条纹数目
+		490,	// LED灯具的真实位置,x坐标
+		940,	// LED灯具的真实位置,y坐标
+	};
+
+	struct position P5 = {	// LED 序号
+		1,		// ID_max,最大条纹数目 
+		1,		// ID_min，最小条纹数目
+		470,	// LED灯具的真实位置,x坐标
+		0,	// LED灯具的真实位置,y坐标
+	};
+
+	struct position P6 = {	//LED 序号
+		5,		// ID_max,最大条纹数目 
+		4,		// ID_min，最小条纹数目
+		470,	// LED灯具的真实位置,x坐标
+		-940,	// LED灯具的真实位置,y坐标
+	};
 
 	// 图像读取及判断
 	cv::Mat grayImage = img;
@@ -623,114 +623,117 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// cout << "e=" << E.ID << E.Img_local_X << E.Img_local_Y << '\n';
 	// cout << "f=" << F.ID << F.Img_local_X << F.Img_local_Y << '\n';
 
+	if (C.ID == 0){
+		cout << "只有两盏灯！" << '\n';
+		return pose;
+	}
+	else{
+		// 计算位置坐标
+		// 焦距
+		double f = 1.5;
+		// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
+		double Center_X = 394;
+		double Center_Y = 328.5;
+		// double Center_X = 395;
+		// double Center_Y = 326;
+		// double Center_X = 400;
+		// double Center_Y = 300;
+		// double Center_X = 391.8;
+		// double Center_Y = 328.7;
 
-	// 计算位置坐标
-	// 焦距
-	double f = 1.5;
-	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
-	double Center_X = 394;
-	double Center_Y = 328.5;
-	// double Center_X = 395;
-	// double Center_Y = 326;
-	// double Center_X = 400;
-	// double Center_Y = 300;
-	// double Center_X = 391.8;
-	// double Center_Y = 328.7;
+		double ImgX1 = A.Img_local_X;
+		double ImgY1 = A.Img_local_Y;
+		double ImgX2 = B.Img_local_X;
+		double ImgY2 = B.Img_local_Y;
+		double ImgX3 = C.Img_local_X;
+		double ImgY3 = C.Img_local_Y;
+		double x1 = A.X;
+		double y1 = A.Y;
+		double x2 = B.X;
+		double y2 = B.Y;
+		double x3 = C.X;
+		double y3 = C.Y;
 
-	double ImgX1 = A.Img_local_X;
-	double ImgY1 = A.Img_local_Y;
-	double ImgX2 = B.Img_local_X;
-	double ImgY2 = B.Img_local_Y;
-	double ImgX3 = C.Img_local_X;
-	double ImgY3 = C.Img_local_Y;
-	double x1 = A.X;
-	double y1 = A.Y;
-	double x2 = B.X;
-	double y2 = B.Y;
-	double x3 = C.X;
-	double y3 = C.Y;
+		//三灯定位
+		double d_12 = sqrt(pow((ImgX1 - ImgX2), 2) + pow((ImgY1 - ImgY2), 2))*3.2e-3;
+		double d_13 = sqrt(pow((ImgX1 - ImgX3), 2) + pow((ImgY1 - ImgY3), 2))*3.2e-3;
+		double d_23 = sqrt(pow((ImgX2 - ImgX3), 2) + pow((ImgY2 - ImgY3), 2))*3.2e-3;
+		double D_12 = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
+		double D_13 = sqrt(pow((x1 - x3), 2) + pow((y1 - y3), 2));
+		double D_23 = sqrt(pow((x2 - x3), 2) + pow((y2 - y3), 2));
+		double H = (D_12 / d_12*f + D_13 / d_13*f + D_23 / d_23*f) / 3;//计算出高度
+		// cout << "H=" << H << '\n';
 
-	//三灯定位
-	double d_12 = sqrt(pow((ImgX1 - ImgX2), 2) + pow((ImgY1 - ImgY2), 2))*3.2e-3;
-	double d_13 = sqrt(pow((ImgX1 - ImgX3), 2) + pow((ImgY1 - ImgY3), 2))*3.2e-3;
-	double d_23 = sqrt(pow((ImgX2 - ImgX3), 2) + pow((ImgY2 - ImgY3), 2))*3.2e-3;
-	double D_12 = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
-	double D_13 = sqrt(pow((x1 - x3), 2) + pow((y1 - y3), 2));
-	double D_23 = sqrt(pow((x2 - x3), 2) + pow((y2 - y3), 2));
-	double H = (D_12 / d_12*f + D_13 / d_13*f + D_23 / d_23*f) / 3;//计算出高度
-	// cout << "H=" << H << '\n';
+		//计算水平方向上摄像头到3个LED的距离
+		double d_1 = sqrt(pow((ImgX1 - Center_X), 2) + pow((ImgY1 - Center_Y), 2))*3.2e-3;
+		double d_2 = sqrt(pow((ImgX2 - Center_X), 2) + pow((ImgY2 - Center_Y), 2))*3.2e-3;
+		double d_3 = sqrt(pow((ImgX3 - Center_X), 2) + pow((ImgY3 - Center_Y), 2))*3.2e-3;
 
-	//计算水平方向上摄像头到3个LED的距离
-	double d_1 = sqrt(pow((ImgX1 - Center_X), 2) + pow((ImgY1 - Center_Y), 2))*3.2e-3;
-	double d_2 = sqrt(pow((ImgX2 - Center_X), 2) + pow((ImgY2 - Center_Y), 2))*3.2e-3;
-	double d_3 = sqrt(pow((ImgX3 - Center_X), 2) + pow((ImgY3 - Center_Y), 2))*3.2e-3;
+		//对应真实的距离
+		double D_1 = H / f*d_1;
+		double D_2 = H / f*d_2;
+		double D_3 = H / f*d_3;
 
-	//对应真实的距离
-	double D_1 = H / f*d_1;
-	double D_2 = H / f*d_2;
-	double D_3 = H / f*d_3;
+		double r1 = pow(D_1, 2);
+		double r2 = pow(D_2, 2);
+		double r3 = pow(D_3, 2);
 
-	double r1 = pow(D_1, 2);
-	double r2 = pow(D_2, 2);
-	double r3 = pow(D_3, 2);
+		// double rr1 = pow(d_1, 2);
+		// double rr2 = pow(d_2, 2);
+		// double rr3 = pow(d_3, 2);
 
-	// double rr1 = pow(d_1, 2);
-	// double rr2 = pow(d_2, 2);
-	// double rr3 = pow(d_3, 2);
+		//解出终端的位置坐标
+		double a1 = 2 * (x1 - x3);
+		double b1 = 2 * (y1 - y3);
+		double c1 = pow(x3, 2) - pow(x1, 2) + pow(y3, 2) - pow(y1, 2) - r3 + r1;
+		double a2 = 2 * (x2 - x3);
+		double b2 = 2 * (y2 - y3);
+		double c2 = pow(x3, 2) - pow(x2, 2) + pow(y3, 2) - pow(y2, 2) - r3 + r2;
 
-	//解出终端的位置坐标
-	double a1 = 2 * (x1 - x3);
-	double b1 = 2 * (y1 - y3);
-	double c1 = pow(x3, 2) - pow(x1, 2) + pow(y3, 2) - pow(y1, 2) - r3 + r1;
-	double a2 = 2 * (x2 - x3);
-	double b2 = 2 * (y2 - y3);
-	double c2 = pow(x3, 2) - pow(x2, 2) + pow(y3, 2) - pow(y2, 2) - r3 + r2;
+		// double a1 = 2 * (ImgX1 - ImgX3);
+		// double b1 = 2 * (ImgY1 - ImgY3);
+		// double c1 = pow(ImgX3, 2) - pow(ImgX1, 2) + pow(ImgY3, 2) - pow(ImgY1, 2) - rr3 + rr1;
+		// double a2 = 2 * (ImgX2 - ImgX3);
+		// double b2 = 2 * (ImgY2 - ImgY3);
+		// double c2 = pow(ImgX3, 2) - pow(ImgX2, 2) + pow(ImgY3, 2) - pow(ImgY2, 2) - rr3 + rr2;
 
-	// double a1 = 2 * (ImgX1 - ImgX3);
-	// double b1 = 2 * (ImgY1 - ImgY3);
-	// double c1 = pow(ImgX3, 2) - pow(ImgX1, 2) + pow(ImgY3, 2) - pow(ImgY1, 2) - rr3 + rr1;
-	// double a2 = 2 * (ImgX2 - ImgX3);
-	// double b2 = 2 * (ImgY2 - ImgY3);
-	// double c2 = pow(ImgX3, 2) - pow(ImgX2, 2) + pow(ImgY3, 2) - pow(ImgY2, 2) - rr3 + rr2;
+		double XX = (c2 * b1 - c1 * b2) / (a1*b2 - a2 * b1);
+		double YY = (c2 * a1 - c1 * a2) / (a2*b1 - a1 * b2);
 
-	double XX = (c2 * b1 - c1 * b2) / (a1*b2 - a2 * b1);
-	double YY = (c2 * a1 - c1 * a2) / (a2*b1 - a1 * b2);
+		double xx = XX / 10;
+		double yy = YY / 10;
+		// xx = xx*(f / H);
+		// yy = xx*(f / H);
+		double zz = 150 - H / 10;
 
-	double xx = XX / 10;
-	double yy = YY / 10;
-	// xx = xx*(f / H);
-	// yy = xx*(f / H);
-	double zz = 150 - H / 10;
+		pose.x=xx;
+		pose.y=yy;
+		pose.z=zz;
+		
+		pose.img_point = img_point;
+		// cv::flip(pose.img_point,pose.img_point,0);
 
-	struct XYZ pose;
-	pose.x=xx;
-	pose.y=yy;
-	pose.z=zz;
-	
-	pose.img_point = img_point;
-    // cv::flip(pose.img_point,pose.img_point,0);
+		//-- 第一步:检测 Oriented FAST 角点位置
+		//detector->detect ( img_1,keypoints_1 );
+		//circle(img_1,(100,63),55,(255,0,0),-1);
+		double xxx=5*xx;
+		double yyy=5*yy;
+		circle(pose.img_point, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
+		// circle(pose.img_point, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
+		
+		//-- 第二步:根据角点位置计算 BRIEF 描述子
+		//descriptor->compute ( img_1, keypoints_1, descriptors_1 );
+			
+		//Mat outimg1;
+		//drawKeypoints( img_1, keypoints_1, outimg1, (255,0,0), DrawMatchesFlags::DEFAULT );
+		// namedWindow("picture");    
+		// cv::imshow("picture",img_1);
 
-    //-- 第一步:检测 Oriented FAST 角点位置
-    //detector->detect ( img_1,keypoints_1 );
-    //circle(img_1,(100,63),55,(255,0,0),-1);
-	double xxx=5*xx;
-	double yyy=5*yy;
-    circle(pose.img_point, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
-	// circle(pose.img_point, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
-    
-    //-- 第二步:根据角点位置计算 BRIEF 描述子
-    //descriptor->compute ( img_1, keypoints_1, descriptors_1 );
-        
-    //Mat outimg1;
-    //drawKeypoints( img_1, keypoints_1, outimg1, (255,0,0), DrawMatchesFlags::DEFAULT );
-    // namedWindow("picture");    
-    // cv::imshow("picture",img_1);
-
-	// cout << pose.x << '\n' << pose.y << '\n' << pose.y << '\n'<< endl;
-	// 等待用户按0键退出程序  
-	waitKey(0);
-	return pose;
-
+		// cout << pose.x << '\n' << pose.y << '\n' << pose.y << '\n'<< endl;
+		// 等待用户按0键退出程序  
+		waitKey(0);
+		return pose;
+	}
 }
 
 
@@ -859,7 +862,7 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-	img_point = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+	img_point = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
     ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
