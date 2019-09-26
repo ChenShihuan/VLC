@@ -32,3 +32,4 @@
 
 # ignore the .vscode folder
 .vscode/
+mvcam/lib/libMVSDK.so
