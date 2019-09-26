@@ -445,15 +445,19 @@ struct XYZ Get_coordinate(cv::Mat img)
 	struct position P2 = {	// LED 序号
 		9,		// ID_max,最大条纹数目 
 		8,		// ID_min，最小条纹数目
+		// -470,	// LED灯具的真实位置,x坐标
+		// 0,	// LED灯具的真实位置,y坐标
 		-470,	// LED灯具的真实位置,x坐标
-		0,	// LED灯具的真实位置,y坐标
+		490,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P3 = {	// LED 序号
 		3,		// ID_max,最大条纹数目 
 		2,		// ID_min，最小条纹数目
-		-470,	// LED灯具的真实位置,x坐标
-		-940,	// LED灯具的真实位置,y坐标
+		// -470,	// LED灯具的真实位置,x坐标
+		// -940,	// LED灯具的真实位置,y坐标
+		-440,	// LED灯具的真实位置,x坐标
+		-420,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P4 = {	// LED 序号
@@ -466,15 +470,19 @@ struct XYZ Get_coordinate(cv::Mat img)
 	struct position P5 = {	// LED 序号
 		1,		// ID_max,最大条纹数目 
 		1,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
-		0,	// LED灯具的真实位置,y坐标
+		// 470,	// LED灯具的真实位置,x坐标
+		// 0,	// LED灯具的真实位置,y坐标
+		460,	// LED灯具的真实位置,x坐标
+		500,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P6 = {	//LED 序号
 		5,		// ID_max,最大条纹数目 
 		4,		// ID_min，最小条纹数目
+		// 470,	// LED灯具的真实位置,x坐标
+		// -940,	// LED灯具的真实位置,y坐标
 		470,	// LED灯具的真实位置,x坐标
-		-940,	// LED灯具的真实位置,y坐标
+		-420,	// LED灯具的真实位置,y坐标
 	};
 
 	// 图像读取及判断
@@ -506,7 +514,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 
 	for (int ii = 1;ii < 7;ii++)
 	{
-		int X_min, X_max, Y_min, Y_max;
+		int X_min, X_max, Y_min, Y_max;		
 		Mat img_next;
 		ls_LED(matBinary, X_min, X_max, Y_min, Y_max, img_next);
 
@@ -612,8 +620,8 @@ struct XYZ Get_coordinate(cv::Mat img)
 	cout << "b="<< B.ID << '\n';
 	cout << "c="<< C.ID << '\n';
 	cout << "d="<< D.ID << '\n';
-	cout << "e="<< E.ID << '\n';
-	cout << "f="<< F.ID << '\n';
+	// cout << "e="<< E.ID << '\n';
+	// cout << "f="<< F.ID << '\n';
 	// cout << "a=" << A.ID << '\n' << A.Img_local_X << '\n' << A.Img_local_Y << '\n'<<A.X << '\n' << A.Y << '\n';
 	// cout << "b=" << B.ID << '\n' << B.Img_local_X << '\n' << B.Img_local_Y << '\n'<<B.X << '\n' << B.Y << '\n';
 	// cout << "c=" << C.ID << C.Img_local_X << C.Img_local_Y << '\n';
@@ -631,8 +639,8 @@ struct XYZ Get_coordinate(cv::Mat img)
 		// 焦距
 		double f = 1.5;
 		// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
-		double Center_X = 397;
-		double Center_Y = 332.3;
+		double Center_X = 399;
+		double Center_Y = 348.3;
 
 		// 双灯定位
 		// 以数目最少的两盏LED灯来定位
@@ -674,16 +682,15 @@ struct XYZ Get_coordinate(cv::Mat img)
 				x2 = D1.X;
 				y2 = D1.Y;
 			}
-			
-			if (y1<y2){
-				alpha = (pi/4)+(pi/4);
-			}
+			alpha = (pi/2);
+			// if (y1<y2){
+			// 	alpha = (pi/4)+(pi/4);
+			// }
 
-			else{
-				alpha = (3*pi/4)-(pi/4);
-			}
+			// else{
+			// 	alpha = (3*pi/4)-(pi/4);
+			// }
 
-			cout << "alpha=" << alpha << '\n';
 		}
 		else if (D1.Y == D2.Y){
 			if (D1.X<D2.X){
@@ -708,18 +715,18 @@ struct XYZ Get_coordinate(cv::Mat img)
 				x2 = D1.X;
 				y2 = D1.Y;
 			}
-			if (x1<x2){
-				alpha = (pi/4)-(pi/4);
-			}
+			alpha = 0;
+			// if (x1<x2){
+			// 	alpha = (pi/4)-(pi/4);
+			// }
 
-			else{
-				alpha = (3*pi/4)+(pi/4);
-			}
+			// else{
+			// 	alpha = (3*pi/4)+(pi/4);
+			// }
 
-			cout << "alpha=" << alpha << '\n';
 		}
 		else{
-			if (D1.Y<D2.Y){
+			if (D1.X<D2.X){
 				ImgX1 = D1.Img_local_X;
 				ImgY1 = D1.Img_local_Y;
 				ImgX2 = D2.Img_local_X;
@@ -741,24 +748,19 @@ struct XYZ Get_coordinate(cv::Mat img)
 				x2 = D1.X;
 				y2 = D1.Y;
 			}
+		
+			alpha = atan((D2.Y - D1.Y) / (D2.X - D1.X));
 
-			if (x1<x2){
-				alpha = (pi/4);
-			}
-
-			else{
-				alpha = (3*pi/4);
-			}
-			cout << "alpha=" << alpha << '\n';
+			// cout << "alpha=" << alpha / pi * 180 << '\n';
 		}
 
 		// cout << "ImgY2=" << ImgY2 << '\n';
 		// cout << "ImgY1=" << ImgY1 << '\n';
 		// cout << "ImgX2 =" << ImgX2 << '\n';
 		// cout << "ImgX1=" << ImgX1 << '\n';
-		double K1 = abs((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+		// double K1 = (ImgY2 - ImgY1) / (ImgX2 - ImgX1);
 		// cout << "K1=" << K1  << '\n';
-		double angle = atan(K1);
+		double angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
 		// cout << "angle1=" << angle / pi * 180 << '\n';
 
 		//由于对称性，要对角度做进一步处理
@@ -766,21 +768,21 @@ struct XYZ Get_coordinate(cv::Mat img)
 		bool EFG = ImgX2 > ImgX1;
 		int ABCD = ABC * 2 + EFG;
 		//ABCD = 3;
-		// cout << "ABCD=" << ABCD << '\n';
+		cout << "ABCD=" << ABCD << '\n';
 
 		switch (ABCD)
 		{
 		case 0:
-			angle = angle + alpha;
+			angle = - angle + alpha;
 			break;
 		case 1:
 			angle = pi - angle + alpha;
 			break;
 		case 2:
-			angle = 2 * pi - angle + alpha;
+			angle = - angle + alpha;
 			break;
 		case 3:
-			angle = angle + pi + alpha;
+			angle = pi - angle + alpha;
 			break;
 		}
 
