@@ -159,7 +159,7 @@ int main(int argc, char** argv)
             #if 0
             #else
             // resize(cvarrToMat(iplImage),frame,Size(800,600),0,0,INTER_NEAREST);
-            // frame = cvarrToMat(iplImage);
+            frame = cvarrToMat(iplImage);
             
             if(Image_size_output_flag){
                 cout << "工业相机运行正常！" << endl;
