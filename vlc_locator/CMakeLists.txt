@@ -36,8 +36,8 @@ target_link_libraries(2333 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 add_executable(publisher_2 src/publisher_2.cpp)
 target_link_libraries(publisher_2 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
-add_executable(publisher_2_1 src/publisher_2_1.cpp)
-target_link_libraries(publisher_2_1 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
+add_executable(publisher_2_max src/publisher_2_max.cpp)
+target_link_libraries(publisher_2_max ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
 add_executable(publisher_2_2 src/publisher_2_2.cpp)
 target_link_libraries(publisher_2_2 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
@@ -53,6 +53,9 @@ target_link_libraries(publisher_3_1 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
 add_executable(publisher_3_2 src/publisher_3_2.cpp)
 target_link_libraries(publisher_3_2 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
+
+add_executable(publisher_test src/publisher_test.cpp)
+target_link_libraries(publisher_test ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
 add_executable(LED_ID_test src/LED_ID_test.cpp)
 target_link_libraries(LED_ID_test ${catkin_LIBRARIES}  ${OpenCV_LIBS})

@@ -63,7 +63,7 @@ struct position{// LED的位置，对应不同位置的灯具
 	};
 
 struct XYZ pose_value;
-
+Mat img_point;
 //-----------------------------------------------------------------------------------------------
 //**********************************************************************************************
 //
@@ -433,50 +433,57 @@ struct XYZ Get_coordinate(cv::Mat img)
 // int main()
 // 1 2/3 4/5 6/7     9/10     11/12
 {
-	struct LED unkonwn,A,B,C,D,E,F;
-	// cout << "111" << '\n';
+	struct LED unkonwn,A,B,C,D,E,F,D1,D2;
+	struct XYZ pose;
 	struct position P1 = {	// LED 序号
-		220,		// ID_max,最大条纹数目 
-		230,		// ID_min，最小条纹数目
+		70000,		// ID_max,最大条纹数目 
+		60000,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		500,		// ID_max,最大条纹数目 
-		400,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
-		940,	// LED灯具的真实位置,y坐标
+		10,		// ID_max,最大条纹数目 
+		7,		// ID_min，最小条纹数目
+		// -470,	// LED灯具的真实位置,x坐标
+		// 0,	// LED灯具的真实位置,y坐标
+		-465,	// LED灯具的真实位置,x坐标
+		495,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P3 = {	// LED 序号
 		3,		// ID_max,最大条纹数目 
 		2,		// ID_min，最小条纹数目
-		-490,	// LED灯具的真实位置,x坐标
-		460,	// LED灯具的真实位置,y坐标
+		// -470,	// LED灯具的真实位置,x坐标
+		// -940,	// LED灯具的真实位置,y坐标
+		-460,	// LED灯具的真实位置,x坐标
+		-420,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P4 = {	// LED 序号
-		100,		// ID_max,最大条纹数目 
-		100,		// ID_min，最小条纹数目
+		100000,		// ID_max,最大条纹数目 
+		11000,		// ID_min，最小条纹数目
 		490,	// LED灯具的真实位置,x坐标
-		-470,	// LED灯具的真实位置,y坐标
-	};	
+		940,	// LED灯具的真实位置,y坐标
+	};
 
 	struct position P5 = {	// LED 序号
-		100,		// ID_max,最大条纹数目 
-		10,		// ID_min，最小条纹数目
-		-470,	// LED灯具的真实位置,x坐标
-		-460,	// LED灯具的真实位置,y坐标
+		1,		// ID_max,最大条纹数目 
+		1,		// ID_min，最小条纹数目
+		// 470,	// LED灯具的真实位置,x坐标
+		// 0,	// LED灯具的真实位置,y坐标
+		460,	// LED灯具的真实位置,x坐标
+		490,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P6 = {	//LED 序号
-		9,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
-		490,	// LED灯具的真实位置,x坐标
-		-470,	// LED灯具的真实位置,y坐标
+		6,		// ID_max,最大条纹数目 
+		4,		// ID_min，最小条纹数目
+		// 470,	// LED灯具的真实位置,x坐标
+		// -940,	// LED灯具的真实位置,y坐标
+		470,	// LED灯具的真实位置,x坐标
+		-420,	// LED灯具的真实位置,y坐标
 	};
-
 
 	// 图像读取及判断
 	cv::Mat grayImage = img;
@@ -507,7 +514,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 
 	for (int ii = 1;ii < 7;ii++)
 	{
-		int X_min, X_max, Y_min, Y_max;
+		int X_min, X_max, Y_min, Y_max;		
 		Mat img_next;
 		ls_LED(matBinary, X_min, X_max, Y_min, Y_max, img_next);
 
@@ -622,143 +629,223 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// cout << "e=" << E.ID << E.Img_local_X << E.Img_local_Y << '\n';
 	// cout << "f=" << F.ID << F.Img_local_X << F.Img_local_Y << '\n';
 
-
-	// 计算位置坐标
-	// 焦距
-	double f = 1.5;
-	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
-	// double Center_X = 394;
-	// double Center_Y = 328.5;
-	// double Center_X = 395;
-	// double Center_Y = 326;
-	double Center_X = 400;
-	double Center_Y = 300;
-	// double Center_X = 391.8;
-	// double Center_Y = 328.7;
-
-	// 双灯定位
-	// 以数目最少的两盏LED灯来定位
-	// 是否必须要取ID最小？若必须，则需要遍历所有ID，若不必须，则只需要取ab两个灯具即可，
-	// 且前面的灯具检测循环只需要循环两次检测两个灯具就可以了
-	double ImgX1;
-	double ImgY1;
-	double ImgX2;
-	double ImgY2;
-	double x1;
-	double y1;
-	double x2;
-	double y2;
-
-	if (A.ID<B.ID){
-		ImgX1 = A.Img_local_X;
-		ImgY1 = A.Img_local_Y;
-		ImgX2 = B.Img_local_X;
-		ImgY2 = B.Img_local_Y;
-		x1 = A.X;
-		y1 = A.Y;
-		x2 = B.X;
-		y2 = B.Y;
+	if (B.ID == 0){
+		cout << "只有一盏灯！" << '\n';
+		return pose;
 	}
-
-	else
-	{
-		ImgX1 = B.Img_local_X;
-		ImgY1 = B.Img_local_Y;
-		ImgX2 = A.Img_local_X;
-		ImgY2 = A.Img_local_Y;
-		x1 = B.X;
-		y1 = B.Y;
-		x2 = A.X;
-		y2 = A.Y;
-	}
-	
-
-	double d_12 = sqrt(pow((ImgX1 - ImgX2),2) + pow((ImgY1 - ImgY2),2))*3.2e-3;
-	double D_12 = sqrt(pow((x1 - x2),2) + pow((y1 - y2),2));
-	double H = D_12 / d_12*f;
-	double X_r = ((ImgX1 + ImgX2) / 2 - Center_X)*3.2e-3*H / f;
-	double Y_r = ((ImgY1 + ImgY2) / 2 - Center_Y)*3.2e-3*H / f;
-	double X_c = (x1 + x2) / 2;
-	double Y_c = (y1 + y2) / 2;
-	double X = X_r;
-	double Y = Y_r;
-
-	// cout << "H=" << H << '\n';
-
-	// // 计算角度
-	// cout << "ImgY2=" << ImgY2 << '\n';
-	// cout << "ImgY1=" << ImgY1 << '\n';
-	// cout << "ImgX2 =" << ImgX2 << '\n';
-	// cout << "ImgX1=" << ImgX1 << '\n';
-	double K1 = abs((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
-	// cout << "K1=" << K1  << '\n';
-	double angle = atan(K1);
-	// cout << "angle1=" << angle / pi * 180 << '\n';
-
-	//由于对称性，要对角度做进一步处理
-	bool ABC = ImgY2 < ImgY1;
-	bool EFG = ImgX2 > ImgX1;
-	int ABCD = ABC * 2 + EFG;
-	// ABCD = 3;
-	// cout << "ABCD=" << ABCD << '\n';
-
-	switch (ABCD)
-	{
-	case 0:
-		angle = angle-(pi/4);
-		break;
-	case 1:
-		angle = pi - angle-(pi/4);
-		break;
-	case 2:
-		angle = 2 * pi - angle-(pi/4);
-		break;
-	case 3:
-		angle = angle + pi-(pi/4);
-		break;
-	}
-	// cout << "angle=" << angle / pi * 180 << '\n';
+	else{
 		
-	double XX = X*cos(angle) - Y*sin(angle);
-	double YY = X*sin(angle) + Y*cos(angle);
+		// 计算位置坐标
+		// 焦距
+		double f = 1.5;
+		// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
+		double Center_X = 399 * 2.56;
+		double Center_Y = 348.3 * 2.56;
 
-	XX = XX + X_c;
-	YY = YY + Y_c;
+		// 双灯定位
+		// 以数目最少的两盏LED灯来定位
+		// 是否必须要取ID最小？若必须，则需要遍历所有ID，若不必须，则只需要取ab两个灯具即可，
+		// 且前面的灯具检测循环只需要循环两次检测两个灯具就可以了
+		double ImgX1;
+		double ImgY1;
+		double ImgX2;
+		double ImgY2;
+		double x1;
+		double y1;
+		double x2;
+		double y2;
 
-	double xx = XX / 10;
-	double yy = YY / 10;
-	double zz = 150 - H / 10;
+		if (C.ID == 0){
+			D1=A;
+			D2=B;
+		}
+		else
+		{
+			D1=A;
+			D2=C;
+		}
+		
+		// 计算角度
+		double alpha;
+		if (D1.X == D2.X ){
+			if (D1.Y<D2.Y){
+				ImgX1 = D1.Img_local_X;
+				ImgY1 = D1.Img_local_Y;
+				ImgX2 = D2.Img_local_X;
+				ImgY2 = D2.Img_local_Y;
+				x1 = D1.X;
+				y1 = D1.Y;
+				x2 = D2.X;
+				y2 = D2.Y;
+			}
 
-	// imshow("test time", grayImage);
+			else
+			{
+				ImgX1 = D2.Img_local_X;
+				ImgY1 = D2.Img_local_Y;
+				ImgX2 = D1.Img_local_X;
+				ImgY2 = D1.Img_local_Y;
+				x1 = D2.X;
+				y1 = D2.Y;
+				x2 = D1.X;
+				y2 = D1.Y;
+			}
+			alpha = (pi/2);
+			// if (y1<y2){
+			// 	alpha = (pi/4)+(pi/4);
+			// }
 
-	struct XYZ pose;
-	pose.x=xx;
-	pose.y=yy;
-	pose.z=zz;
-	
-	pose.img_point = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/74.png", CV_LOAD_IMAGE_COLOR );
-    cv::flip(pose.img_point,pose.img_point,0);
+			// else{
+			// 	alpha = (3*pi/4)-(pi/4);
+			// }
 
-    //-- 第一步:检测 Oriented FAST 角点位置
-    //detector->detect ( img_1,keypoints_1 );
-    //circle(img_1,(100,63),55,(255,0,0),-1);
-	double xxx=4*xx;
-	double yyy=4*yy;
-    circle(pose.img_point, Point(200+xxx, 350-yyy), 10, Scalar(0, 0, 255));
-	// circle(pose.img_point, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
-    
-    //-- 第二步:根据角点位置计算 BRIEF 描述子
-    //descriptor->compute ( img_1, keypoints_1, descriptors_1 );
-        
-    //Mat outimg1;
-    //drawKeypoints( img_1, keypoints_1, outimg1, (255,0,0), DrawMatchesFlags::DEFAULT );
-    // namedWindow("picture");    
-    // cv::imshow("picture",img_1);
+		}
+		else if (D1.Y == D2.Y){
+			if (D1.X<D2.X){
+				ImgX1 = D1.Img_local_X;
+				ImgY1 = D1.Img_local_Y;
+				ImgX2 = D2.Img_local_X;
+				ImgY2 = D2.Img_local_Y;
+				x1 = D1.X;
+				y1 = D1.Y;
+				x2 = D2.X;
+				y2 = D2.Y;
+			}
 
-	// cout << pose.x << '\n' << pose.y << '\n' << pose.y << '\n'<< endl;
-	// 等待用户按0键退出程序  
-	waitKey(0);
-	return pose;
+			else
+			{
+				ImgX1 = D2.Img_local_X;
+				ImgY1 = D2.Img_local_Y;
+				ImgX2 = D1.Img_local_X;
+				ImgY2 = D1.Img_local_Y;
+				x1 = D2.X;
+				y1 = D2.Y;
+				x2 = D1.X;
+				y2 = D1.Y;
+			}
+			alpha = 0;
+			// if (x1<x2){
+			// 	alpha = (pi/4)-(pi/4);
+			// }
+
+			// else{
+			// 	alpha = (3*pi/4)+(pi/4);
+			// }
+
+		}
+		else{
+			if (D1.X<D2.X){
+				ImgX1 = D1.Img_local_X;
+				ImgY1 = D1.Img_local_Y;
+				ImgX2 = D2.Img_local_X;
+				ImgY2 = D2.Img_local_Y;
+				x1 = D1.X;
+				y1 = D1.Y;
+				x2 = D2.X;
+				y2 = D2.Y;
+			}
+
+			else
+			{
+				ImgX1 = D2.Img_local_X;
+				ImgY1 = D2.Img_local_Y;
+				ImgX2 = D1.Img_local_X;
+				ImgY2 = D1.Img_local_Y;
+				x1 = D2.X;
+				y1 = D2.Y;
+				x2 = D1.X;
+				y2 = D1.Y;
+			}
+		
+			alpha = atan((D2.Y - D1.Y) / (D2.X - D1.X));
+
+			// cout << "alpha=" << alpha / pi * 180 << '\n';
+		}
+
+		// cout << "ImgY2=" << ImgY2 << '\n';
+		// cout << "ImgY1=" << ImgY1 << '\n';
+		// cout << "ImgX2 =" << ImgX2 << '\n';
+		// cout << "ImgX1=" << ImgX1 << '\n';
+		// double K1 = (ImgY2 - ImgY1) / (ImgX2 - ImgX1);
+		// cout << "K1=" << K1  << '\n';
+		double angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+		// cout << "angle1=" << angle / pi * 180 << '\n';
+
+		//由于对称性，要对角度做进一步处理
+		bool ABC = ImgY2 < ImgY1;
+		bool EFG = ImgX2 > ImgX1;
+		int ABCD = ABC * 2 + EFG;
+		//ABCD = 3;
+		// cout << "ABCD=" << ABCD << '\n';
+
+		switch (ABCD)
+		{
+		case 0:
+			angle = - angle + alpha;
+			break;
+		case 1:
+			angle = pi - angle + alpha;
+			break;
+		case 2:
+			angle = - angle + alpha;
+			break;
+		case 3:
+			angle = pi - angle + alpha;
+			break;
+		}
+
+		double d_12 = sqrt(pow((ImgX1 - ImgX2),2) + pow((ImgY1 - ImgY2),2))*3.2e-3;
+		double D_12 = sqrt(pow((x1 - x2),2) + pow((y1 - y2),2));
+		double H = D_12 / d_12*f;
+		double X_r = ((ImgX1 + ImgX2) / 2 - Center_X)*3.2e-3*H / f;
+		double Y_r = ((ImgY1 + ImgY2) / 2 - Center_Y)*3.2e-3*H / f;
+		double X_c = (x1 + x2) / 2;
+		double Y_c = (y1 + y2) / 2;
+		double X = X_r;
+		double Y = Y_r;
+
+		// cout << "angle=" << angle / pi * 180 << '\n';
+			
+		double XX = X*cos(angle) - Y*sin(angle);
+		double YY = X*sin(angle) + Y*cos(angle);
+
+		XX = XX + X_c;
+		YY = YY + Y_c;
+
+		double xx = XX / 10;
+		double yy = YY / 10;
+		double zz = 150 - H / 10;
+
+		// imshow("test time", grayImage);
+
+		pose.x=xx;
+		pose.y=yy;
+		pose.z=zz;
+		
+		pose.img_point = img_point;
+
+		//-- 第一步:检测 Oriented FAST 角点位置
+		//detector->detect ( img_1,keypoints_1 );
+		//circle(img_1,(100,63),55,(255,0,0),-1);
+		double xxx=5*xx;
+		double yyy=5*yy;
+		circle (pose.img_point, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
+		// circle(pose.img_point, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
+		
+		//-- 第二步:根据角点位置计算 BRIEF 描述子
+		//descriptor->compute ( img_1, keypoints_1, descriptors_1 );
+			
+		//Mat outimg1;
+		//drawKeypoints( img_1, keypoints_1, outimg1, (255,0,0), DrawMatchesFlags::DEFAULT );
+		// namedWindow("picture");    
+		// cv::imshow("picture",img_1);
+
+		// cout << pose.x << '\n' << pose.y << '\n' << pose.y << '\n'<< endl;
+		// 等待用户按0键退出程序  
+		waitKey (0);
+		return pose;
+
+	}
 
 }
 
@@ -888,7 +975,8 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-    ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
+    img_point = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
 } 

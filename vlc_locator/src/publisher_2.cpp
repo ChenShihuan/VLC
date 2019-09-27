@@ -436,53 +436,53 @@ struct XYZ Get_coordinate(cv::Mat img)
 	struct LED unkonwn,A,B,C,D,E,F,D1,D2;
 	struct XYZ pose;
 	struct position P1 = {	// LED 序号
-		7,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
+		70000,		// ID_max,最大条纹数目   7
+		60000,		// ID_min，最小条纹数目   6
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		9,		// ID_max,最大条纹数目 
-		8,		// ID_min，最小条纹数目
+		15,		// ID_max,最大条纹数目 
+		7,		// ID_min，最小条纹数目
 		// -470,	// LED灯具的真实位置,x坐标
 		// 0,	// LED灯具的真实位置,y坐标
-		-470,	// LED灯具的真实位置,x坐标
-		490,	// LED灯具的真实位置,y坐标
+		-465,	// LED灯具的真实位置,x坐标
+		495,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P3 = {	// LED 序号
 		3,		// ID_max,最大条纹数目 
-		2,		// ID_min，最小条纹数目
+		1,		// ID_min，最小条纹数目
 		// -470,	// LED灯具的真实位置,x坐标
 		// -940,	// LED灯具的真实位置,y坐标
-		-440,	// LED灯具的真实位置,x坐标
+		-460,	// LED灯具的真实位置,x坐标
 		-420,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P4 = {	// LED 序号
-		100,		// ID_max,最大条纹数目 
-		11,		// ID_min，最小条纹数目
+		100000,		// ID_max,最大条纹数目  100
+		11000,		// ID_min，最小条纹数目 11
 		490,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P5 = {	// LED 序号
-		1,		// ID_max,最大条纹数目 
-		1,		// ID_min，最小条纹数目
+		1000000,		// ID_max,最大条纹数目  1
+		1000000,		// ID_min，最小条纹数目 1
 		// 470,	// LED灯具的真实位置,x坐标
 		// 0,	// LED灯具的真实位置,y坐标
 		460,	// LED灯具的真实位置,x坐标
-		500,	// LED灯具的真实位置,y坐标
+		490,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P6 = {	//LED 序号
-		5,		// ID_max,最大条纹数目 
+		6,		// ID_max,最大条纹数目 
 		4,		// ID_min，最小条纹数目
 		// 470,	// LED灯具的真实位置,x坐标
 		// -940,	// LED灯具的真实位置,y坐标
-		470,	// LED灯具的真实位置,x坐标
-		-420,	// LED灯具的真实位置,y坐标
+		480,	// LED灯具的真实位置,x坐标
+		-425,	// LED灯具的真实位置,y坐标
 	};
 
 	// 图像读取及判断
@@ -522,49 +522,55 @@ struct XYZ Get_coordinate(cv::Mat img)
 		double Img_local_X = (X_max + X_min) / 2;
 		double Img_local_Y = (Y_max + Y_min) / 2;
 
-		//将原图中LED1部分的区域变黑
-		//获取图像的行列
-		double rowB = matBinary.rows;//二值化图像的行数
-		double colB = matBinary.cols;//二值化图像的列数
-		Mat matBinary1 = matBinary.clone();//定义一幅图像来放去除LED1的图？？？？？？？？？？？？？？？？为什么要用1做后缀
+		if (X_max>780|X_min<20|Y_max>580|Y_min<20){ //防止因为识别到半个灯而造成ID错误和坐标错误
+			unkonwn.ID = 0;
+		}
+		else{
+			//将原图中LED1部分的区域变黑
+			//获取图像的行列
+			double rowB = matBinary.rows;//二值化图像的行数
+			double colB = matBinary.cols;//二值化图像的列数
+			Mat matBinary1 = matBinary.clone();//定义一幅图像来放去除LED1的图？？？？？？？？？？？？？？？？为什么要用1做后缀
 
 
-		for (double i = 0;i < rowB;i++)
-		{
-			for (double j = 0;j < colB;j++)
+			for (double i = 0;i < rowB;i++)
 			{
-				double r = pow((i - Img_local_Y), 2) + pow((j - Img_local_X), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)计算x的y次方
-				if (r - 360 > 0)//将r扩大
+				for (double j = 0;j < colB;j++)
 				{
-					//LED1圆外面像素重载为原图
-					matBinary1.at<uchar>(i, j) = matBinary.at<uchar>(i, j);
-				}
-				else
-				{
-					matBinary1.at<uchar>(i, j) = 0;//将第 i 行第 j 列像素值设置为255,二值化后为0和255
+					double r = pow((i - Img_local_Y), 2) + pow((j - Img_local_X), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)计算x的y次方
+					if (r - 360 > 0)//将r扩大
+					{
+						//LED1圆外面像素重载为原图
+						matBinary1.at<uchar>(i, j) = matBinary.at<uchar>(i, j);
+					}
+					else
+					{
+						matBinary1.at<uchar>(i, j) = 0;//将第 i 行第 j 列像素值设置为255,二值化后为0和255
+					}
 				}
 			}
+			matBinary = matBinary1.clone();
+			bwareaopen(matBinary, 500);//去除连通区域小于500的区域,这是必须的，因为上面的圆很有可能清不掉
+
+			unkonwn.img_next = img_next.clone();
+			unkonwn.Img_local_X = Img_local_X;
+			unkonwn.Img_local_Y = Img_local_Y;
+			unkonwn.matBinary = matBinary1.clone(); 
+			//框框
+			unkonwn.X_min = X_min;
+			unkonwn.X_max = X_max;
+			unkonwn.Y_min = Y_min;
+			unkonwn.Y_max = Y_max;
+
+			//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
+			unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
+			//做图像细化(有用，效果好)
+			chao_thinimage(unkonwn.image_cut);
+			//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
+			findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+			unkonwn.ID = unkonwn.contours.size();
 		}
-		matBinary = matBinary1.clone();
-		bwareaopen(matBinary, 500);//去除连通区域小于500的区域,这是必须的，因为上面的圆很有可能清不掉
-
-		unkonwn.img_next = img_next.clone();
-		unkonwn.Img_local_X = Img_local_X;
-		unkonwn.Img_local_Y = Img_local_Y;
-		unkonwn.matBinary = matBinary1.clone(); 
-		//框框
-		unkonwn.X_min = X_min;
-		unkonwn.X_max = X_max;
-		unkonwn.Y_min = Y_min;
-		unkonwn.Y_max = Y_max;
-
-		//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
-		unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
-		//做图像细化(有用，效果好)
-		chao_thinimage(unkonwn.image_cut);
-		//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
-		findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
-		unkonwn.ID = unkonwn.contours.size();
+		
 
 		// 根据ID判断对应的LED，并写入坐标值
 		if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
@@ -640,7 +646,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		double f = 1.5;
 		// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
 		double Center_X = 399;
-		double Center_Y = 348.3;
+		double Center_Y = 340.3;
 
 		// 双灯定位
 		// 以数目最少的两盏LED灯来定位
@@ -655,8 +661,24 @@ struct XYZ Get_coordinate(cv::Mat img)
 		double x2;
 		double y2;
 
-		D1=A;
-		D2=B;
+		if (C.ID == 0){
+			D1=A;
+			D2=B;
+		}
+		else
+		{
+			if (A.Img_local_X == C.Img_local_X){
+				D1=A;
+				D2=B;
+			}
+			else
+			{
+				D1=A;
+				D2=C;
+			}		
+		}
+		cout << "D1="<< D1.ID << '\n';
+		cout << "D2="<< D2.ID << '\n';
 		// 计算角度
 		double alpha;
 		if (D1.X == D2.X ){
@@ -760,7 +782,15 @@ struct XYZ Get_coordinate(cv::Mat img)
 		// cout << "ImgX1=" << ImgX1 << '\n';
 		// double K1 = (ImgY2 - ImgY1) / (ImgX2 - ImgX1);
 		// cout << "K1=" << K1  << '\n';
-		double angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+
+		double angle;
+		if (ImgX2 == ImgX1){
+			angle = (pi/2);
+		}
+		else{
+			angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+		}
+		
 		// cout << "angle1=" << angle / pi * 180 << '\n';
 
 		//由于对称性，要对角度做进一步处理
@@ -768,7 +798,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		bool EFG = ImgX2 > ImgX1;
 		int ABCD = ABC * 2 + EFG;
 		//ABCD = 3;
-		cout << "ABCD=" << ABCD << '\n';
+		// cout << "ABCD=" << ABCD << '\n';
 
 		switch (ABCD)
 		{
@@ -967,7 +997,7 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-    img_point = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+    img_point = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
 	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();

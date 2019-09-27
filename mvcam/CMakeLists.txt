@@ -35,5 +35,5 @@ link_directories(
 add_executable(mvcam src/mvcam.cpp)
 target_link_libraries(mvcam ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} MVSDK)
 
-# add_executable(mvcam1 src/mvcam1.cpp)
-# target_link_libraries(mvcam1 ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} mvcam)
+add_executable(mvcam_max src/mvcam_max.cpp)
+target_link_libraries(mvcam_max ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} MVSDK)
