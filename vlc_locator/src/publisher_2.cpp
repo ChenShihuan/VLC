@@ -453,7 +453,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 
 	struct position P3 = {	// LED 序号
 		3,		// ID_max,最大条纹数目 
-		1,		// ID_min，最小条纹数目
+		2,		// ID_min，最小条纹数目
 		// -470,	// LED灯具的真实位置,x坐标
 		// -940,	// LED灯具的真实位置,y坐标
 		-460,	// LED灯具的真实位置,x坐标
@@ -468,8 +468,8 @@ struct XYZ Get_coordinate(cv::Mat img)
 	};
 
 	struct position P5 = {	// LED 序号
-		1000000,		// ID_max,最大条纹数目  1
-		1000000,		// ID_min，最小条纹数目 1
+		1,		// ID_max,最大条纹数目  
+		1,		// ID_min，最小条纹数目 
 		// 470,	// LED灯具的真实位置,x坐标
 		// 0,	// LED灯具的真实位置,y坐标
 		460,	// LED灯具的真实位置,x坐标
@@ -522,46 +522,49 @@ struct XYZ Get_coordinate(cv::Mat img)
 		double Img_local_X = (X_max + X_min) / 2;
 		double Img_local_Y = (Y_max + Y_min) / 2;
 
-		if (X_max>780|X_min<20|Y_max>580|Y_min<20){ //防止因为识别到半个灯而造成ID错误和坐标错误
-			unkonwn.ID = 0;
-		}
-		else{
-			//将原图中LED1部分的区域变黑
-			//获取图像的行列
-			double rowB = matBinary.rows;//二值化图像的行数
-			double colB = matBinary.cols;//二值化图像的列数
-			Mat matBinary1 = matBinary.clone();//定义一幅图像来放去除LED1的图？？？？？？？？？？？？？？？？为什么要用1做后缀
+
+		//将原图中LED1部分的区域变黑
+		//获取图像的行列
+		double rowB = matBinary.rows;//二值化图像的行数
+		double colB = matBinary.cols;//二值化图像的列数
+		Mat matBinary1 = matBinary.clone();//定义一幅图像来放去除LED1的图？？？？？？？？？？？？？？？？为什么要用1做后缀
 
 
-			for (double i = 0;i < rowB;i++)
+		for (double i = 0;i < rowB;i++)
+		{
+			for (double j = 0;j < colB;j++)
 			{
-				for (double j = 0;j < colB;j++)
+				double r = pow((i - Img_local_Y), 2) + pow((j - Img_local_X), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)计算x的y次方
+				if (r - 360 > 0)//将r扩大
 				{
-					double r = pow((i - Img_local_Y), 2) + pow((j - Img_local_X), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)计算x的y次方
-					if (r - 360 > 0)//将r扩大
-					{
-						//LED1圆外面像素重载为原图
-						matBinary1.at<uchar>(i, j) = matBinary.at<uchar>(i, j);
-					}
-					else
-					{
-						matBinary1.at<uchar>(i, j) = 0;//将第 i 行第 j 列像素值设置为255,二值化后为0和255
-					}
+					//LED1圆外面像素重载为原图
+					matBinary1.at<uchar>(i, j) = matBinary.at<uchar>(i, j);
+				}
+				else
+				{
+					matBinary1.at<uchar>(i, j) = 0;//将第 i 行第 j 列像素值设置为255,二值化后为0和255
 				}
 			}
-			matBinary = matBinary1.clone();
-			bwareaopen(matBinary, 500);//去除连通区域小于500的区域,这是必须的，因为上面的圆很有可能清不掉
+		}
+		matBinary = matBinary1.clone();
+		bwareaopen(matBinary, 500);//去除连通区域小于500的区域,这是必须的，因为上面的圆很有可能清不掉
 
-			unkonwn.img_next = img_next.clone();
-			unkonwn.Img_local_X = Img_local_X;
-			unkonwn.Img_local_Y = Img_local_Y;
-			unkonwn.matBinary = matBinary1.clone(); 
-			//框框
-			unkonwn.X_min = X_min;
-			unkonwn.X_max = X_max;
-			unkonwn.Y_min = Y_min;
-			unkonwn.Y_max = Y_max;
+		unkonwn.img_next = img_next.clone();
+		unkonwn.Img_local_X = Img_local_X;
+		unkonwn.Img_local_Y = Img_local_Y;
+		unkonwn.matBinary = matBinary1.clone(); 
+		//框框
+		unkonwn.X_min = X_min;
+		unkonwn.X_max = X_max;
+		unkonwn.Y_min = Y_min;
+		unkonwn.Y_max = Y_max;
 
+		if (X_max>780 || X_min<20 || Y_max>580 || Y_min<20){ //防止因为识别到半个灯而造成ID错误和坐标错误
+			unkonwn.ID = 0;
+			unkonwn.num = 0;
+		}
+		else
+		{
 			//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
 			unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
 			//做图像细化(有用，效果好)
@@ -569,34 +572,35 @@ struct XYZ Get_coordinate(cv::Mat img)
 			//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
 			findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 			unkonwn.ID = unkonwn.contours.size();
-		}
-		
 
-		// 根据ID判断对应的LED，并写入坐标值
-		if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
-			{unkonwn.X = P1.X;
-			unkonwn.Y = P1.Y;
-			unkonwn.num = 1;}
-		else if (unkonwn.ID <= P2.max && unkonwn.ID >= P2.min)
-			{unkonwn.X = P2.X;
-			unkonwn.Y = P2.Y;
-			unkonwn.num = 2;}
-		else if (unkonwn.ID <= P3.max && unkonwn.ID >= P3.min)
-			{unkonwn.X = P3.X;
-			unkonwn.Y = P3.Y;
-			unkonwn.num = 3;}
-		else if (unkonwn.ID <= P4.max && unkonwn.ID >= P4.min)
-			{unkonwn.X = P4.X;
-			unkonwn.Y = P4.Y;
-			unkonwn.num = 4;}
-		else if (unkonwn.ID <= P5.max && unkonwn.ID >= P5.min)
-			{unkonwn.X = P5.X;
-			unkonwn.Y = P5.Y;
-			unkonwn.num = 5;}
-		else if (unkonwn.ID <= P6.max && unkonwn.ID >= P6.min)
-			{unkonwn.X = P6.X;
-			unkonwn.Y = P6.Y;
-			unkonwn.num = 6;}
+		
+			// 根据ID判断对应的LED，并写入坐标值
+			if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
+				{unkonwn.X = P1.X;
+				unkonwn.Y = P1.Y;
+				unkonwn.num = 1;}
+			else if (unkonwn.ID <= P2.max && unkonwn.ID >= P2.min)
+				{unkonwn.X = P2.X;
+				unkonwn.Y = P2.Y;
+				unkonwn.num = 2;}
+			else if (unkonwn.ID <= P3.max && unkonwn.ID >= P3.min)
+				{unkonwn.X = P3.X;
+				unkonwn.Y = P3.Y;
+				unkonwn.num = 3;}
+			else if (unkonwn.ID <= P4.max && unkonwn.ID >= P4.min)
+				{unkonwn.X = P4.X;
+				unkonwn.Y = P4.Y;
+				unkonwn.num = 4;}
+			else if (unkonwn.ID <= P5.max && unkonwn.ID >= P5.min)
+				{unkonwn.X = P5.X;
+				unkonwn.Y = P5.Y;
+				unkonwn.num = 5;}
+			else if (unkonwn.ID <= P6.max && unkonwn.ID >= P6.min)
+				{unkonwn.X = P6.X;
+				unkonwn.Y = P6.Y;
+				unkonwn.num = 6;}
+
+		}
 
 		// 将以上的unknown结构体的值一起赋予某个灯具，释放出unknown
 		switch (ii)
@@ -622,10 +626,10 @@ struct XYZ Get_coordinate(cv::Mat img)
 		}
 	}
 
-	cout << "a="<< A.ID << '\n';
-	cout << "b="<< B.ID << '\n';
-	cout << "c="<< C.ID << '\n';
-	cout << "d="<< D.ID << '\n';
+	// cout << "a="<< A.ID << '\n';
+	// cout << "b="<< B.ID << '\n';
+	// cout << "c="<< C.ID << '\n';
+	// cout << "d="<< D.ID << '\n';
 	// cout << "e="<< E.ID << '\n';
 	// cout << "f="<< F.ID << '\n';
 	// cout << "a=" << A.ID << '\n' << A.Img_local_X << '\n' << A.Img_local_Y << '\n'<<A.X << '\n' << A.Y << '\n';
@@ -635,11 +639,12 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// cout << "e=" << E.ID << E.Img_local_X << E.Img_local_Y << '\n';
 	// cout << "f=" << F.ID << F.Img_local_X << F.Img_local_Y << '\n';
 
-	if (B.ID == 0){
-		cout << "只有一盏灯！" << '\n';
-		return pose;
-	}
-	else{
+	// if (B.ID == 0){
+	// 	cout << "只有一盏灯！" << '\n';
+	// 	return pose;
+	// }
+	// else
+	{
 		
 		// 计算位置坐标
 		// 焦距
@@ -677,8 +682,8 @@ struct XYZ Get_coordinate(cv::Mat img)
 				D2=C;
 			}		
 		}
-		cout << "D1="<< D1.ID << '\n';
-		cout << "D2="<< D2.ID << '\n';
+		// cout << "D1="<< D1.ID << '\n';
+		// cout << "D2="<< D2.ID << '\n';
 		// 计算角度
 		double alpha;
 		if (D1.X == D2.X ){
