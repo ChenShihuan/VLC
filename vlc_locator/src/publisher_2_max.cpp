@@ -436,14 +436,14 @@ struct XYZ Get_coordinate(cv::Mat img)
 	struct LED unkonwn,A,B,C,D,E,F,D1,D2;
 	struct XYZ pose;
 	struct position P1 = {	// LED 序号
-		70000,		// ID_max,最大条纹数目 
-		60000,		// ID_min，最小条纹数目
+		70000,		// ID_max,最大条纹数目   7
+		60000,		// ID_min，最小条纹数目   6
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		10,		// ID_max,最大条纹数目 
+		15,		// ID_max,最大条纹数目 
 		7,		// ID_min，最小条纹数目
 		// -470,	// LED灯具的真实位置,x坐标
 		// 0,	// LED灯具的真实位置,y坐标
@@ -451,7 +451,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		495,	// LED灯具的真实位置,y坐标
 	};
 
-	struct position P3 = {	// LED 序号
+	struct position P3 = {	// LED 序号    !!!在此分辨率下，条纹数处于2～3的灯具不可使用！
 		3,		// ID_max,最大条纹数目 
 		2,		// ID_min，最小条纹数目
 		// -470,	// LED灯具的真实位置,x坐标
@@ -461,15 +461,15 @@ struct XYZ Get_coordinate(cv::Mat img)
 	};
 
 	struct position P4 = {	// LED 序号
-		100000,		// ID_max,最大条纹数目 
-		11000,		// ID_min，最小条纹数目
+		100000,		// ID_max,最大条纹数目  100
+		11000,		// ID_min，最小条纹数目 11
 		490,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P5 = {	// LED 序号
-		1,		// ID_max,最大条纹数目 
-		1,		// ID_min，最小条纹数目
+		1,		// ID_max,最大条纹数目  
+		1,		// ID_min，最小条纹数目 
 		// 470,	// LED灯具的真实位置,x坐标
 		// 0,	// LED灯具的真实位置,y坐标
 		460,	// LED灯具的真实位置,x坐标
@@ -481,8 +481,8 @@ struct XYZ Get_coordinate(cv::Mat img)
 		4,		// ID_min，最小条纹数目
 		// 470,	// LED灯具的真实位置,x坐标
 		// -940,	// LED灯具的真实位置,y坐标
-		470,	// LED灯具的真实位置,x坐标
-		-420,	// LED灯具的真实位置,y坐标
+		480,	// LED灯具的真实位置,x坐标
+		-425,	// LED灯具的真实位置,y坐标
 	};
 
 	// 图像读取及判断
@@ -522,6 +522,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		double Img_local_X = (X_max + X_min) / 2;
 		double Img_local_Y = (Y_max + Y_min) / 2;
 
+
 		//将原图中LED1部分的区域变黑
 		//获取图像的行列
 		double rowB = matBinary.rows;//二值化图像的行数
@@ -558,39 +559,48 @@ struct XYZ Get_coordinate(cv::Mat img)
 		unkonwn.Y_min = Y_min;
 		unkonwn.Y_max = Y_max;
 
-		//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
-		unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
-		//做图像细化(有用，效果好)
-		chao_thinimage(unkonwn.image_cut);
-		//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
-		findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
-		unkonwn.ID = unkonwn.contours.size();
+		if (X_max>(780*2.56) || X_min<(20*2.56) || Y_max>(580*2.56) || Y_min<(20*2.56)){ //防止因为识别到半个灯而造成ID错误和坐标错误
+			unkonwn.ID = 0;
+			unkonwn.num = 0;
+		}
+		else
+		{
+			//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
+			unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
+			//做图像细化(有用，效果好)
+			chao_thinimage(unkonwn.image_cut);
+			//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
+			findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+			unkonwn.ID = unkonwn.contours.size();
 
-		// 根据ID判断对应的LED，并写入坐标值
-		if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
-			{unkonwn.X = P1.X;
-			unkonwn.Y = P1.Y;
-			unkonwn.num = 1;}
-		else if (unkonwn.ID <= P2.max && unkonwn.ID >= P2.min)
-			{unkonwn.X = P2.X;
-			unkonwn.Y = P2.Y;
-			unkonwn.num = 2;}
-		else if (unkonwn.ID <= P3.max && unkonwn.ID >= P3.min)
-			{unkonwn.X = P3.X;
-			unkonwn.Y = P3.Y;
-			unkonwn.num = 3;}
-		else if (unkonwn.ID <= P4.max && unkonwn.ID >= P4.min)
-			{unkonwn.X = P4.X;
-			unkonwn.Y = P4.Y;
-			unkonwn.num = 4;}
-		else if (unkonwn.ID <= P5.max && unkonwn.ID >= P5.min)
-			{unkonwn.X = P5.X;
-			unkonwn.Y = P5.Y;
-			unkonwn.num = 5;}
-		else if (unkonwn.ID <= P6.max && unkonwn.ID >= P6.min)
-			{unkonwn.X = P6.X;
-			unkonwn.Y = P6.Y;
-			unkonwn.num = 6;}
+		
+			// 根据ID判断对应的LED，并写入坐标值
+			if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
+				{unkonwn.X = P1.X;
+				unkonwn.Y = P1.Y;
+				unkonwn.num = 1;}
+			else if (unkonwn.ID <= P2.max && unkonwn.ID >= P2.min)
+				{unkonwn.X = P2.X;
+				unkonwn.Y = P2.Y;
+				unkonwn.num = 2;}
+			else if (unkonwn.ID <= P3.max && unkonwn.ID >= P3.min)
+				{unkonwn.X = P3.X;
+				unkonwn.Y = P3.Y;
+				unkonwn.num = 3;}
+			else if (unkonwn.ID <= P4.max && unkonwn.ID >= P4.min)
+				{unkonwn.X = P4.X;
+				unkonwn.Y = P4.Y;
+				unkonwn.num = 4;}
+			else if (unkonwn.ID <= P5.max && unkonwn.ID >= P5.min)
+				{unkonwn.X = P5.X;
+				unkonwn.Y = P5.Y;
+				unkonwn.num = 5;}
+			else if (unkonwn.ID <= P6.max && unkonwn.ID >= P6.min)
+				{unkonwn.X = P6.X;
+				unkonwn.Y = P6.Y;
+				unkonwn.num = 6;}
+
+		}
 
 		// 将以上的unknown结构体的值一起赋予某个灯具，释放出unknown
 		switch (ii)
@@ -629,18 +639,19 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// cout << "e=" << E.ID << E.Img_local_X << E.Img_local_Y << '\n';
 	// cout << "f=" << F.ID << F.Img_local_X << F.Img_local_Y << '\n';
 
-	if (B.ID == 0){
-		cout << "只有一盏灯！" << '\n';
-		return pose;
-	}
-	else{
+	// if (B.ID == 0){
+	// 	cout << "只有一盏灯！" << '\n';
+	// 	return pose;
+	// }
+	// else
+	{
 		
 		// 计算位置坐标
 		// 焦距
 		double f = 1.5;
 		// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
-		double Center_X = 399 * 2.56;
-		double Center_Y = 348.3 * 2.56;
+		double Center_X = 1002.5;
+		double Center_Y = 852.5;
 
 		// 双灯定位
 		// 以数目最少的两盏LED灯来定位
@@ -661,10 +672,18 @@ struct XYZ Get_coordinate(cv::Mat img)
 		}
 		else
 		{
-			D1=A;
-			D2=C;
+			if (A.Img_local_X == C.Img_local_X){
+				D1=A;
+				D2=B;
+			}
+			else
+			{
+				D1=A;
+				D2=C;
+			}		
 		}
-		
+		// cout << "D1="<< D1.ID << '\n';
+		// cout << "D2="<< D2.ID << '\n';
 		// 计算角度
 		double alpha;
 		if (D1.X == D2.X ){
@@ -768,7 +787,15 @@ struct XYZ Get_coordinate(cv::Mat img)
 		// cout << "ImgX1=" << ImgX1 << '\n';
 		// double K1 = (ImgY2 - ImgY1) / (ImgX2 - ImgX1);
 		// cout << "K1=" << K1  << '\n';
-		double angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+
+		double angle;
+		if (ImgX2 == ImgX1){
+			angle = (pi/2);
+		}
+		else{
+			angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+		}
+		
 		// cout << "angle1=" << angle / pi * 180 << '\n';
 
 		//由于对称性，要对角度做进一步处理
