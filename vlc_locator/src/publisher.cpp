@@ -33,7 +33,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 {
 	struct LED unkonwn,A,B,C,D,E,F;
 	// cout << "111" << '\n';
-
+	struct XYZ pose;
 	struct position P1 = {	// LED 序号
 		7,		// ID_max,最大条纹数目 
 		6,		// ID_min，最小条纹数目
@@ -251,16 +251,27 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// double Center_X = 391.8;
 	// double Center_Y = 328.7;
 
-	struct XYZ pose;
-	// if (C.ID > 0)
-	// {
-	// 	pose = three_LED(f, Center_X, Center_Y, A, B, C); 
-	// }
-	// else
-	// {
-	// 	pose = double_LED(f, Center_X, Center_Y, A, B);
-	// }
-	pose = three_LED(f, Center_X, Center_Y, A, B, C);
+	struct LED D1,D2;
+
+	if (C.ID == 0){
+		D1=A;
+		D2=B;
+	}
+	else
+	{
+		if (A.imgLocalX == C.imgLocalX){
+			D1=A;
+			D2=B;
+		}
+		else
+		{
+			D1=A;
+			D2=C;
+		}		
+	}
+	pose = double_LED(f, Center_X, Center_Y, D1, D2);
+	
+	// pose = three_LED(f, Center_X, Center_Y, A, B, C);
 
 	
 	pose.imgPoint = imgPoint;
