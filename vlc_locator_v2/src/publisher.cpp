@@ -123,13 +123,14 @@ struct position P6 = {	//LED 序号
 
 	for (int ii = 1;ii < 7;ii++)
 	{
-		int X_min, X_max, Y_min, Y_max;
+		int X_min, X_max, Y_min, Y_max;		
 		Mat img_next;
 		ls_LED(matBinary, X_min, X_max, Y_min, Y_max, img_next);
 
 		//获得LED1像素中心的位置
 		double Img_local_X = (X_max + X_min) / 2;
 		double Img_local_Y = (Y_max + Y_min) / 2;
+
 
 		//将原图中LED1部分的区域变黑
 		//获取图像的行列
@@ -167,39 +168,48 @@ struct position P6 = {	//LED 序号
 		unkonwn.Y_min = Y_min;
 		unkonwn.Y_max = Y_max;
 
-		//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
-		unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
-		//做图像细化(有用，效果好)
-		thinImage(unkonwn.image_cut);
-		//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
-		findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
-		unkonwn.ID = unkonwn.contours.size();
+		if (X_max>780 || X_min<20 || Y_max>580 || Y_min<20){ //防止因为识别到半个灯而造成ID错误和坐标错误
+			unkonwn.ID = 0;
+			unkonwn.num = 0;
+		}
+		else
+		{
+			//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
+			unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
+			//做图像细化(有用，效果好)
+			thinImage(unkonwn.image_cut);
+			//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
+			findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+			unkonwn.ID = unkonwn.contours.size();
 
-		// 根据ID判断对应的LED，并写入坐标值
-		if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
-			{unkonwn.X = P1.X;
-			unkonwn.Y = P1.Y;
-			unkonwn.num = 1;}
-		else if (unkonwn.ID <= P2.max && unkonwn.ID >= P2.min)
-			{unkonwn.X = P2.X;
-			unkonwn.Y = P2.Y;
-			unkonwn.num = 2;}
-		else if (unkonwn.ID <= P3.max && unkonwn.ID >= P3.min)
-			{unkonwn.X = P3.X;
-			unkonwn.Y = P3.Y;
-			unkonwn.num = 3;}
-		else if (unkonwn.ID <= P4.max && unkonwn.ID >= P4.min)
-			{unkonwn.X = P4.X;
-			unkonwn.Y = P4.Y;
-			unkonwn.num = 4;}
-		else if (unkonwn.ID <= P5.max && unkonwn.ID >= P5.min)
-			{unkonwn.X = P5.X;
-			unkonwn.Y = P5.Y;
-			unkonwn.num = 5;}
-		else if (unkonwn.ID <= P6.max && unkonwn.ID >= P6.min)
-			{unkonwn.X = P6.X;
-			unkonwn.Y = P6.Y;
-			unkonwn.num = 6;}
+		
+			// 根据ID判断对应的LED，并写入坐标值
+			if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
+				{unkonwn.X = P1.X;
+				unkonwn.Y = P1.Y;
+				unkonwn.num = 1;}
+			else if (unkonwn.ID <= P2.max && unkonwn.ID >= P2.min)
+				{unkonwn.X = P2.X;
+				unkonwn.Y = P2.Y;
+				unkonwn.num = 2;}
+			else if (unkonwn.ID <= P3.max && unkonwn.ID >= P3.min)
+				{unkonwn.X = P3.X;
+				unkonwn.Y = P3.Y;
+				unkonwn.num = 3;}
+			else if (unkonwn.ID <= P4.max && unkonwn.ID >= P4.min)
+				{unkonwn.X = P4.X;
+				unkonwn.Y = P4.Y;
+				unkonwn.num = 4;}
+			else if (unkonwn.ID <= P5.max && unkonwn.ID >= P5.min)
+				{unkonwn.X = P5.X;
+				unkonwn.Y = P5.Y;
+				unkonwn.num = 5;}
+			else if (unkonwn.ID <= P6.max && unkonwn.ID >= P6.min)
+				{unkonwn.X = P6.X;
+				unkonwn.Y = P6.Y;
+				unkonwn.num = 6;}
+
+		}
 
 		// 将以上的unknown结构体的值一起赋予某个灯具，释放出unknown
 		switch (ii)
