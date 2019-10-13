@@ -2,15 +2,9 @@
 //      描述：包含程序所依赖的头文件
 //----------------------------------------------------------------------------------------------  
 #include <stdio.h>
-<<<<<<< HEAD
-#include <string>
-#include <math.h>//对应下面的pow（平方）
-#include <geometry_msgs/Point.h>
-=======
 #include <stdlib.h>
 #include <vlcCommonInclude.hpp>
 
->>>>>>> beta
 #include "std_msgs/String.h"
 
 #include <sstream>
@@ -300,6 +294,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 //            来源: http://blog.csdn.net/robogreen/article/details/50488215
 //----------------------------------------------------------------------------------------------- 
 
+//定义一个转换的类 
 class IMAGE_LISTENER_and_LOCATOR  
 {  
 private:  
@@ -309,11 +304,7 @@ private:
 	image_transport::Publisher image_pub_; 
 	ros::Publisher msgPointPub;
 
-<<<<<<< HEAD
-    struct XYZ pose_value;
-=======
     struct XYZ poseValue;
->>>>>>> beta
   
 public:  
     IMAGE_LISTENER_and_LOCATOR()  
@@ -383,15 +374,9 @@ public:
 
        	ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
-<<<<<<< HEAD
-		msgPoint.x = pose_value.x;
-		msgPoint.y = pose_value.y;
-		msgPoint.z = pose_value.z;
-=======
 		msgPoint.x = poseValue.x;
 		msgPoint.y = poseValue.y;
 		msgPoint.z = poseValue.z;
->>>>>>> beta
 		msgPointPub.publish(msgPoint);
 
 		ROS_INFO("%s", msg.data.c_str());
@@ -428,18 +413,11 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-<<<<<<< HEAD
-    img_point = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
-=======
     imgPoint = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
->>>>>>> beta
 	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
 } 
-<<<<<<< HEAD
-=======
   
   
->>>>>>> beta
 

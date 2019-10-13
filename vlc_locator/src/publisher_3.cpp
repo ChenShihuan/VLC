@@ -559,19 +559,11 @@ struct XYZ Get_coordinate(cv::Mat img)
 		else
 		{
 			//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
-<<<<<<< HEAD
-			unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
-			//做图像细化(有用，效果好)
-			chao_thinimage(unkonwn.image_cut);
-			//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
-			findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
-=======
 			unkonwn.imgCut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
 			//做图像细化(有用，效果好)
 			thinImage(unkonwn.imgCut);
 			//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
 			findContours(unkonwn.imgCut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
->>>>>>> beta
 			unkonwn.ID = unkonwn.contours.size();
 
 		
@@ -633,21 +625,12 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// cout << "d="<< D.ID << '\n';
 	// cout << "e="<< E.ID << '\n';
 	// cout << "f="<< F.ID << '\n';
-<<<<<<< HEAD
-	// cout << "a=" << A.ID << '\n' << A.Img_local_X << '\n' << A.Img_local_Y << '\n';
-	// cout << "b=" << B.ID << '\n' << B.Img_local_X << '\n' << B.Img_local_Y << '\n';
-	// cout << "c=" << C.ID << '\n' << C.Img_local_X << '\n' << C.Img_local_Y << '\n';
-	// cout << "d=" << D.ID << D.Img_local_X << D.Img_local_Y << '\n';
-	// cout << "e=" << E.ID << E.Img_local_X << E.Img_local_Y << '\n';
-	// cout << "f=" << F.ID << F.Img_local_X << F.Img_local_Y << '\n';
-=======
 	// cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
 	// cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
 	// cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
 	// cout << "d=" << D.ID << D.imgLocalX << D.imgLocalY << '\n';
 	// cout << "e=" << E.ID << E.imgLocalX << E.imgLocalY << '\n';
 	// cout << "f=" << F.ID << F.imgLocalX << F.imgLocalY << '\n';
->>>>>>> beta
 
 	if (C.ID == 0){
 		cout << "只有两盏灯！" << '\n';
@@ -776,7 +759,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 //            来源: http://blog.csdn.net/robogreen/article/details/50488215
 //----------------------------------------------------------------------------------------------- 
 
-//定义一个转换的类  
+//定义一个转换的类 
 class IMAGE_LISTENER_and_LOCATOR  
 {  
 private:  
@@ -784,13 +767,9 @@ private:
     image_transport::ImageTransport it_; //定义一个image_transport实例  
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
 	image_transport::Publisher image_pub_; 
-<<<<<<< HEAD
 	ros::Publisher msgPointPub;
 
-    struct XYZ pose_value;
-=======
     struct XYZ poseValue;
->>>>>>> beta
   
 public:  
     IMAGE_LISTENER_and_LOCATOR()  
@@ -860,9 +839,9 @@ public:
 
        	ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
-		msgPoint.x = pose_value.x;
-		msgPoint.y = pose_value.y;
-		msgPoint.z = pose_value.z;
+		msgPoint.x = poseValue.x;
+		msgPoint.y = poseValue.y;
+		msgPoint.z = poseValue.z;
 		msgPointPub.publish(msgPoint);
 
 		ROS_INFO("%s", msg.data.c_str());
@@ -899,13 +878,8 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-<<<<<<< HEAD
-    img_point = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+    imgPoint = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
 	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
-=======
-	imgPoint = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
-    ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
->>>>>>> beta
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
 } 
