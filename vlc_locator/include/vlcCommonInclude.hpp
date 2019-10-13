@@ -1,6 +1,8 @@
 #ifndef vlcCommonInclude_COMMON_INCLUDES_hpp_
 #define vlcCommonInclude_COMMON_INCLUDES_hpp_
-
+//-----------------------------------【头文件包含部分】---------------------------------------  
+//      描述：包含程序所依赖的头文件
+//----------------------------------------------------------------------------------------------  
 #include <ros/ros.h>
 #include <iostream> //C++标准输入输出库  
 #include <opencv2/core.hpp>
