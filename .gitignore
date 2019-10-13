@@ -33,4 +33,4 @@
 # ignore the .vscode folder
 .vscode/
 mvcam/lib/libMVSDK.so
-vlc_locator_v2/
+vlc_locator_v2
