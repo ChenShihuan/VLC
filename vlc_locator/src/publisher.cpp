@@ -41,45 +41,53 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// cout << "111" << '\n';
 
 	struct position P1 = {	// LED 序号
-		5,		// ID_max,最大条纹数目 
-		4,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
+		7,		// ID_max,最大条纹数目 
+		6,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		1,		// ID_max,最大条纹数目 
-		1,		// ID_min，最小条纹数目
+		9,		// ID_max,最大条纹数目 
+		8,		// ID_min，最小条纹数目
+		// -470,	// LED灯具的真实位置,x坐标
+		// 0,	// LED灯具的真实位置,y坐标
 		-470,	// LED灯具的真实位置,x坐标
-		940,	// LED灯具的真实位置,y坐标
+		490,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P3 = {	// LED 序号
-		7,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
-		0,	// LED灯具的真实位置,y坐标
+		3,		// ID_max,最大条纹数目 
+		2,		// ID_min，最小条纹数目
+		// -470,	// LED灯具的真实位置,x坐标
+		// -940,	// LED灯具的真实位置,y坐标
+		-440,	// LED灯具的真实位置,x坐标
+		-420,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P4 = {	// LED 序号
-		10,		// ID_max,最大条纹数目 
-		8,		// ID_min，最小条纹数目
-		-470,	// LED灯具的真实位置,x坐标
-		0,	// LED灯具的真实位置,y坐标
-	};	
-
-	struct position P5 = {	// LED 序号
 		100,		// ID_max,最大条纹数目 
 		11,		// ID_min，最小条纹数目
-		470,	// LED灯具的真实位置,x坐标
-		-940,	// LED灯具的真实位置,y坐标
+		490,	// LED灯具的真实位置,x坐标
+		940,	// LED灯具的真实位置,y坐标
+	};
+
+	struct position P5 = {	// LED 序号
+		1,		// ID_max,最大条纹数目 
+		1,		// ID_min，最小条纹数目
+		// 470,	// LED灯具的真实位置,x坐标
+		// 0,	// LED灯具的真实位置,y坐标
+		460,	// LED灯具的真实位置,x坐标
+		500,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P6 = {	//LED 序号
-		3,		// ID_max,最大条纹数目 
-		2,		// ID_min，最小条纹数目
-		-470,	// LED灯具的真实位置,x坐标
-		-940,	// LED灯具的真实位置,y坐标
+		5,		// ID_max,最大条纹数目 
+		4,		// ID_min，最小条纹数目
+		// 470,	// LED灯具的真实位置,x坐标
+		// -940,	// LED灯具的真实位置,y坐标
+		470,	// LED灯具的真实位置,x坐标
+		-420,	// LED灯具的真实位置,y坐标
 	};
 
 	// 图像读取及判断
@@ -250,15 +258,15 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// double Center_Y = 328.7;
 
 	struct XYZ pose;
-	if (C.ID > 0)
-	{
-		pose = three_LED(f, Center_X, Center_Y, A, B, C); 
-	}
-	else
-	{
-		pose = double_LED(f, Center_X, Center_Y, A, B);
-	}
-	
+	// if (C.ID > 0)
+	// {
+	// 	pose = three_LED(f, Center_X, Center_Y, A, B, C); 
+	// }
+	// else
+	// {
+	// 	pose = double_LED(f, Center_X, Center_Y, A, B);
+	// }
+	pose = three_LED(f, Center_X, Center_Y, A, B, C);
 
 	
 	pose.imgPoint = imgPoint;
@@ -294,6 +302,8 @@ private:
     image_transport::ImageTransport it_; //定义一个image_transport实例  
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
 	image_transport::Publisher image_pub_; 
+	ros::Publisher msgPointPub;
+
     struct XYZ poseValue;
   
 public:  
@@ -302,6 +312,7 @@ public:
     {  
         image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
         image_pub_ = it_.advertise("/camera/image_show", 1); //定义ROS图象发布器
+		msgPointPub = nh_.advertise<geometry_msgs::Point>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
 		// cv::namedWindow(OUTPUT);  
@@ -337,7 +348,7 @@ public:
     //-----------------------------------------------------------------------------------------------
     void image_process(cv::Mat img)   
     { 
-       ros::Publisher chatter_pub = nh_.advertise<std_msgs::String>("location", 1000); 
+       
        cv::Mat img_out;    
 	   ros::Rate loop_rate(60); //帧率
 
@@ -353,7 +364,7 @@ public:
 		 * This is a message object. You stuff it with data, and then publish it.
 		 */
 		std_msgs::String msg;
-
+		geometry_msgs::Point msgPoint;
 		std::stringstream ss;
 		
 		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
@@ -363,6 +374,10 @@ public:
 
        	ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
+		msgPoint.x = poseValue.x;
+		msgPoint.y = poseValue.y;
+		msgPoint.z = poseValue.z;
+		msgPointPub.publish(msgPoint);
 
 		ROS_INFO("%s", msg.data.c_str());
 
@@ -376,7 +391,7 @@ public:
 		 * given as a template parameter to the advertise<>() call, as was done
 		 * in the constructor above.
 		 */
-		chatter_pub.publish(msg);
+		
 		ros::spin();
 
 		loop_rate.sleep();
@@ -398,10 +413,11 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-	imgPoint = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
-    ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
+    imgPoint = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
 } 
+  
   
 

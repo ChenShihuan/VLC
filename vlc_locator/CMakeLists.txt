@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(vlc_locator_v2)
+project(vlc_locator)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -29,8 +29,12 @@ add_executable(locator
   src/imageProcess.cpp
   src/positioningCalculation.cpp
 )
-
 target_link_libraries(locator ${catkin_LIBRARIES}  ${OpenCV_LIBS})
+
+# add_executable(locator_2
+#   src/publisher_2.cpp
+# )
+# target_link_libraries(locator ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
 
 

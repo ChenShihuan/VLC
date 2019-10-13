@@ -1,6 +1,6 @@
-<?xml version="1.0"?>
+<?xml version="2.0"?>
 <package format="2">
-  <name>vlc_locator_v2</name>
+  <name>vlc_locator</name>
   <version>2.0.0</version>
   <description>The vlc_locator_v2 package</description>
 
