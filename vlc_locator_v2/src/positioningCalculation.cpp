@@ -15,10 +15,10 @@ struct XYZ double_LED(double f,double Center_X, double Center_Y, struct LED A,st
 	double y2;
 
 	if (A.Y>B.Y){
-		ImgX1 = A.Img_local_X;
-		ImgY1 = A.Img_local_Y;
-		ImgX2 = B.Img_local_X;
-		ImgY2 = B.Img_local_Y;
+		ImgX1 = A.imgLocalX;
+		ImgY1 = A.imgLocalY;
+		ImgX2 = B.imgLocalX;
+		ImgY2 = B.imgLocalY;
 		x1 = A.X;
 		y1 = A.Y;
 		x2 = B.X;
@@ -27,10 +27,10 @@ struct XYZ double_LED(double f,double Center_X, double Center_Y, struct LED A,st
 
 	else
 	{
-		ImgX1 = B.Img_local_X;
-		ImgY1 = B.Img_local_Y;
-		ImgX2 = A.Img_local_X;
-		ImgY2 = A.Img_local_Y;
+		ImgX1 = B.imgLocalX;
+		ImgY1 = B.imgLocalY;
+		ImgX2 = A.imgLocalX;
+		ImgY2 = A.imgLocalY;
 		x1 = B.X;
 		y1 = B.Y;
 		x2 = A.X;
@@ -117,12 +117,12 @@ struct XYZ double_LED(double f,double Center_X, double Center_Y, struct LED A,st
 
 struct XYZ three_LED(double f, double Center_X, double Center_Y, struct LED A,struct LED B,struct LED C)
 {
-	double ImgX1 = A.Img_local_X;
-	double ImgY1 = A.Img_local_Y;
-	double ImgX2 = B.Img_local_X;
-	double ImgY2 = B.Img_local_Y;
-	double ImgX3 = C.Img_local_X;
-	double ImgY3 = C.Img_local_Y;
+	double ImgX1 = A.imgLocalX;
+	double ImgY1 = A.imgLocalY;
+	double ImgX2 = B.imgLocalX;
+	double ImgY2 = B.imgLocalY;
+	double ImgX3 = C.imgLocalX;
+	double ImgY3 = C.imgLocalY;
 	double x1 = A.X;
 	double y1 = A.Y;
 	double x2 = B.X;

@@ -40,16 +40,16 @@ struct XYZ{	//坐标处理函数的结构体，用于放置坐标值
 	double x;
 	double y;
 	double z;
-	Mat img_point;
+	Mat imgPoint;
 	};
 
 struct LED{	// LED处理过程的结构体，用于存放图像处理过程中的信息以及处理结果
 	int ID;								//	ID,条纹数目
-	double Img_local_X, Img_local_Y;	// LED在图像上的像素坐标位置，,x坐标,y坐标
+	double imgLocalX, imgLocalY;	// LED在图像上的像素坐标位置，,x坐标,y坐标
 	double X, Y; 						// LED灯具的真实位置,x坐标,y坐标
-	Mat img_next, matBinary;			
+	Mat imgNext, matBinary;			
 	int X_min, X_max, Y_min, Y_max;
-	Mat image_cut;
+	Mat imgCut;
 	vector<vector<Point> > contours;
 	vector<Vec4i> hierarchy;
 	int num;
@@ -62,8 +62,8 @@ struct position{// LED的位置，对应不同位置的灯具
 	double Y;	// LED灯具的真实位置,y坐标
 	};
 
-struct XYZ pose_value;
-Mat img_point;
+struct XYZ poseValue;
+Mat imgPoint;
 //-----------------------------------------------------------------------------------------------
 //**********************************************************************************************
 //
@@ -136,7 +136,7 @@ double getThreshVal_Otsu_8u(const cv::Mat& _src)
 
 
 //将图片中的LED逐个进行分割
-void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& img_next)
+void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& imgNext)
 {
 	Mat temp1= _img.clone();
 	
@@ -184,8 +184,8 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
 	X_max = j;
 
 	//进行切割
-	Mat image_cut = temp1(Rect(X_min, 0, X_max - X_min, row1));
-	Mat temp = image_cut.clone();
+	Mat imgCut = temp1(Rect(X_min, 0, X_max - X_min, row1));
+	Mat temp = imgCut.clone();
 
 
 
@@ -249,8 +249,8 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
 	Y_max = i;
 
 	//进行切割
-	Mat image_cut1 = temp(Rect(0, Y_min, col, Y_max - Y_min));
-	img_next = image_cut1.clone();   //clone函数创建新的图片 
+	Mat imgCut1 = temp(Rect(0, Y_min, col, Y_max - Y_min));
+	imgNext = imgCut1.clone();   //clone函数创建新的图片 
 }
 
 
@@ -509,12 +509,12 @@ struct XYZ Get_coordinate(cv::Mat img)
 	for (int ii = 1;ii < 7;ii++)
 	{
 		int X_min, X_max, Y_min, Y_max;
-		Mat img_next;
-		ls_LED(matBinary, X_min, X_max, Y_min, Y_max, img_next);
+		Mat imgNext;
+		ls_LED(matBinary, X_min, X_max, Y_min, Y_max, imgNext);
 
 		//获得LED1像素中心的位置
-		double Img_local_X = (X_max + X_min) / 2;
-		double Img_local_Y = (Y_max + Y_min) / 2;
+		double imgLocalX = (X_max + X_min) / 2;
+		double imgLocalY = (Y_max + Y_min) / 2;
 
 		//将原图中LED1部分的区域变黑
 		//获取图像的行列
@@ -527,7 +527,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		{
 			for (double j = 0;j < colB;j++)
 			{
-				double r = pow((i - Img_local_Y), 2) + pow((j - Img_local_X), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)计算x的y次方
+				double r = pow((i - imgLocalY), 2) + pow((j - imgLocalX), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)计算x的y次方
 				if (r - 360 > 0)//将r扩大
 				{
 					//LED1圆外面像素重载为原图
@@ -542,9 +542,9 @@ struct XYZ Get_coordinate(cv::Mat img)
 		matBinary = matBinary1.clone();
 		bwareaopen(matBinary, 500);//去除连通区域小于500的区域,这是必须的，因为上面的圆很有可能清不掉
 
-		unkonwn.img_next = img_next.clone();
-		unkonwn.Img_local_X = Img_local_X;
-		unkonwn.Img_local_Y = Img_local_Y;
+		unkonwn.imgNext = imgNext.clone();
+		unkonwn.imgLocalX = imgLocalX;
+		unkonwn.imgLocalY = imgLocalY;
 		unkonwn.matBinary = matBinary1.clone(); 
 		//框框
 		unkonwn.X_min = X_min;
@@ -559,11 +559,11 @@ struct XYZ Get_coordinate(cv::Mat img)
 		else
 		{
 			//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
-			unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
+			unkonwn.imgCut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
 			//做图像细化(有用，效果好)
-			thinImage(unkonwn.image_cut);
+			thinImage(unkonwn.imgCut);
 			//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
-			findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+			findContours(unkonwn.imgCut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 			unkonwn.ID = unkonwn.contours.size();
 
 		
@@ -625,12 +625,12 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// cout << "d="<< D.ID << '\n';
 	// cout << "e="<< E.ID << '\n';
 	// cout << "f="<< F.ID << '\n';
-	// cout << "a=" << A.ID << '\n' << A.Img_local_X << '\n' << A.Img_local_Y << '\n';
-	// cout << "b=" << B.ID << '\n' << B.Img_local_X << '\n' << B.Img_local_Y << '\n';
-	// cout << "c=" << C.ID << '\n' << C.Img_local_X << '\n' << C.Img_local_Y << '\n';
-	// cout << "d=" << D.ID << D.Img_local_X << D.Img_local_Y << '\n';
-	// cout << "e=" << E.ID << E.Img_local_X << E.Img_local_Y << '\n';
-	// cout << "f=" << F.ID << F.Img_local_X << F.Img_local_Y << '\n';
+	// cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
+	// cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
+	// cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
+	// cout << "d=" << D.ID << D.imgLocalX << D.imgLocalY << '\n';
+	// cout << "e=" << E.ID << E.imgLocalX << E.imgLocalY << '\n';
+	// cout << "f=" << F.ID << F.imgLocalX << F.imgLocalY << '\n';
 
 	if (C.ID == 0){
 		cout << "只有两盏灯！" << '\n';
@@ -650,12 +650,12 @@ struct XYZ Get_coordinate(cv::Mat img)
 		// double Center_X = 391.8;
 		// double Center_Y = 328.7;
 
-		double ImgX1 = A.Img_local_X;
-		double ImgY1 = A.Img_local_Y;
-		double ImgX2 = B.Img_local_X;
-		double ImgY2 = B.Img_local_Y;
-		double ImgX3 = C.Img_local_X;
-		double ImgY3 = C.Img_local_Y;
+		double ImgX1 = A.imgLocalX;
+		double ImgY1 = A.imgLocalY;
+		double ImgX2 = B.imgLocalX;
+		double ImgY2 = B.imgLocalY;
+		double ImgX3 = C.imgLocalX;
+		double ImgY3 = C.imgLocalY;
 		double x1 = A.X;
 		double y1 = A.Y;
 		double x2 = B.X;
@@ -719,16 +719,16 @@ struct XYZ Get_coordinate(cv::Mat img)
 		pose.y=yy;
 		pose.z=zz;
 		
-		pose.img_point = img_point;
-		// cv::flip(pose.img_point,pose.img_point,0);
+		pose.imgPoint = imgPoint;
+		// cv::flip(pose.imgPoint,pose.imgPoint,0);
 
 		//-- 第一步:检测 Oriented FAST 角点位置
 		//detector->detect ( img_1,keypoints_1 );
 		//circle(img_1,(100,63),55,(255,0,0),-1);
 		double xxx=5*xx;
 		double yyy=5*yy;
-		circle(pose.img_point, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
-		// circle(pose.img_point, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
+		circle(pose.imgPoint, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
+		// circle(pose.imgPoint, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
 		
 		//-- 第二步:根据角点位置计算 BRIEF 描述子
 		//descriptor->compute ( img_1, keypoints_1, descriptors_1 );
@@ -767,7 +767,7 @@ private:
     image_transport::ImageTransport it_; //定义一个image_transport实例  
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
 	image_transport::Publisher image_pub_; 
-    struct XYZ pose_value;
+    struct XYZ poseValue;
   
 public:  
     IMAGE_LISTENER_and_LOCATOR()  
@@ -832,15 +832,15 @@ public:
 		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
 		// cv::imshow(OUTPUT, img_out);
 
-		pose_value=Get_coordinate(img_out);
+		poseValue=Get_coordinate(img_out);
 
-       	ss  << '\n'<< pose_value.x  << '\n'<<pose_value.y << '\n'<<pose_value.z << count;
+       	ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
 
 		ROS_INFO("%s", msg.data.c_str());
 
 
-        sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", pose_value.img_point).toImageMsg();
+        sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", poseValue.imgPoint).toImageMsg();
         image_pub_.publish(msg_image);
 
 		/**
@@ -871,7 +871,7 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-	img_point = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+	imgPoint = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
     ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();

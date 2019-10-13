@@ -70,7 +70,7 @@ double getThreshVal_Otsu_8u(const cv::Mat& _src)
 
 
 //将图片中的LED逐个进行分割
-void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& img_next)
+void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& imgNext)
 {
 	Mat temp1= _img.clone();
 	
@@ -118,8 +118,8 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
 	X_max = j;
 
 	//进行切割
-	Mat image_cut = temp1(Rect(X_min, 0, X_max - X_min, row1));
-	Mat temp = image_cut.clone();
+	Mat imgCut = temp1(Rect(X_min, 0, X_max - X_min, row1));
+	Mat temp = imgCut.clone();
 
 
 
@@ -183,8 +183,8 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
 	Y_max = i;
 
 	//进行切割
-	Mat image_cut1 = temp(Rect(0, Y_min, col, Y_max - Y_min));
-	img_next = image_cut1.clone();   //clone函数创建新的图片 
+	Mat imgCut1 = temp(Rect(0, Y_min, col, Y_max - Y_min));
+	imgNext = imgCut1.clone();   //clone函数创建新的图片 
 }
 
 
@@ -359,3 +359,4 @@ void thinImage(Mat &srcimage)//单通道、二值化后的图像
 		deletelist1.clear();
 	}
 }
+

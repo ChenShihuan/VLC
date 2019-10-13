@@ -10,6 +10,10 @@
 #include <opencv2/imgproc/imgproc.hpp>  
 
 #define pi 3.1415926
+#define focalLength 1.5
+#define centerXofImage 394
+#define centerYofImage 328.5
+
 using namespace cv;
 using namespace std;
 
@@ -24,16 +28,16 @@ struct XYZ{	//坐标处理函数的结构体，用于放置坐标值
     double x;
 	double y;
 	double z;
-	Mat img_point;
+	Mat imgPoint;
 	};
 
 struct LED{	// LED处理过程的结构体，用于存放图像处理过程中的信息以及处理结果
 	int ID;								//	ID,条纹数目
-	double Img_local_X, Img_local_Y;	// LED在图像上的像素坐标位置，,x坐标,y坐标
+	double imgLocalX, imgLocalY;	// LED在图像上的像素坐标位置，,x坐标,y坐标
 	double X, Y; 						// LED灯具的真实位置,x坐标,y坐标
-	Mat img_next, matBinary;			
+	Mat imgNext, matBinary;			
 	int X_min, X_max, Y_min, Y_max;
-	Mat image_cut;
+	Mat imgCut;
 	vector<vector<Point> > contours;
 	vector<Vec4i> hierarchy;
 	int num;

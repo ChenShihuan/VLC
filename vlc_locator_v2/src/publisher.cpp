@@ -14,7 +14,6 @@
 
 /////////////////////////////////////双灯视觉定位程序/////////////////////////////////////////////////////////
 
-#define pi 3.1415926
 
 
 //-----------------------------------【命名空间声明部分】--------------------------------------  
@@ -27,22 +26,12 @@ using namespace std;
 //      描述：定义各种结构体  
 //----------------------------------------------------------------------------------------------- 
 
-	
-
-
-struct XYZ pose_value;
-Mat img_point;
-//-----------------------------------------------------------------------------------------------
-//**********************************************************************************************
-//
-//      *********************             【函数声明部分】              *******************
-//
-//**********************************************************************************************
-//-----------------------------------------------------------------------------------------------
+struct XYZ poseValue;
+Mat imgPoint;
 
 
 //-----------------------------------【Get_coordinate()函数】------------------------------------
-//      描述：双灯定位，灰度图像传入
+//      描述：灰度图像传入，定位计算
 //-----------------------------------------------------------------------------------------------  
 struct XYZ Get_coordinate(cv::Mat img)
 // int main()
@@ -51,47 +40,47 @@ struct XYZ Get_coordinate(cv::Mat img)
 	struct LED unkonwn,A,B,C,D,E,F;
 	// cout << "111" << '\n';
 
-struct position P1 = {	// LED 序号
-    5,		// ID_max,最大条纹数目 
-    4,		// ID_min，最小条纹数目
-    470,	// LED灯具的真实位置,x坐标
-    940,	// LED灯具的真实位置,y坐标
-};
+	struct position P1 = {	// LED 序号
+		5,		// ID_max,最大条纹数目 
+		4,		// ID_min，最小条纹数目
+		470,	// LED灯具的真实位置,x坐标
+		940,	// LED灯具的真实位置,y坐标
+	};
 
-struct position P2 = {	// LED 序号
-    1,		// ID_max,最大条纹数目 
-    1,		// ID_min，最小条纹数目
-    -470,	// LED灯具的真实位置,x坐标
-    940,	// LED灯具的真实位置,y坐标
-};
+	struct position P2 = {	// LED 序号
+		1,		// ID_max,最大条纹数目 
+		1,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
+		940,	// LED灯具的真实位置,y坐标
+	};
 
-struct position P3 = {	// LED 序号
-    7,		// ID_max,最大条纹数目 
-    6,		// ID_min，最小条纹数目
-    470,	// LED灯具的真实位置,x坐标
-    0,	// LED灯具的真实位置,y坐标
-};
+	struct position P3 = {	// LED 序号
+		7,		// ID_max,最大条纹数目 
+		6,		// ID_min，最小条纹数目
+		470,	// LED灯具的真实位置,x坐标
+		0,	// LED灯具的真实位置,y坐标
+	};
 
-struct position P4 = {	// LED 序号
-    10,		// ID_max,最大条纹数目 
-    8,		// ID_min，最小条纹数目
-    -470,	// LED灯具的真实位置,x坐标
-    0,	// LED灯具的真实位置,y坐标
-};	
+	struct position P4 = {	// LED 序号
+		10,		// ID_max,最大条纹数目 
+		8,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
+		0,	// LED灯具的真实位置,y坐标
+	};	
 
-struct position P5 = {	// LED 序号
-    100,		// ID_max,最大条纹数目 
-    11,		// ID_min，最小条纹数目
-    470,	// LED灯具的真实位置,x坐标
-    -940,	// LED灯具的真实位置,y坐标
-};
+	struct position P5 = {	// LED 序号
+		100,		// ID_max,最大条纹数目 
+		11,		// ID_min，最小条纹数目
+		470,	// LED灯具的真实位置,x坐标
+		-940,	// LED灯具的真实位置,y坐标
+	};
 
-struct position P6 = {	//LED 序号
-    3,		// ID_max,最大条纹数目 
-    2,		// ID_min，最小条纹数目
-    -470,	// LED灯具的真实位置,x坐标
-    -940,	// LED灯具的真实位置,y坐标
-};
+	struct position P6 = {	//LED 序号
+		3,		// ID_max,最大条纹数目 
+		2,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
+		-940,	// LED灯具的真实位置,y坐标
+	};
 
 	// 图像读取及判断
 	cv::Mat grayImage = img;
@@ -124,12 +113,12 @@ struct position P6 = {	//LED 序号
 	for (int ii = 1;ii < 7;ii++)
 	{
 		int X_min, X_max, Y_min, Y_max;		
-		Mat img_next;
-		ls_LED(matBinary, X_min, X_max, Y_min, Y_max, img_next);
+		Mat imgNext;
+		ls_LED(matBinary, X_min, X_max, Y_min, Y_max, imgNext);
 
 		//获得LED1像素中心的位置
-		double Img_local_X = (X_max + X_min) / 2;
-		double Img_local_Y = (Y_max + Y_min) / 2;
+		double imgLocalX = (X_max + X_min) / 2;
+		double imgLocalY = (Y_max + Y_min) / 2;
 
 
 		//将原图中LED1部分的区域变黑
@@ -143,7 +132,7 @@ struct position P6 = {	//LED 序号
 		{
 			for (double j = 0;j < colB;j++)
 			{
-				double r = pow((i - Img_local_Y), 2) + pow((j - Img_local_X), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)计算x的y次方
+				double r = pow((i - imgLocalY), 2) + pow((j - imgLocalX), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)计算x的y次方
 				if (r - 360 > 0)//将r扩大
 				{
 					//LED1圆外面像素重载为原图
@@ -158,9 +147,9 @@ struct position P6 = {	//LED 序号
 		matBinary = matBinary1.clone();
 		bwareaopen(matBinary, 500);//去除连通区域小于500的区域,这是必须的，因为上面的圆很有可能清不掉
 
-		unkonwn.img_next = img_next.clone();
-		unkonwn.Img_local_X = Img_local_X;
-		unkonwn.Img_local_Y = Img_local_Y;
+		unkonwn.imgNext = imgNext.clone();
+		unkonwn.imgLocalX = imgLocalX;
+		unkonwn.imgLocalY = imgLocalY;
 		unkonwn.matBinary = matBinary1.clone(); 
 		//框框
 		unkonwn.X_min = X_min;
@@ -168,48 +157,46 @@ struct position P6 = {	//LED 序号
 		unkonwn.Y_min = Y_min;
 		unkonwn.Y_max = Y_max;
 
+		//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
+		unkonwn.imgCut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
+		//做图像细化(有用，效果好)
+		thinImage(unkonwn.imgCut);
+		//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
+		findContours(unkonwn.imgCut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+		unkonwn.ID = unkonwn.contours.size();
+
 		if (X_max>780 || X_min<20 || Y_max>580 || Y_min<20){ //防止因为识别到半个灯而造成ID错误和坐标错误
 			unkonwn.ID = 0;
 			unkonwn.num = 0;
 		}
-		else
-		{
-			//imshow("matBinary_threshold", matBinary_threshold);//对二值化的图进行的复制
-			unkonwn.image_cut = matBinary_threshold(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
-			//做图像细化(有用，效果好)
-			thinImage(unkonwn.image_cut);
-			//用findContours检测轮廓，函数将白色区域当作前景物体。所以找轮廓找到的是白色区域的轮廓
-			findContours(unkonwn.image_cut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
-			unkonwn.ID = unkonwn.contours.size();
+		
+		// 根据ID判断对应的LED，并写入坐标值
+		if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
+			{unkonwn.X = P1.X;
+			unkonwn.Y = P1.Y;
+			unkonwn.num = 1;}
+		else if (unkonwn.ID <= P2.max && unkonwn.ID >= P2.min)
+			{unkonwn.X = P2.X;
+			unkonwn.Y = P2.Y;
+			unkonwn.num = 2;}
+		else if (unkonwn.ID <= P3.max && unkonwn.ID >= P3.min)
+			{unkonwn.X = P3.X;
+			unkonwn.Y = P3.Y;
+			unkonwn.num = 3;}
+		else if (unkonwn.ID <= P4.max && unkonwn.ID >= P4.min)
+			{unkonwn.X = P4.X;
+			unkonwn.Y = P4.Y;
+			unkonwn.num = 4;}
+		else if (unkonwn.ID <= P5.max && unkonwn.ID >= P5.min)
+			{unkonwn.X = P5.X;
+			unkonwn.Y = P5.Y;
+			unkonwn.num = 5;}
+		else if (unkonwn.ID <= P6.max && unkonwn.ID >= P6.min)
+			{unkonwn.X = P6.X;
+			unkonwn.Y = P6.Y;
+			unkonwn.num = 6;}
 
 		
-			// 根据ID判断对应的LED，并写入坐标值
-			if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
-				{unkonwn.X = P1.X;
-				unkonwn.Y = P1.Y;
-				unkonwn.num = 1;}
-			else if (unkonwn.ID <= P2.max && unkonwn.ID >= P2.min)
-				{unkonwn.X = P2.X;
-				unkonwn.Y = P2.Y;
-				unkonwn.num = 2;}
-			else if (unkonwn.ID <= P3.max && unkonwn.ID >= P3.min)
-				{unkonwn.X = P3.X;
-				unkonwn.Y = P3.Y;
-				unkonwn.num = 3;}
-			else if (unkonwn.ID <= P4.max && unkonwn.ID >= P4.min)
-				{unkonwn.X = P4.X;
-				unkonwn.Y = P4.Y;
-				unkonwn.num = 4;}
-			else if (unkonwn.ID <= P5.max && unkonwn.ID >= P5.min)
-				{unkonwn.X = P5.X;
-				unkonwn.Y = P5.Y;
-				unkonwn.num = 5;}
-			else if (unkonwn.ID <= P6.max && unkonwn.ID >= P6.min)
-				{unkonwn.X = P6.X;
-				unkonwn.Y = P6.Y;
-				unkonwn.num = 6;}
-
-		}
 
 		// 将以上的unknown结构体的值一起赋予某个灯具，释放出unknown
 		switch (ii)
@@ -241,20 +228,20 @@ struct position P6 = {	//LED 序号
 	cout << "d="<< D.ID << '\n';
 	cout << "e="<< E.ID << '\n';
 	cout << "f="<< F.ID << '\n';
-	// cout << "a=" << A.ID << '\n' << A.Img_local_X << '\n' << A.Img_local_Y << '\n';
-	// cout << "b=" << B.ID << '\n' << B.Img_local_X << '\n' << B.Img_local_Y << '\n';
-	// cout << "c=" << C.ID << '\n' << C.Img_local_X << '\n' << C.Img_local_Y << '\n';
-	// cout << "d=" << D.ID << D.Img_local_X << D.Img_local_Y << '\n';
-	// cout << "e=" << E.ID << E.Img_local_X << E.Img_local_Y << '\n';
-	// cout << "f=" << F.ID << F.Img_local_X << F.Img_local_Y << '\n';
+	// cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
+	// cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
+	// cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
+	// cout << "d=" << D.ID << D.imgLocalX << D.imgLocalY << '\n';
+	// cout << "e=" << E.ID << E.imgLocalX << E.imgLocalY << '\n';
+	// cout << "f=" << F.ID << F.imgLocalX << F.imgLocalY << '\n';
 
 
 	// 计算位置坐标
 	// 焦距
-	double f = 1.5;
+	double f = focalLength;
 	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
-	double Center_X = 394;
-	double Center_Y = 328.5;
+	double Center_X = centerXofImage;
+	double Center_Y = centerYofImage;
 	// double Center_X = 395;
 	// double Center_Y = 326;
 	// double Center_X = 400;
@@ -274,27 +261,17 @@ struct position P6 = {	//LED 序号
 	
 
 	
-	pose.img_point = img_point;
-    // cv::flip(pose.img_point,pose.img_point,0);
+	pose.imgPoint = imgPoint;
+    // cv::flip(pose.imgPoint,pose.imgPoint,0);
 
     //-- 第一步:检测 Oriented FAST 角点位置
     //detector->detect ( img_1,keypoints_1 );
     //circle(img_1,(100,63),55,(255,0,0),-1);
 	double xxx=5*pose.x;
 	double yyy=5*pose.y;
-    circle(pose.img_point, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
-	// circle(pose.img_point, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
+    circle(pose.imgPoint, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
+	// circle(pose.imgPoint, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
     
-    //-- 第二步:根据角点位置计算 BRIEF 描述子
-    //descriptor->compute ( img_1, keypoints_1, descriptors_1 );
-        
-    //Mat outimg1;
-    //drawKeypoints( img_1, keypoints_1, outimg1, (255,0,0), DrawMatchesFlags::DEFAULT );
-    // namedWindow("picture");    
-    // cv::imshow("picture",img_1);
-
-	// cout << pose.x << '\n' << pose.y << '\n' << pose.y << '\n'<< endl;
-	// 等待用户按0键退出程序  
 	waitKey(0);
 	return pose;
 
@@ -303,11 +280,6 @@ struct position P6 = {	//LED 序号
 
 //////////////////////////////////////////OpenCV话题订阅//////////////////////////////////////////
 
-
-//static const std::string OUTPUT = "Output"; //定义输出窗口名称 
-
-
-//-----------------------------------【函数声明部分】-------------------------------------- 
 
 //-----------------------------------【IMAGE_LISTENER_and_LOCATOR对象】------------------------------------
 //            描述：接受话题“webcam/image_raw” 的图像
@@ -322,7 +294,7 @@ private:
     image_transport::ImageTransport it_; //定义一个image_transport实例  
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
 	image_transport::Publisher image_pub_; 
-    struct XYZ pose_value;
+    struct XYZ poseValue;
   
 public:  
     IMAGE_LISTENER_and_LOCATOR()  
@@ -387,15 +359,15 @@ public:
 		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
 		// cv::imshow(OUTPUT, img_out);
 
-		pose_value=Get_coordinate(img_out);
+		poseValue=Get_coordinate(img_out);
 
-       	ss  << '\n'<< pose_value.x  << '\n'<<pose_value.y << '\n'<<pose_value.z << count;
+       	ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
 
 		ROS_INFO("%s", msg.data.c_str());
 
 
-        sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", pose_value.img_point).toImageMsg();
+        sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", poseValue.imgPoint).toImageMsg();
         image_pub_.publish(msg_image);
 
 		/**
@@ -426,7 +398,7 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-	img_point = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+	imgPoint = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
     ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
