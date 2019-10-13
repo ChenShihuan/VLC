@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <string>
 #include <math.h>//对应下面的pow（平方）
-
+#include <geometry_msgs/Point.h>
 #include "std_msgs/String.h"
 
 #include <sstream>

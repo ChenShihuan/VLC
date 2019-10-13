@@ -18,7 +18,7 @@
 #include <math.h>//对应下面的pow（平方）
 
 #include "std_msgs/String.h"
-
+#include <geometry_msgs/Point.h>
 #include <sstream>
 /////////////////////////////////////双灯视觉定位程序/////////////////////////////////////////////////////////
 
@@ -898,6 +898,10 @@ private:
     image_transport::ImageTransport it_; //定义一个image_transport实例  
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
 	image_transport::Publisher image_pub_; 
+	geometry_msgs::Point msgPoint; //定义一个geometry_msgs::Point实例
+	geometry_msgs::Point::Point_ msgPointPub;
+
+
     struct XYZ pose_value;
   
 public:  
