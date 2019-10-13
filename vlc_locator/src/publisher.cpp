@@ -4,15 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vlcCommonInclude.hpp>
-
 #include "std_msgs/String.h"
-
 #include <sstream>
-
 #include <imageProcess.hpp>
 #include <positioningCalculation.hpp> 
-
-/////////////////////////////////////双灯视觉定位程序/////////////////////////////////////////////////////////
 
 
 
@@ -352,11 +347,6 @@ public:
        cv::Mat img_out;    
 	   ros::Rate loop_rate(60); //帧率
 
-	  /**
-	   * 以下为信息输出部分，暂时采用字符串格式输出。
-	   * A count of how many messages we have sent. This is used to create
-	   * a unique string for each message.
-	   */
 	  int count = 0;
 	  while (ros::ok())
 	  {
@@ -372,7 +362,7 @@ public:
 
 		poseValue=Get_coordinate(img_out);
 
-       	ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
+		ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
 		msgPoint.x = poseValue.x;
 		msgPoint.y = poseValue.y;
@@ -382,15 +372,9 @@ public:
 		ROS_INFO("%s", msg.data.c_str());
 
 
-        sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", poseValue.imgPoint).toImageMsg();
-        image_pub_.publish(msg_image);
+		sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", poseValue.imgPoint).toImageMsg();
+		image_pub_.publish(msg_image);
 
-		/**
-		 * The publish() function is how you send messages. The parameter
-		 * is the message object. The type of this object must agree with the type
-		 * given as a template parameter to the advertise<>() call, as was done
-		 * in the constructor above.
-		 */
 		
 		ros::spin();
 
