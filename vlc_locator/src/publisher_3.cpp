@@ -18,7 +18,7 @@
 #include <math.h>//对应下面的pow（平方）
 
 #include "std_msgs/String.h"
-
+#include <geometry_msgs/Point.h>
 #include <sstream>
 /////////////////////////////////////双灯视觉定位程序/////////////////////////////////////////////////////////
 
@@ -767,6 +767,8 @@ private:
     image_transport::ImageTransport it_; //定义一个image_transport实例  
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
 	image_transport::Publisher image_pub_; 
+	ros::Publisher msgPointPub;
+
     struct XYZ pose_value;
   
 public:  
@@ -775,6 +777,7 @@ public:
     {  
         image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
         image_pub_ = it_.advertise("/camera/image_show", 1); //定义ROS图象发布器
+		msgPointPub = nh_.advertise<geometry_msgs::Point>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
 		// cv::namedWindow(OUTPUT);  
@@ -810,7 +813,7 @@ public:
     //-----------------------------------------------------------------------------------------------
     void image_process(cv::Mat img)   
     { 
-       ros::Publisher chatter_pub = nh_.advertise<std_msgs::String>("location", 1000); 
+       
        cv::Mat img_out;    
 	   ros::Rate loop_rate(60); //帧率
 
@@ -826,7 +829,7 @@ public:
 		 * This is a message object. You stuff it with data, and then publish it.
 		 */
 		std_msgs::String msg;
-
+		geometry_msgs::Point msgPoint;
 		std::stringstream ss;
 		
 		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
@@ -836,6 +839,10 @@ public:
 
        	ss  << '\n'<< pose_value.x  << '\n'<<pose_value.y << '\n'<<pose_value.z << count;
 		msg.data = ss.str();
+		msgPoint.x = pose_value.x;
+		msgPoint.y = pose_value.y;
+		msgPoint.z = pose_value.z;
+		msgPointPub.publish(msgPoint);
 
 		ROS_INFO("%s", msg.data.c_str());
 
@@ -849,7 +856,7 @@ public:
 		 * given as a template parameter to the advertise<>() call, as was done
 		 * in the constructor above.
 		 */
-		chatter_pub.publish(msg);
+		
 		ros::spin();
 
 		loop_rate.sleep();
@@ -871,8 +878,8 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-	img_point = cv::imread ( "/home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
-    ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
+    img_point = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
 } 
