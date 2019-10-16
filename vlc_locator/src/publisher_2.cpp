@@ -32,6 +32,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 // 1 2/3 4/5 6/7     9/10     11/12
 {
 	struct LED unkonwn,A,B,C,D,E,F;
+	vector<struct LED> LEDs {A,B,C,D,E,F};
 	// cout << "111" << '\n';
 	struct XYZ pose;
 	struct position P1 = {	// LED 序号
@@ -173,6 +174,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		}
 		
 		// 根据ID判断对应的LED，并写入坐标值
+		//此处后续可以改进为vector成员的表达，以便更方便兼容更多ID
 		if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
 			{unkonwn.X = P1.X;
 			unkonwn.Y = P1.Y;
@@ -201,6 +203,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		
 
 		// 将以上的unknown结构体的值一起赋予某个灯具，释放出unknown
+		//此处后续可以改进为vector成员的表达，以便更方便兼容更多ID，结束条件ii也可以更改，具体应该单步调试看不再有未识别到的灯后各变量会如何变化
 		switch (ii)
 		{
 		case 1:
@@ -245,26 +248,23 @@ struct XYZ Get_coordinate(cv::Mat img)
 	double Center_X = centerXofImage;
 	double Center_Y = centerYofImage;
 
+	//找出非0的ID，并将它在vector<struct LED> LEDs中的位置存入数组NonZeroID
+	
+	int NonZeroID [LEDs.size()] {};
+	int getNonZeroID = 1;
 
-	struct LED D1,D2;
-
-	if (C.ID == 0){
-		D1=A;
-		D2=B;
-	}
-	else
+	for (int findNonZeroID = 1; findNonZeroID <= LEDs.size() ; findNonZeroID++)
 	{
-		if (A.imgLocalX == C.imgLocalX){
-			D1=A;
-			D2=B;
+		
+		if (LEDs.at(findNonZeroID).ID != 0){
+			NonZeroID[getNonZeroID] = findNonZeroID;
+			getNonZeroID ++;
 		}
-		else
-		{
-			D1=A;
-			D2=C;
-		}		
+	
 	}
-	pose = double_LED(f, Center_X, Center_Y, D1, D2);
+	
+	//将非0的第一个与第二个灯代入执行定位
+	pose = double_LED(f, Center_X, Center_Y, LEDs.at(NonZeroID[1]), LEDs.at(NonZeroID[2]));
 	
 	// pose = three_LED(f, Center_X, Center_Y, A, B, C);
 

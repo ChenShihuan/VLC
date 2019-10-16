@@ -227,9 +227,9 @@ struct XYZ Get_coordinate(cv::Mat img)
 	cout << "a="<< A.ID << '\n';
 	cout << "b="<< B.ID << '\n';
 	cout << "c="<< C.ID << '\n';
-	cout << "d="<< D.ID << '\n';
-	cout << "e="<< E.ID << '\n';
-	cout << "f="<< F.ID << '\n';
+	// cout << "d="<< D.ID << '\n';
+	// cout << "e="<< E.ID << '\n';
+	// cout << "f="<< F.ID << '\n';
 	// cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
 	// cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
 	// cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
@@ -245,7 +245,23 @@ struct XYZ Get_coordinate(cv::Mat img)
 	double Center_X = centerXofImage;
 	double Center_Y = centerYofImage;
 
-	pose = three_LED(f, Center_X, Center_Y, A, B, C);
+	//找出非0的ID，并将它在vector<struct LED> LEDs中的位置存入数组NonZeroID
+	vector<struct LED> LEDs {A,B,C,D,E,F};
+	int NonZeroID [LEDs.size()] {};
+	int getNonZeroID;
+
+	for (int findNonZeroID = findNonZeroID; findNonZeroID < 6 ; findNonZeroID++)
+	{
+		
+		if (LEDs.at(findNonZeroID).ID != 0){
+			NonZeroID[getNonZeroID] = findNonZeroID;
+			getNonZeroID ++;
+		}
+	
+	}
+	
+	//将非0的前三个灯代入执行定位
+	pose = three_LED(f, Center_X, Center_Y, LEDs.at(NonZeroID[1]), LEDs.at(NonZeroID[2]), LEDs.at(NonZeroID[3]));
 
 	
 	pose.imgPoint = imgPoint;
