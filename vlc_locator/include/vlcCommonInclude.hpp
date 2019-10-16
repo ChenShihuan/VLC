@@ -15,6 +15,8 @@
 #define focalLength 1.5
 #define centerXofImage 394
 #define centerYofImage 328.5
+#define centerXofImageMax 1002.5
+#define centerYofImageMax 852.5
 
 //-----------------------------------【命名空间声明部分】--------------------------------------  
 //      描述：包含程序所使用的命名空间  

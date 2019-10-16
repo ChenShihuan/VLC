@@ -35,53 +35,53 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// cout << "111" << '\n';
 	struct XYZ pose;
 	struct position P1 = {	// LED 序号
-		7,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
+		70000,		// ID_max,最大条纹数目   7
+		60000,		// ID_min，最小条纹数目   6
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		9,		// ID_max,最大条纹数目 
-		8,		// ID_min，最小条纹数目
+		15,		// ID_max,最大条纹数目 
+		7,		// ID_min，最小条纹数目
 		// -470,	// LED灯具的真实位置,x坐标
 		// 0,	// LED灯具的真实位置,y坐标
-		-470,	// LED灯具的真实位置,x坐标
-		490,	// LED灯具的真实位置,y坐标
+		-465,	// LED灯具的真实位置,x坐标
+		495,	// LED灯具的真实位置,y坐标
 	};
 
-	struct position P3 = {	// LED 序号
+	struct position P3 = {	// LED 序号    !!!在此分辨率下，条纹数处于2～3的灯具不可使用！
 		3,		// ID_max,最大条纹数目 
 		2,		// ID_min，最小条纹数目
 		// -470,	// LED灯具的真实位置,x坐标
 		// -940,	// LED灯具的真实位置,y坐标
-		-440,	// LED灯具的真实位置,x坐标
+		-460,	// LED灯具的真实位置,x坐标
 		-420,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P4 = {	// LED 序号
-		100,		// ID_max,最大条纹数目 
-		11,		// ID_min，最小条纹数目
+		100000,		// ID_max,最大条纹数目  100
+		11000,		// ID_min，最小条纹数目 11
 		490,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P5 = {	// LED 序号
-		1,		// ID_max,最大条纹数目 
-		1,		// ID_min，最小条纹数目
+		1,		// ID_max,最大条纹数目  
+		1,		// ID_min，最小条纹数目 
 		// 470,	// LED灯具的真实位置,x坐标
 		// 0,	// LED灯具的真实位置,y坐标
 		460,	// LED灯具的真实位置,x坐标
-		500,	// LED灯具的真实位置,y坐标
+		490,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P6 = {	//LED 序号
-		5,		// ID_max,最大条纹数目 
+		6,		// ID_max,最大条纹数目 
 		4,		// ID_min，最小条纹数目
 		// 470,	// LED灯具的真实位置,x坐标
 		// -940,	// LED灯具的真实位置,y坐标
-		470,	// LED灯具的真实位置,x坐标
-		-420,	// LED灯具的真实位置,y坐标
+		480,	// LED灯具的真实位置,x坐标
+		-425,	// LED灯具的真实位置,y坐标
 	};
 
 	// 图像读取及判断
@@ -167,7 +167,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		findContours(unkonwn.imgCut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 		unkonwn.ID = unkonwn.contours.size();
 
-		if (X_max>780 || X_min<20 || Y_max>580 || Y_min<20){ //防止因为识别到半个灯而造成ID错误和坐标错误
+		if (X_max>(780*2.56) || X_min<(20*2.56) || Y_max>(580*2.56) || Y_min<(20*2.56)){ //防止因为识别到半个灯而造成ID错误和坐标错误
 			unkonwn.ID = 0;
 			unkonwn.num = 0;
 		}
@@ -242,14 +242,8 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// 焦距
 	double f = focalLength;
 	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
-	double Center_X = centerXofImage;
-	double Center_Y = centerYofImage;
-	// double Center_X = 395;
-	// double Center_Y = 326;
-	// double Center_X = 400;
-	// double Center_Y = 300;
-	// double Center_X = 391.8;
-	// double Center_Y = 328.7;
+	double Center_X = centerXofImageMax;
+	double Center_Y = centerYofImageMax;
 
 	struct LED D1,D2;
 
@@ -274,16 +268,16 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// pose = three_LED(f, Center_X, Center_Y, A, B, C);
 
 	
-	pose.imgPoint = imgPoint;
-    // cv::flip(pose.imgPoint,pose.imgPoint,0);
+	// pose.imgPoint = imgPoint;
+    // // cv::flip(pose.imgPoint,pose.imgPoint,0);
 
-    //-- 第一步:检测 Oriented FAST 角点位置
-    //detector->detect ( img_1,keypoints_1 );
-    //circle(img_1,(100,63),55,(255,0,0),-1);
-	double xxx=5*pose.x;
-	double yyy=5*pose.y;
-    circle(pose.imgPoint, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
-	// circle(pose.imgPoint, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
+    // //-- 第一步:检测 Oriented FAST 角点位置
+    // //detector->detect ( img_1,keypoints_1 );
+    // //circle(img_1,(100,63),55,(255,0,0),-1);
+	// double xxx=5*pose.x;
+	// double yyy=5*pose.y;
+    // circle(pose.imgPoint, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
+	// // circle(pose.imgPoint, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
     
 	waitKey(0);
 	return pose;
@@ -306,7 +300,7 @@ private:
     ros::NodeHandle nh_; //定义ROS句柄  
     image_transport::ImageTransport it_; //定义一个image_transport实例  
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
-	image_transport::Publisher image_pub_; 
+	// image_transport::Publisher image_pub_; 
 	ros::Publisher msgPointPub;
 
     struct XYZ poseValue;
@@ -316,7 +310,7 @@ public:
       :it_(nh_) //构造函数  
     {  
         image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
-        image_pub_ = it_.advertise("/camera/image_show", 1); //定义ROS图象发布器
+        // image_pub_ = it_.advertise("/camera/image_show", 1); //定义ROS图象发布器
 		msgPointPub = nh_.advertise<geometry_msgs::Point>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
@@ -382,8 +376,8 @@ public:
 		ROS_INFO("%s", msg.data.c_str());
 
 
-		sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", poseValue.imgPoint).toImageMsg();
-		image_pub_.publish(msg_image);
+		// sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", poseValue.imgPoint).toImageMsg();
+		// image_pub_.publish(msg_image);
 
 		
 		ros::spin();

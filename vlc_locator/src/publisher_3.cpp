@@ -244,12 +244,6 @@ struct XYZ Get_coordinate(cv::Mat img)
 	// 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
 	double Center_X = centerXofImage;
 	double Center_Y = centerYofImage;
-	// double Center_X = 395;
-	// double Center_Y = 326;
-	// double Center_X = 400;
-	// double Center_Y = 300;
-	// double Center_X = 391.8;
-	// double Center_Y = 328.7;
 
 	pose = three_LED(f, Center_X, Center_Y, A, B, C);
 
