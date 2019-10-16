@@ -126,22 +126,22 @@
   <joint name="imu_joint" type="fixed">
     <parent link="base_link"/>
     <child link="imu_link"/>
-    <origin xyz="-0.032 0 0.068" rpy="0 0 3.1415"/>
+    <origin xyz="-0.032 0 0.068" rpy="0 0 3.141526"/>
   </joint>
 
   <link name="imu_link"/>
 
   <joint name="scan_joint" type="fixed">
     <parent link="base_link"/>
-    <child link="base_kinect2"/>
-    <origin xyz="-0.012 0 0.172" rpy="0 0 0"/>
+    <child link="base_scan"/>
+    <origin xyz="-0.032 0 0.172" rpy="0 0 0"/>
   </joint>
 
-  <link name="base_kinect2">
+  <link name="base_scan">
     <visual>
-      <origin xyz="0 0 -0.03" rpy="0 0 -1.57075"/>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://turtlebot3_description/meshes/sensors/Kinect2.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://turtlebot3_description/meshes/sensors/lds.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
