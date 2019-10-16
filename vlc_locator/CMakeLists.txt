@@ -31,10 +31,29 @@ add_executable(locator
 )
 target_link_libraries(locator ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
-# add_executable(locator_2
+# #find_package(OpenCV REQUIRED)
+# add_executable(locator_2 
 #   src/publisher_2.cpp
+#   src/imageProcess.cpp
+#   src/positioningCalculation.cpp
 # )
-# target_link_libraries(locator ${catkin_LIBRARIES}  ${OpenCV_LIBS})
+# target_link_libraries(locator_2 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
+
+# #find_package(OpenCV REQUIRED)
+# add_executable(locator_3
+#   src/publisher_3.cpp
+#   src/imageProcess.cpp
+#   src/positioningCalculation.cpp
+# )
+# target_link_libraries(locator_3 ${catkin_LIBRARIES}  ${OpenCV_LIBS})
+
+#find_package(OpenCV REQUIRED)
+add_executable(locator_2_max
+  src/publisher_2_max.cpp
+  src/imageProcess.cpp
+  src/positioningCalculation.cpp
+)
+target_link_libraries(locator_2_max ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
 
 
