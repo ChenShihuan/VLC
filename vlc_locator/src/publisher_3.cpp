@@ -20,7 +20,7 @@ using namespace std;
 //----------------------------------·【结构体】--------------------------------------------
 //      描述：定义各种结构体  
 //----------------------------------------------------------------------------------------------- 
-
+vector<struct LED> LEDs {};
 struct XYZ poseValue;
 Mat imgPoint;
 
@@ -227,9 +227,9 @@ struct XYZ Get_coordinate(cv::Mat img)
 	cout << "a="<< A.ID << '\n';
 	cout << "b="<< B.ID << '\n';
 	cout << "c="<< C.ID << '\n';
-	// cout << "d="<< D.ID << '\n';
-	// cout << "e="<< E.ID << '\n';
-	// cout << "f="<< F.ID << '\n';
+	cout << "d="<< D.ID << '\n';
+	cout << "e="<< E.ID << '\n';
+	cout << "f="<< F.ID << '\n';
 	// cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
 	// cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
 	// cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
@@ -248,20 +248,22 @@ struct XYZ Get_coordinate(cv::Mat img)
 	//找出非0的ID，并将它在vector<struct LED> LEDs中的位置存入数组NonZeroID
 	vector<struct LED> LEDs {A,B,C,D,E,F};
 	int NonZeroID [LEDs.size()] {};
-	int getNonZeroID;
-
-	for (int findNonZeroID = findNonZeroID; findNonZeroID < 6 ; findNonZeroID++)
+	int getNonZeroID = 0;
+	
+	for (int findNonZeroID = 0; findNonZeroID < LEDs.size() ; findNonZeroID++)
 	{
-		
 		if (LEDs.at(findNonZeroID).ID != 0){
 			NonZeroID[getNonZeroID] = findNonZeroID;
+			cout << "LEDofNonZeroID="<< NonZeroID[getNonZeroID] << '\n';
 			getNonZeroID ++;
 		}
-	
+		if (getNonZeroID == 3){
+			break;
+		}
 	}
-	
+	cout << "test ID="<< LEDs[0].ID << '\n';
 	//将非0的前三个灯代入执行定位
-	pose = three_LED(f, Center_X, Center_Y, LEDs.at(NonZeroID[1]), LEDs.at(NonZeroID[2]), LEDs.at(NonZeroID[3]));
+	pose = three_LED(f, Center_X, Center_Y, LEDs[NonZeroID[0]], LEDs[NonZeroID[1]], LEDs[NonZeroID[2]]);
 
 	
 	pose.imgPoint = imgPoint;
@@ -290,6 +292,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 //----------------------------------------------------------------------------------------------- 
 
 //定义一个转换的类 
+//定义一个转换的类 
 class IMAGE_LISTENER_and_LOCATOR  
 {  
 private:  
@@ -307,7 +310,7 @@ public:
     {  
         image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
         image_pub_ = it_.advertise("/camera/image_show", 1); //定义ROS图象发布器
-		msgPointPub = nh_.advertise<geometry_msgs::Point>("location", 1000);
+		msgPointPub = nh_.advertise<geometry_msgs::PointStamped>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
 		// cv::namedWindow(OUTPUT);  
@@ -354,7 +357,7 @@ public:
 		 * This is a message object. You stuff it with data, and then publish it.
 		 */
 		std_msgs::String msg;
-		geometry_msgs::Point msgPoint;
+		geometry_msgs::PointStamped msgPointStamped;
 		std::stringstream ss;
 		
 		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
@@ -364,11 +367,14 @@ public:
 
 		ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
-		msgPoint.x = poseValue.x;
-		msgPoint.y = poseValue.y;
-		msgPoint.z = poseValue.z;
-		msgPointPub.publish(msgPoint);
+		msgPointStamped.header.stamp = ros::Time::now();
+		msgPointStamped.header.frame_id = "odom";
+		msgPointStamped.point.x = (poseValue.x/100);
+		msgPointStamped.point.y = (poseValue.y/100);
+		msgPointStamped.point.z = (poseValue.z/100);
 
+		msgPointPub.publish(msgPointStamped);
+		
 		ROS_INFO("%s", msg.data.c_str());
 
 
@@ -384,7 +390,6 @@ public:
 
     }  
 }; 
-  
 
 
 //---------------------------------------【main()函数】------------------------------------------

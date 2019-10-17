@@ -20,7 +20,7 @@ using namespace std;
 //----------------------------------·【结构体】--------------------------------------------
 //      描述：定义各种结构体  
 //----------------------------------------------------------------------------------------------- 
-
+vector<struct LED> LEDs {};
 struct XYZ poseValue;
 Mat imgPoint;
 
@@ -32,19 +32,18 @@ struct XYZ Get_coordinate(cv::Mat img)
 // 1 2/3 4/5 6/7     9/10     11/12
 {
 	struct LED unkonwn,A,B,C,D,E,F;
-	vector<struct LED> LEDs {A,B,C,D,E,F};
 	// cout << "111" << '\n';
 	struct XYZ pose;
 	struct position P1 = {	// LED 序号
-		7,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
+		700000,		// ID_max,最大条纹数目 
+		60000,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		9,		// ID_max,最大条纹数目 
-		8,		// ID_min，最小条纹数目
+		11,//9,		// ID_max,最大条纹数目 
+		7,//8,		// ID_min，最小条纹数目
 		// -470,	// LED灯具的真实位置,x坐标
 		// 0,	// LED灯具的真实位置,y坐标
 		-470,	// LED灯具的真实位置,x坐标
@@ -61,8 +60,8 @@ struct XYZ Get_coordinate(cv::Mat img)
 	};
 
 	struct position P4 = {	// LED 序号
-		100,		// ID_max,最大条纹数目 
-		11,		// ID_min，最小条纹数目
+		100000,		// ID_max,最大条纹数目 
+		11000,		// ID_min，最小条纹数目
 		490,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
@@ -77,7 +76,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 	};
 
 	struct position P6 = {	//LED 序号
-		5,		// ID_max,最大条纹数目 
+		6,//5,		// ID_max,最大条纹数目 
 		4,		// ID_min，最小条纹数目
 		// 470,	// LED灯具的真实位置,x坐标
 		// -940,	// LED灯具的真实位置,y坐标
@@ -226,7 +225,6 @@ struct XYZ Get_coordinate(cv::Mat img)
 			break;
 		}
 	}
-
 	cout << "a="<< A.ID << '\n';
 	cout << "b="<< B.ID << '\n';
 	cout << "c="<< C.ID << '\n';
@@ -249,22 +247,24 @@ struct XYZ Get_coordinate(cv::Mat img)
 	double Center_Y = centerYofImage;
 
 	//找出非0的ID，并将它在vector<struct LED> LEDs中的位置存入数组NonZeroID
-	
+	vector<struct LED> LEDs {A,B,C,D,E,F};
+	// cout << "test ID="<< LEDs[0].ID << '\n';
 	int NonZeroID [LEDs.size()] {};
-	int getNonZeroID = 1;
+	int getNonZeroID = 0;
 
-	for (int findNonZeroID = 1; findNonZeroID <= LEDs.size() ; findNonZeroID++)
+	for (int findNonZeroID = 0; findNonZeroID < LEDs.size() ; findNonZeroID++)
 	{
-		
 		if (LEDs.at(findNonZeroID).ID != 0){
 			NonZeroID[getNonZeroID] = findNonZeroID;
+			cout << "LEDofNonZeroID="<< NonZeroID[getNonZeroID] << '\n';
 			getNonZeroID ++;
 		}
-	
+		if (getNonZeroID == 2){
+			break;
+		}
 	}
-	
 	//将非0的第一个与第二个灯代入执行定位
-	pose = double_LED(f, Center_X, Center_Y, LEDs.at(NonZeroID[1]), LEDs.at(NonZeroID[2]));
+	pose = double_LED(f, Center_X, Center_Y, LEDs[NonZeroID[0]], LEDs[NonZeroID[1]]);
 	
 	// pose = three_LED(f, Center_X, Center_Y, A, B, C);
 
@@ -295,6 +295,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 //----------------------------------------------------------------------------------------------- 
 
 //定义一个转换的类 
+//定义一个转换的类 
 class IMAGE_LISTENER_and_LOCATOR  
 {  
 private:  
@@ -312,7 +313,7 @@ public:
     {  
         image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
         image_pub_ = it_.advertise("/camera/image_show", 1); //定义ROS图象发布器
-		msgPointPub = nh_.advertise<geometry_msgs::Point>("location", 1000);
+		msgPointPub = nh_.advertise<geometry_msgs::PointStamped>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
 		// cv::namedWindow(OUTPUT);  
@@ -359,7 +360,7 @@ public:
 		 * This is a message object. You stuff it with data, and then publish it.
 		 */
 		std_msgs::String msg;
-		geometry_msgs::Point msgPoint;
+		geometry_msgs::PointStamped msgPointStamped;
 		std::stringstream ss;
 		
 		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
@@ -369,11 +370,14 @@ public:
 
 		ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
-		msgPoint.x = poseValue.x;
-		msgPoint.y = poseValue.y;
-		msgPoint.z = poseValue.z;
-		msgPointPub.publish(msgPoint);
+		msgPointStamped.header.stamp = ros::Time::now();
+		msgPointStamped.header.frame_id = "odom";
+		msgPointStamped.point.x = (poseValue.x/100);
+		msgPointStamped.point.y = (poseValue.y/100);
+		msgPointStamped.point.z = (poseValue.z/100);
 
+		msgPointPub.publish(msgPointStamped);
+		
 		ROS_INFO("%s", msg.data.c_str());
 
 
