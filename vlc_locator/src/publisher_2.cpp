@@ -372,6 +372,7 @@ public:
 		msg.data = ss.str();
 		msgPointStamped.header.stamp = ros::Time::now();
 		msgPointStamped.header.frame_id = "odom";
+		// 单位采用m，poseValue为cm，除以100转化为标准的m
 		msgPointStamped.point.x = (poseValue.x/100);
 		msgPointStamped.point.y = (poseValue.y/100);
 		msgPointStamped.point.z = (poseValue.z/100);
@@ -393,7 +394,6 @@ public:
 
     }  
 }; 
-  
 
 
 //---------------------------------------【main()函数】------------------------------------------

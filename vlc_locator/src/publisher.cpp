@@ -315,8 +315,8 @@ public:
     IMAGE_LISTENER_and_LOCATOR()  
       :it_(nh_) //构造函数  
     {  
-        image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
-        image_pub_ = it_.advertise("/camera/image_show", 1); //定义ROS图象发布器
+        image_sub_ = it_.subscribe("/mvcam/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
+        image_pub_ = it_.advertise("/locator/image_show", 1); //定义ROS图象发布器
 		msgPointPub = nh_.advertise<geometry_msgs::PointStamped>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
