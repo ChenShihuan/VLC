@@ -64,6 +64,7 @@ struct LED{	// LED处理过程的结构体，用于存放图像处理过程中�
 
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/PointStamped.h>
 #include <image_transport/image_transport.h> /*image_transport 头文件用来在ROS系统中的话题上发布和订阅图象消息 */ 
 #include <cv_bridge/cv_bridge.h>  
 #include <sensor_msgs/image_encodings.h> /* ROS图象类型的编码函数 */ 

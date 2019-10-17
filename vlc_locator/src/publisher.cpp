@@ -227,9 +227,9 @@ struct XYZ Get_coordinate(cv::Mat img)
 	cout << "a="<< A.ID << '\n';
 	cout << "b="<< B.ID << '\n';
 	cout << "c="<< C.ID << '\n';
-	// cout << "d="<< D.ID << '\n';
-	// cout << "e="<< E.ID << '\n';
-	// cout << "f="<< F.ID << '\n';
+	cout << "d="<< D.ID << '\n';
+	cout << "e="<< E.ID << '\n';
+	cout << "f="<< F.ID << '\n';
 	// cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
 	// cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
 	// cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
@@ -317,7 +317,7 @@ public:
     {  
         image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
         image_pub_ = it_.advertise("/camera/image_show", 1); //定义ROS图象发布器
-		msgPointPub = nh_.advertise<geometry_msgs::Point>("location", 1000);
+		msgPointPub = nh_.advertise<geometry_msgs::PointStamped>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
 		// cv::namedWindow(OUTPUT);  
@@ -364,7 +364,7 @@ public:
 		 * This is a message object. You stuff it with data, and then publish it.
 		 */
 		std_msgs::String msg;
-		geometry_msgs::Point msgPoint;
+		geometry_msgs::PointStamped msgPointStamped;
 		std::stringstream ss;
 		
 		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
@@ -374,11 +374,15 @@ public:
 
 		ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
-		msgPoint.x = poseValue.x;
-		msgPoint.y = poseValue.y;
-		msgPoint.z = poseValue.z;
-		msgPointPub.publish(msgPoint);
+		msgPointStamped.header.stamp = ros::Time::now();
+		msgPointStamped.header.frame_id = "odom";
+		// 单位采用m，poseValue为cm，除以100转化为标准的m
+		msgPointStamped.point.x = (poseValue.x/100);
+		msgPointStamped.point.y = (poseValue.y/100);
+		msgPointStamped.point.z = (poseValue.z/100);
 
+		msgPointPub.publish(msgPointStamped);
+		
 		ROS_INFO("%s", msg.data.c_str());
 
 
@@ -394,7 +398,6 @@ public:
 
     }  
 }; 
-  
 
 
 //---------------------------------------【main()函数】------------------------------------------
