@@ -316,7 +316,7 @@ public:
       :it_(nh_) //构造函数  
     {  
         image_sub_ = it_.subscribe("/mvcam/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
-        image_pub_ = it_.advertise("/locator/image_show", 1); //定义ROS图象发布器
+        image_pub_ = it_.advertise("/locator/image_showhhh", 1); //定义ROS图象发布器
 		msgPointPub = nh_.advertise<geometry_msgs::PointStamped>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
@@ -350,6 +350,7 @@ public:
 	
     //----------------------------------【图象处理主函数】----------------------------------------------
     //      描述：这是图象处理主函数，一般会把图像处理的主要程序写在这个函数中。 
+	//  ros-kinetic-cmake-modules ros-kinetic-geographic-msgs ros-kinetic-robot-localization ros-kinetic-uuid-msgs
     //-----------------------------------------------------------------------------------------------
     void image_process(cv::Mat img)   
     { 
@@ -375,7 +376,7 @@ public:
 		ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
 		msgPointStamped.header.stamp = ros::Time::now();
-		msgPointStamped.header.frame_id = "odom";
+		msgPointStamped.header.frame_id = "base_vlc_mvcam";
 		// 单位采用m，poseValue为cm，除以100转化为标准的m
 		msgPointStamped.point.x = (poseValue.x/100);
 		msgPointStamped.point.y = (poseValue.y/100);
@@ -410,7 +411,7 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-    imgPoint = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+    imgPoint = cv::imread ( "~/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
 	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();

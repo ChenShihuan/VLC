@@ -371,7 +371,7 @@ public:
 		ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
 		msg.data = ss.str();
 		msgPointStamped.header.stamp = ros::Time::now();
-		msgPointStamped.header.frame_id = "odom";
+		msgPointStamped.header.frame_id = "base_vlc_mvcam";
 		// 单位采用m，poseValue为cm，除以100转化为标准的m
 		msgPointStamped.point.x = (poseValue.x/100);
 		msgPointStamped.point.y = (poseValue.y/100);
@@ -406,7 +406,7 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-    imgPoint = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+    imgPoint = cv::imread ( "~/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
 	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
