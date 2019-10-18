@@ -48,4 +48,4 @@
     3）代码中有大量中间过程的图像输出代码，如需查看将其取消注释即可
  
  
-9.使用窗口界面查看坐标图像：rosrun image_view image_view image:=/camera/image_show
+9.使用窗口界面查看坐标图像：rosrun image_view image_view image:=/locator/image_show
