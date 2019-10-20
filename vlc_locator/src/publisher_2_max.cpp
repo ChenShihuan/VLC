@@ -20,68 +20,67 @@ using namespace std;
 //----------------------------------·【结构体】--------------------------------------------
 //      描述：定义各种结构体  
 //----------------------------------------------------------------------------------------------- 
-
-struct XYZ poseValue;
+vector<struct LED> LEDs {};
 Mat imgPoint;
 
 //-----------------------------------【Get_coordinate()函数】------------------------------------
 //      描述：灰度图像传入，定位计算
 //-----------------------------------------------------------------------------------------------  
-struct XYZ Get_coordinate(cv::Mat img)
+geometry_msgs::Point Get_coordinate(cv::Mat img)
 // int main()
 // 1 2/3 4/5 6/7     9/10     11/12
 {
 	struct LED unkonwn,A,B,C,D,E,F;
 	// cout << "111" << '\n';
-	struct XYZ pose;
+	geometry_msgs::Point Point;
 	struct position P1 = {	// LED 序号
-		70000,		// ID_max,最大条纹数目   7
-		60000,		// ID_min，最小条纹数目   6
+		7,		// ID_max,最大条纹数目 
+		6,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		15,		// ID_max,最大条纹数目 
-		7,		// ID_min，最小条纹数目
+		9,//11,//9,		// ID_max,最大条纹数目 
+		8,//7,//8,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
+		0,   	// LED灯具的真实位置,y坐标
 		// -470,	// LED灯具的真实位置,x坐标
-		// 0,	// LED灯具的真实位置,y坐标
-		-465,	// LED灯具的真实位置,x坐标
-		495,	// LED灯具的真实位置,y坐标
+		// 490,	// LED灯具的真实位置,y坐标
 	};
 
-	struct position P3 = {	// LED 序号    !!!在此分辨率下，条纹数处于2～3的灯具不可使用！
+	struct position P3 = {	// LED 序号
 		3,		// ID_max,最大条纹数目 
 		2,		// ID_min，最小条纹数目
-		// -470,	// LED灯具的真实位置,x坐标
-		// -940,	// LED灯具的真实位置,y坐标
-		-460,	// LED灯具的真实位置,x坐标
-		-420,	// LED灯具的真实位置,y坐标
+		-470,	// LED灯具的真实位置,x坐标
+		-940,	// LED灯具的真实位置,y坐标
+		// -440,	// LED灯具的真实位置,x坐标
+		// -420,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P4 = {	// LED 序号
-		100000,		// ID_max,最大条纹数目  100
-		11000,		// ID_min，最小条纹数目 11
+		100,		// ID_max,最大条纹数目 
+		11,		// ID_min，最小条纹数目
 		490,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P5 = {	// LED 序号
-		1,		// ID_max,最大条纹数目  
-		1,		// ID_min，最小条纹数目 
-		// 470,	// LED灯具的真实位置,x坐标
-		// 0,	// LED灯具的真实位置,y坐标
-		460,	// LED灯具的真实位置,x坐标
-		490,	// LED灯具的真实位置,y坐标
+		1,		// ID_max,最大条纹数目 
+		1,		// ID_min，最小条纹数目
+		470,	// LED灯具的真实位置,x坐标
+		0,	// LED灯具的真实位置,y坐标
+		// 460,	// LED灯具的真实位置,x坐标
+		// 500,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P6 = {	//LED 序号
-		6,		// ID_max,最大条纹数目 
+		6,//5,		// ID_max,最大条纹数目 
 		4,		// ID_min，最小条纹数目
+		470,	// LED灯具的真实位置,x坐标
+		-940,	// LED灯具的真实位置,y坐标
 		// 470,	// LED灯具的真实位置,x坐标
-		// -940,	// LED灯具的真实位置,y坐标
-		480,	// LED灯具的真实位置,x坐标
-		-425,	// LED灯具的真实位置,y坐标
+		// -420,	// LED灯具的真实位置,y坐标
 	};
 
 	// 图像读取及判断
@@ -173,6 +172,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		}
 		
 		// 根据ID判断对应的LED，并写入坐标值
+		//此处后续可以改进为vector成员的表达，以便更方便兼容更多ID
 		if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
 			{unkonwn.X = P1.X;
 			unkonwn.Y = P1.Y;
@@ -201,6 +201,7 @@ struct XYZ Get_coordinate(cv::Mat img)
 		
 
 		// 将以上的unknown结构体的值一起赋予某个灯具，释放出unknown
+		//此处后续可以改进为vector成员的表达，以便更方便兼容更多ID，结束条件ii也可以更改，具体应该单步调试看不再有未识别到的灯后各变量会如何变化
 		switch (ii)
 		{
 		case 1:
@@ -223,13 +224,12 @@ struct XYZ Get_coordinate(cv::Mat img)
 			break;
 		}
 	}
-
 	cout << "a="<< A.ID << '\n';
 	cout << "b="<< B.ID << '\n';
 	cout << "c="<< C.ID << '\n';
-	// cout << "d="<< D.ID << '\n';
-	// cout << "e="<< E.ID << '\n';
-	// cout << "f="<< F.ID << '\n';
+	cout << "d="<< D.ID << '\n';
+	cout << "e="<< E.ID << '\n';
+	cout << "f="<< F.ID << '\n';
 	// cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
 	// cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
 	// cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
@@ -245,42 +245,28 @@ struct XYZ Get_coordinate(cv::Mat img)
 	double Center_X = centerXofImageMax;
 	double Center_Y = centerYofImageMax;
 
-	struct LED D1,D2;
+	//找出非0的ID，并将它在vector<struct LED> LEDs中的位置存入数组NonZeroID
+	vector<struct LED> LEDs {A,B,C,D,E,F};
+	// cout << "test ID="<< LEDs[0].ID << '\n';
+	int NonZeroID [LEDs.size()] {};
+	int getNonZeroID = 0;
 
-	if (C.ID == 0){
-		D1=A;
-		D2=B;
-	}
-	else
+	for (int findNonZeroID = 0; findNonZeroID < LEDs.size() ; findNonZeroID++)
 	{
-		if (A.imgLocalX == C.imgLocalX){
-			D1=A;
-			D2=B;
+		if (LEDs.at(findNonZeroID).ID != 0){
+			NonZeroID[getNonZeroID] = findNonZeroID;
+			cout << "LEDofNonZeroID="<< NonZeroID[getNonZeroID] << '\n';
+			getNonZeroID ++;
 		}
-		else
-		{
-			D1=A;
-			D2=C;
-		}		
+		if (getNonZeroID == 2){
+			break;
+		}
 	}
-	pose = double_LED(f, Center_X, Center_Y, D1, D2);
-	
-	// pose = three_LED(f, Center_X, Center_Y, A, B, C);
-
-	
-	// pose.imgPoint = imgPoint;
-    // // cv::flip(pose.imgPoint,pose.imgPoint,0);
-
-    // //-- 第一步:检测 Oriented FAST 角点位置
-    // //detector->detect ( img_1,keypoints_1 );
-    // //circle(img_1,(100,63),55,(255,0,0),-1);
-	// double xxx=5*pose.x;
-	// double yyy=5*pose.y;
-    // circle(pose.imgPoint, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
-	// // circle(pose.imgPoint, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
+	//将非0的第一个与第二个灯代入执行定位
+	Point = double_LED(f, Center_X, Center_Y, LEDs[NonZeroID[0]], LEDs[NonZeroID[1]]);
     
 	waitKey(0);
-	return pose;
+	return Point;
 
 }
 
@@ -300,18 +286,16 @@ private:
     ros::NodeHandle nh_; //定义ROS句柄  
     image_transport::ImageTransport it_; //定义一个image_transport实例  
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
-	// image_transport::Publisher image_pub_; 
+	image_transport::Publisher image_pub_; 
 	ros::Publisher msgPointPub;
-
-    struct XYZ poseValue;
-  
+      
 public:  
     IMAGE_LISTENER_and_LOCATOR()  
       :it_(nh_) //构造函数  
     {  
-        image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
-        // image_pub_ = it_.advertise("/camera/image_show", 1); //定义ROS图象发布器
-		msgPointPub = nh_.advertise<geometry_msgs::Point>("location", 1000);
+        image_sub_ = it_.subscribe("/mvcam/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
+        image_pub_ = it_.advertise("/location/map_show", 1); //定义ROS图象发布器
+		msgPointPub = nh_.advertise<geometry_msgs::PointStamped>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
 		// cv::namedWindow(OUTPUT);  
@@ -344,7 +328,7 @@ public:
 	
     //----------------------------------【图象处理主函数】----------------------------------------------
     //      描述：这是图象处理主函数，一般会把图像处理的主要程序写在这个函数中。 
-    //-----------------------------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------------------
     void image_process(cv::Mat img)   
     { 
        
@@ -358,28 +342,29 @@ public:
 		 * This is a message object. You stuff it with data, and then publish it.
 		 */
 		std_msgs::String msg;
-		geometry_msgs::Point msgPoint;
+		geometry_msgs::PointStamped msgPointStamped;
 		std::stringstream ss;
 		
 		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
 		// cv::imshow(OUTPUT, img_out);
 
-		poseValue=Get_coordinate(img_out);
+		msgPointStamped.point=Get_coordinate(img_out);
 
-		ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
+		ss  << '\n'<< msgPointStamped.point.x*100  
+			<< '\n'<< msgPointStamped.point.y*100 
+			<< '\n'<< msgPointStamped.point.z*100 << count;
 		msg.data = ss.str();
-		msgPoint.x = poseValue.x;
-		msgPoint.y = poseValue.y;
-		msgPoint.z = poseValue.z;
-		msgPointPub.publish(msgPoint);
-
+		msgPointStamped.header.stamp = ros::Time::now();
+		msgPointStamped.header.frame_id = "odom";
+		msgPointPub.publish(msgPointStamped);
+				
 		ROS_INFO("%s", msg.data.c_str());
 
-
-		// sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", poseValue.imgPoint).toImageMsg();
-		// image_pub_.publish(msg_image);
-
-		
+		// 在地图坐标纸上打点输出，不过不知道为啥运行不正常了
+		imgPoint = pointOnMap(imgPoint,msgPointStamped.point);
+		sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imgPoint).toImageMsg();
+		image_pub_.publish(msg_image);
+				
 		ros::spin();
 
 		loop_rate.sleep();
@@ -388,7 +373,6 @@ public:
 
     }  
 }; 
-  
 
 
 //---------------------------------------【main()函数】------------------------------------------
@@ -401,7 +385,7 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-    imgPoint = cv::imread ( "/home/chen/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+    imgPoint = cv::imread ( "home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
 	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();

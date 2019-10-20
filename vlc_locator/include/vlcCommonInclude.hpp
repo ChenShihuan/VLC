@@ -36,12 +36,6 @@ struct position{// LED的位置，对应不同位置的灯具
 	double Y;	// LED灯具的真实位置,y坐标
 	};
 
-struct XYZ{	//坐标处理函数的结构体，用于放置坐标值
-    double x;
-	double y;
-	double z;
-	Mat imgPoint;
-	};
 
 struct LED{	// LED处理过程的结构体，用于存放图像处理过程中的信息以及处理结果
 	int ID;								//	ID,条纹数目

@@ -14,7 +14,8 @@
 //**********************************************************************************************
 //-----------------------------------------------------------------------------------------------
 
-struct XYZ double_LED(double f,double Center_X, double Center_Y, struct LED A,struct LED B);
-struct XYZ three_LED(double f, double Center_X, double Center_Y, struct LED A,struct LED B,struct LED C);
+cv::Mat pointOnMap(cv::Mat imgPoint,geometry_msgs::Point point);
+geometry_msgs::Point double_LED(double f,double Center_X, double Center_Y, struct LED A,struct LED B);
+geometry_msgs::Point three_LED(double f, double Center_X, double Center_Y, struct LED A,struct LED B,struct LED C);
 
 #endif

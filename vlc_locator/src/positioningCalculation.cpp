@@ -11,8 +11,17 @@
 //**********************************************************************************************
 //-----------------------------------------------------------------------------------------------
 
+cv::Mat pointOnMap(cv::Mat imgPoint,geometry_msgs::Point point) {
+	
+	// -- 在平面地图上打点输出
+	double xxx=5*point.x;
+	double yyy=5*point.y;
+	circle(imgPoint, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
+	return imgPoint;
+}
+		
 
-struct XYZ double_LED(double f,double Center_X, double Center_Y, struct LED D1,struct LED D2)
+geometry_msgs::Point double_LED(double f,double Center_X, double Center_Y, struct LED D1,struct LED D2)
 {
 	double ImgX1;
 	double ImgY1;
@@ -175,20 +184,17 @@ struct XYZ double_LED(double f,double Center_X, double Center_Y, struct LED D1,s
 	XX = XX + X_c;
 	YY = YY + Y_c;
 
-	double xx = XX / 10;
-	double yy = YY / 10;
-	double zz = 150 - H / 10;
+	geometry_msgs::Point point;
+	//mm转化为m
+	point.x = XX / 1000;
+	point.y = YY / 1000;
+	point.z = (150 - H/100) / 1000;
 
-	// imshow("test time", grayImage);
-	struct XYZ pose;
-	pose.x=xx;
-	pose.y=yy;
-	pose.z=zz;
-	return pose;
+	return point;
 
 }
 
-struct XYZ three_LED(double f, double Center_X, double Center_Y, struct LED D1,struct LED D2, struct LED D3)
+geometry_msgs::Point three_LED(double f, double Center_X, double Center_Y, struct LED D1,struct LED D2, struct LED D3)
 {
 	double ImgX1 = D1.imgLocalX;
 	double ImgY1 = D1.imgLocalY;
@@ -238,17 +244,13 @@ struct XYZ three_LED(double f, double Center_X, double Center_Y, struct LED D1,s
 	double XX = (c2 * b1 - c1 * b2) / (a1*b2 - a2 * b1);
 	double YY = (c2 * a1 - c1 * a2) / (a2*b1 - a1 * b2);
 
-	double xx = XX / 10;
-	double yy = YY / 10;
-	// xx = xx*(f / H);
-	// yy = xx*(f / H);
-	double zz = 150 - H / 10;
+	geometry_msgs::Point point;
+	//mm转化为m
+	point.x = XX / 1000;
+	point.y = YY / 1000;
+	point.z = (150 - H/100) / 1000;
 
-	struct XYZ pose;
-	pose.x=xx;
-	pose.y=yy;
-	pose.z=zz;
-	return pose;
+	return point;
 
 }
 

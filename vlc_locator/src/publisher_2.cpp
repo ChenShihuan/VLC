@@ -21,47 +21,46 @@ using namespace std;
 //      描述：定义各种结构体  
 //----------------------------------------------------------------------------------------------- 
 vector<struct LED> LEDs {};
-struct XYZ poseValue;
 Mat imgPoint;
 
 //-----------------------------------【Get_coordinate()函数】------------------------------------
 //      描述：灰度图像传入，定位计算
 //-----------------------------------------------------------------------------------------------  
-struct XYZ Get_coordinate(cv::Mat img)
+geometry_msgs::Point Get_coordinate(cv::Mat img)
 // int main()
 // 1 2/3 4/5 6/7     9/10     11/12
 {
 	struct LED unkonwn,A,B,C,D,E,F;
 	// cout << "111" << '\n';
-	struct XYZ pose;
+	geometry_msgs::Point Point;
 	struct position P1 = {	// LED 序号
-		700000,		// ID_max,最大条纹数目 
-		60000,		// ID_min，最小条纹数目
+		7,		// ID_max,最大条纹数目 
+		6,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		11,//9,		// ID_max,最大条纹数目 
-		7,//8,		// ID_min，最小条纹数目
-		// -470,	// LED灯具的真实位置,x坐标
-		// 0,	// LED灯具的真实位置,y坐标
+		9,//11,//9,		// ID_max,最大条纹数目 
+		8,//7,//8,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
-		490,	// LED灯具的真实位置,y坐标
+		0,   	// LED灯具的真实位置,y坐标
+		// -470,	// LED灯具的真实位置,x坐标
+		// 490,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P3 = {	// LED 序号
 		3,		// ID_max,最大条纹数目 
 		2,		// ID_min，最小条纹数目
-		// -470,	// LED灯具的真实位置,x坐标
-		// -940,	// LED灯具的真实位置,y坐标
-		-440,	// LED灯具的真实位置,x坐标
-		-420,	// LED灯具的真实位置,y坐标
+		-470,	// LED灯具的真实位置,x坐标
+		-940,	// LED灯具的真实位置,y坐标
+		// -440,	// LED灯具的真实位置,x坐标
+		// -420,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P4 = {	// LED 序号
-		100000,		// ID_max,最大条纹数目 
-		11000,		// ID_min，最小条纹数目
+		100,		// ID_max,最大条纹数目 
+		11,		// ID_min，最小条纹数目
 		490,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
@@ -69,19 +68,19 @@ struct XYZ Get_coordinate(cv::Mat img)
 	struct position P5 = {	// LED 序号
 		1,		// ID_max,最大条纹数目 
 		1,		// ID_min，最小条纹数目
-		// 470,	// LED灯具的真实位置,x坐标
-		// 0,	// LED灯具的真实位置,y坐标
-		460,	// LED灯具的真实位置,x坐标
-		500,	// LED灯具的真实位置,y坐标
+		470,	// LED灯具的真实位置,x坐标
+		0,	// LED灯具的真实位置,y坐标
+		// 460,	// LED灯具的真实位置,x坐标
+		// 500,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P6 = {	//LED 序号
 		6,//5,		// ID_max,最大条纹数目 
 		4,		// ID_min，最小条纹数目
-		// 470,	// LED灯具的真实位置,x坐标
-		// -940,	// LED灯具的真实位置,y坐标
 		470,	// LED灯具的真实位置,x坐标
-		-420,	// LED灯具的真实位置,y坐标
+		-940,	// LED灯具的真实位置,y坐标
+		// 470,	// LED灯具的真实位置,x坐标
+		// -420,	// LED灯具的真实位置,y坐标
 	};
 
 	// 图像读取及判断
@@ -264,24 +263,10 @@ struct XYZ Get_coordinate(cv::Mat img)
 		}
 	}
 	//将非0的第一个与第二个灯代入执行定位
-	pose = double_LED(f, Center_X, Center_Y, LEDs[NonZeroID[0]], LEDs[NonZeroID[1]]);
-	
-	// pose = three_LED(f, Center_X, Center_Y, A, B, C);
-
-	
-	pose.imgPoint = imgPoint;
-    // cv::flip(pose.imgPoint,pose.imgPoint,0);
-
-    //-- 第一步:检测 Oriented FAST 角点位置
-    //detector->detect ( img_1,keypoints_1 );
-    //circle(img_1,(100,63),55,(255,0,0),-1);
-	double xxx=5*pose.x;
-	double yyy=5*pose.y;
-    circle(pose.imgPoint, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
-	// circle(pose.imgPoint, Point(200+200, 350-200), 10, Scalar(0, 0, 255));
+	Point = double_LED(f, Center_X, Center_Y, LEDs[NonZeroID[0]], LEDs[NonZeroID[1]]);
     
 	waitKey(0);
-	return pose;
+	return Point;
 
 }
 
@@ -295,7 +280,6 @@ struct XYZ Get_coordinate(cv::Mat img)
 //----------------------------------------------------------------------------------------------- 
 
 //定义一个转换的类 
-//定义一个转换的类 
 class IMAGE_LISTENER_and_LOCATOR  
 {  
 private:  
@@ -304,15 +288,13 @@ private:
     image_transport::Subscriber image_sub_; //定义ROS图象接收器  
 	image_transport::Publisher image_pub_; 
 	ros::Publisher msgPointPub;
-
-    struct XYZ poseValue;
-  
+      
 public:  
     IMAGE_LISTENER_and_LOCATOR()  
       :it_(nh_) //构造函数  
     {  
         image_sub_ = it_.subscribe("/mvcam/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
-        image_pub_ = it_.advertise("/locator/image_show", 1); //定义ROS图象发布器
+        image_pub_ = it_.advertise("/location/map_show", 1); //定义ROS图象发布器
 		msgPointPub = nh_.advertise<geometry_msgs::PointStamped>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
@@ -346,7 +328,7 @@ public:
 	
     //----------------------------------【图象处理主函数】----------------------------------------------
     //      描述：这是图象处理主函数，一般会把图像处理的主要程序写在这个函数中。 
-    //-----------------------------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------------------
     void image_process(cv::Mat img)   
     { 
        
@@ -366,26 +348,23 @@ public:
 		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
 		// cv::imshow(OUTPUT, img_out);
 
-		poseValue=Get_coordinate(img_out);
+		msgPointStamped.point=Get_coordinate(img_out);
 
-		ss  << '\n'<< poseValue.x  << '\n'<<poseValue.y << '\n'<<poseValue.z << count;
+		ss  << '\n'<< msgPointStamped.point.x*100  
+			<< '\n'<< msgPointStamped.point.y*100 
+			<< '\n'<< msgPointStamped.point.z*100 << count;
 		msg.data = ss.str();
 		msgPointStamped.header.stamp = ros::Time::now();
-		msgPointStamped.header.frame_id = "base_vlc_mvcam";
-		// 单位采用m，poseValue为cm，除以100转化为标准的m
-		msgPointStamped.point.x = (poseValue.x/100);
-		msgPointStamped.point.y = (poseValue.y/100);
-		msgPointStamped.point.z = (poseValue.z/100);
-
+		msgPointStamped.header.frame_id = "odom";
 		msgPointPub.publish(msgPointStamped);
-		
+				
 		ROS_INFO("%s", msg.data.c_str());
 
-
-		sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", poseValue.imgPoint).toImageMsg();
+		// 在地图坐标纸上打点输出，不过不知道为啥运行不正常了
+		imgPoint = pointOnMap(imgPoint,msgPointStamped.point);
+		sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imgPoint).toImageMsg();
 		image_pub_.publish(msg_image);
-
-		
+				
 		ros::spin();
 
 		loop_rate.sleep();
@@ -406,7 +385,7 @@ public:
 //主函数  
 int main(int argc, char** argv)  
 {  
-    imgPoint = cv::imread ( "~/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
+    imgPoint = cv::imread ( "home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR );
 	ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");  
     IMAGE_LISTENER_and_LOCATOR obj;  
     ros::spin();
