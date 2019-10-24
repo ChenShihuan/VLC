@@ -170,7 +170,7 @@ int main(int argc, char** argv)
             }
 
 
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", frame).toImageMsg();
+            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", frame).toImageMsg();
             pub.publish(msg);
             #endif
             waitKey(1);
