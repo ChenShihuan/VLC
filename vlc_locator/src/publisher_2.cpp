@@ -34,15 +34,15 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 	// cout << "111" << '\n';
 	geometry_msgs::Point Point;
 	struct position P1 = {	// LED 序号
-		7,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
+		70000,		// ID_max,最大条纹数目 
+		6000,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		9,//11,//9,		// ID_max,最大条纹数目 
-		8,//7,//8,		// ID_min，最小条纹数目
+		10,//11,//9,		// ID_max,最大条纹数目 
+		7,//7,//8,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		0,   	// LED灯具的真实位置,y坐标
 		// -470,	// LED灯具的真实位置,x坐标
@@ -294,7 +294,7 @@ public:
       :it_(nh_) //构造函数  
     {  
         image_sub_ = it_.subscribe("/mvcam/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
-        image_pub_ = it_.advertise("/location/map_show", 1); //定义ROS图象发布器
+        // image_pub_ = it_.advertise("/location/map_show", 1); //定义ROS图象发布器
 		msgPointPub = nh_.advertise<geometry_msgs::PointStamped>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
@@ -315,7 +315,7 @@ public:
   
         try  
         {  
-            cv_ptr =  cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8); //将ROS消息中的图象信息提取，生成新cv类型的图象，复制给CvImage指针  
+            cv_ptr =  cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::MONO8); //将ROS消息中的图象信息提取，生成新cv类型的图象，复制给CvImage指针  
         }  
         catch(cv_bridge::Exception& e)  //异常处理  
         {  
@@ -344,11 +344,10 @@ public:
 		std_msgs::String msg;
 		geometry_msgs::PointStamped msgPointStamped;
 		std::stringstream ss;
-		
-		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
-		// cv::imshow(OUTPUT, img_out);
+		 
+		// cv::imshow("OUTPUT", img);
 
-		msgPointStamped.point=Get_coordinate(img_out);
+		msgPointStamped.point=Get_coordinate(img);
 
 		ss  << '\n'<< msgPointStamped.point.x*100  
 			<< '\n'<< msgPointStamped.point.y*100 
@@ -361,9 +360,9 @@ public:
 		ROS_INFO("%s", msg.data.c_str());
 
 		// 在地图坐标纸上打点输出，不过不知道为啥运行不正常了
-		imgPoint = pointOnMap(imgPoint,msgPointStamped.point);
-		sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imgPoint).toImageMsg();
-		image_pub_.publish(msg_image);
+		// imgPoint = pointOnMap(imgPoint,msgPointStamped.point);
+		// sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imgPoint).toImageMsg();
+		// image_pub_.publish(msg_image);
 				
 		ros::spin();
 

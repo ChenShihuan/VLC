@@ -33,8 +33,8 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 	struct LED unkonwn,A,B,C,D,E,F;
 	geometry_msgs::Point Point;
 	struct position P1 = {	// LED 序号
-		7,		// ID_max,最大条纹数目 
-		6,		// ID_min，最小条纹数目
+		100,//7,		// ID_max,最大条纹数目 
+		11,//6,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
@@ -58,8 +58,8 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 	};
 
 	struct position P4 = {	// LED 序号
-		100,		// ID_max,最大条纹数目 
-		11,		// ID_min，最小条纹数目
+		10000,		// ID_max,最大条纹数目 
+		1100,		// ID_min，最小条纹数目
 		490,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
@@ -165,10 +165,10 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 		findContours(unkonwn.imgCut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 		unkonwn.ID = unkonwn.contours.size();
 
-		if (X_max>780 || X_min<20 || Y_max>580 || Y_min<20){ //防止因为识别到半个灯而造成ID错误和坐标错误
-			unkonwn.ID = 0;
-			unkonwn.num = 0;
-		}
+		// if (X_max>780 || X_min<20 || Y_max>580 || Y_min<20){ //防止因为识别到半个灯而造成ID错误和坐标错误
+		// 	unkonwn.ID = 0;
+		// 	unkonwn.num = 0;
+		// }
 		
 		// 根据ID判断对应的LED，并写入坐标值
 		if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
@@ -267,7 +267,9 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 		}
 	}
 	//将非0的第一个与第二个灯代入执行定位
-	Point = double_LED(f, Center_X, Center_Y, LEDs[NonZeroID[0]], LEDs[NonZeroID[1]]);
+	//Point = double_LED(f, Center_X, Center_Y, LEDs[NonZeroID[0]], LEDs[NonZeroID[1]]);
+	Point = three_LED(f, Center_X, Center_Y, LEDs[NonZeroID[0]], LEDs[NonZeroID[1]], LEDs[NonZeroID[2]]);
+
     
 	waitKey(0);
 	return Point;
@@ -318,7 +320,7 @@ public:
   
         try  
         {  
-            cv_ptr =  cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8); //将ROS消息中的图象信息提取，生成新cv类型的图象，复制给CvImage指针  
+            cv_ptr =  cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::MONO8); //将ROS消息中的图象信息提取，生成新cv类型的图象，复制给CvImage指针  
         }  
         catch(cv_bridge::Exception& e)  //异常处理  
         {  
@@ -347,11 +349,10 @@ public:
 		std_msgs::String msg;
 		geometry_msgs::PointStamped msgPointStamped;
 		std::stringstream ss;
-		
-		cv::cvtColor(img, img_out, CV_RGB2GRAY);  //转换成灰度图象    
-		// cv::imshow(OUTPUT, img_out);
+		 
+		// cv::imshow("OUTPUT", img);
 
-		msgPointStamped.point=Get_coordinate(img_out);
+		msgPointStamped.point=Get_coordinate(img);
 
 		ss  << '\n'<< msgPointStamped.point.x*100  
 			<< '\n'<< msgPointStamped.point.y*100 
@@ -364,9 +365,9 @@ public:
 		ROS_INFO("%s", msg.data.c_str());
 
 		// 在地图坐标纸上打点输出，不过不知道为啥运行不正常了
-		imgPoint = pointOnMap(imgPoint,msgPointStamped.point);
-		sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imgPoint).toImageMsg();
-		image_pub_.publish(msg_image);
+		// imgPoint = pointOnMap(imgPoint,msgPointStamped.point);
+		// sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imgPoint).toImageMsg();
+		// image_pub_.publish(msg_image);
 				
 		ros::spin();
 
