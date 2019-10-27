@@ -17,6 +17,34 @@ using namespace std;
 
 unsigned char           * g_pRgbBuffer;     // 处理后数据缓存区
 
+sensor_msgs::CameraInfo get_default_camera_info_from_image(sensor_msgs::ImagePtr img)
+{
+    sensor_msgs::CameraInfo cam_info_msg;
+    cam_info_msg.header.frame_id = img->header.frame_id;
+    // Fill image size
+    cam_info_msg.height = img->height;
+    cam_info_msg.width = img->width;
+    ROS_INFO_STREAM("The image width is: " << img->width);
+    ROS_INFO_STREAM("The image height is: " << img->height);
+    // Add the most common distortion model as sensor_msgs/CameraInfo says
+    cam_info_msg.distortion_model = "plumb_bob";
+    // Don't let distorsion matrix be empty
+    cam_info_msg.D.resize(5, 0.0);
+    // Give a reasonable default intrinsic camera matrix
+    cam_info_msg.K = boost::assign::list_of(1.0) (0.0) (img->width/2.0)
+                                           (0.0) (1.0) (img->height/2.0)
+                                           (0.0) (0.0) (1.0);
+    // Give a reasonable default rectification matrix
+    cam_info_msg.R = boost::assign::list_of (1.0) (0.0) (0.0)
+                                            (0.0) (1.0) (0.0)
+                                            (0.0) (0.0) (1.0);
+    // Give a reasonable default projection matrix
+    cam_info_msg.P = boost::assign::list_of (1.0) (0.0) (img->width/2.0) (0.0)
+                                            (0.0) (1.0) (img->height/2.0) (0.0)
+                                            (0.0) (0.0) (1.0) (0.0);
+    return cam_info_msg;
+}
+
 int main(int argc, char** argv)
 {
     std::cout<<"相机节点开始运行"<<std::endl;
@@ -38,21 +66,7 @@ int main(int argc, char** argv)
     int Image_size_output_flag = 1;
 
     
-    ros::init(argc, argv, "image_publisher");
-    ros::NodeHandle nh;
-    image_transport::ImageTransport it(nh);
-    image_transport::Publisher pub = it.advertise("mvcam/image", 1);
-    // bC++:用 image_transport::Publisher (API),还是用image_transport::CameraPublisher (API)？
-    
-    Mat frame;
-    sensor_msgs::ImagePtr msg;    
-    // sensor_msgs::CameraInfo cam_info_msg;
-    std_msgs::Header header;
-    // header.frame_id = frame_id;
-    // camera_info_manager::CameraInfoManager cam_info_manager(nh, mindvision, camera_info_url);
-    // Get the saved camera info if any
-    // cam_info_msg = cam_info_manager.getCameraInfo();
-   
+ 
 
     CameraSdkInit(1);
     // 枚举设备，并建立设备列表
@@ -99,7 +113,7 @@ int main(int argc, char** argv)
 
     CameraSetAnalogGain(hCamera,100);
     CameraSetExposureTime(hCamera,200);
-	CameraSetIspOutFormat(hCamera,CAMERA_MEDIA_TYPE_MONO8);
+	//CameraSetIspOutFormat(hCamera,CAMERA_MEDIA_TYPE_MONO8);
     CameraSetMonochrome(hCamera,TRUE);
     CameraSetFrameSpeed(hCamera,2000);
     
@@ -138,7 +152,18 @@ int main(int argc, char** argv)
             CameraSetIspOutFormat(hCamera,CAMERA_MEDIA_TYPE_BGR8);
         }
 
-
+    ros::init(argc, argv, "image_publisher");
+    ros::NodeHandle nh;
+    image_transport::ImageTransport it(nh);
+    image_transport::CameraPublisher pub = it.advertiseCamera("mvcam/image", 1);  
+    Mat frame;
+    sensor_msgs::ImagePtr msg;    
+    sensor_msgs::CameraInfo cam_info_msg;
+    std_msgs::Header header;
+    header.frame_id = "mvcam";
+    camera_info_manager::CameraInfoManager cam_info_manager(nh, "mvcam/camera_info");
+    // Get the saved camera info if any
+    // cam_info_msg = cam_info_manager.getCameraInfo();
 
     ros::Rate r(fps);
     while (nh.ok()) 
@@ -158,9 +183,11 @@ int main(int argc, char** argv)
             /******************************************************/    
             #if 0
             #else
-            resize(cvarrToMat(iplImage),frame,Size(800,600),0,0,INTER_NEAREST);
-            // frame = cvarrToMat(iplImage);
             
+            frame = cvarrToMat(iplImage);
+            cv::cvtColor(frame,frame,cv::COLOR_BGR2GRAY);
+            resize(frame,frame,Size(1280,960),0,0,INTER_NEAREST);
+
             if(Image_size_output_flag){
                 cout << "工业相机运行正常！" << endl;
                 cout << "图像尺寸：" << endl;
@@ -169,13 +196,14 @@ int main(int argc, char** argv)
                 Image_size_output_flag = 0;
             }
 
-
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", frame).toImageMsg();
-            pub.publish(msg);
+            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", frame).toImageMsg();
+            cam_info_msg = get_default_camera_info_from_image(msg);
+            cam_info_manager.setCameraInfo(cam_info_msg);
+            //pub.publish(msg);
+            pub.publish(*msg, cam_info_msg, ros::Time::now());
             #endif
             waitKey(1);
-            
-                        
+                                    
             // 在成功调用CameraGetImageBuffer后，必须调用CameraReleaseImageBuffer来释放获得的buffer。
 			// 否则再次调用CameraGetImageBuffer时，程序将被挂起一直阻塞，直到其他线程中调用CameraReleaseImageBuffer来释放了buffer
 			CameraReleaseImageBuffer(hCamera,pbyBuffer);
