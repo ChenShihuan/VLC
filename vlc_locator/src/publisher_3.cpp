@@ -83,6 +83,11 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 		// -420,	// LED灯具的真实位置,y坐标
 	};
 
+	//获取图片尺寸与800之比值，用于识别过于靠近边缘的灯具。
+	cv::Size s = img.size();
+	float width = s.width;
+	float ratio = width/800;
+
 	// 图像读取及判断
 	cv::Mat grayImage = img;
 	// Mat grayImage = cv::imread("/home/rc/Image/1.BMP",0);
@@ -166,7 +171,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 		findContours(unkonwn.imgCut, unkonwn.contours, unkonwn.hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 		unkonwn.ID = unkonwn.contours.size();
 
-		if (X_max>780 || X_min<20 || Y_max>580 || Y_min<20){ //防止因为识别到半个灯而造成ID错误和坐标错误
+		if (X_max>780*ratio || X_min<20*ratio || Y_max>580*ratio || Y_min<20*ratio){ //防止因为识别到半个灯而造成ID错误和坐标错误
 			unkonwn.ID = 0;
 			unkonwn.num = 0;
 		}
