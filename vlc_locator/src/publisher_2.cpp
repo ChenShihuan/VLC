@@ -34,15 +34,15 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 	// cout << "111" << '\n';
 	geometry_msgs::Point Point;
 	struct position P1 = {	// LED 序号
-		70000,		// ID_max,最大条纹数目 
-		6000,		// ID_min，最小条纹数目
+		1,		// ID_max,最大条纹数目 
+		1,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P2 = {	// LED 序号
-		10,//11,//9,		// ID_max,最大条纹数目 
-		7,//7,//8,		// ID_min，最小条纹数目
+		10,		// ID_max,最大条纹数目 
+		8,		// ID_min，最小条纹数目
 		-470,	// LED灯具的真实位置,x坐标
 		0,   	// LED灯具的真实位置,y坐标
 		// -470,	// LED灯具的真实位置,x坐标
@@ -59,15 +59,15 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 	};
 
 	struct position P4 = {	// LED 序号
-		100,		// ID_max,最大条纹数目 
+		13,		// ID_max,最大条纹数目 
 		11,		// ID_min，最小条纹数目
 		490,	// LED灯具的真实位置,x坐标
 		940,	// LED灯具的真实位置,y坐标
 	};
 
 	struct position P5 = {	// LED 序号
-		1,		// ID_max,最大条纹数目 
-		1,		// ID_min，最小条纹数目
+		7,		// ID_max,最大条纹数目 
+		6,		// ID_min，最小条纹数目
 		470,	// LED灯具的真实位置,x坐标
 		0,	// LED灯具的真实位置,y坐标
 		// 460,	// LED灯具的真实位置,x坐标
@@ -75,7 +75,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 	};
 
 	struct position P6 = {	//LED 序号
-		6,//5,		// ID_max,最大条纹数目 
+		5,		// ID_max,最大条纹数目 
 		4,		// ID_min，最小条纹数目
 		470,	// LED灯具的真实位置,x坐标
 		-940,	// LED灯具的真实位置,y坐标
