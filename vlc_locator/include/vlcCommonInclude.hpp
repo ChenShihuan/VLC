@@ -13,8 +13,8 @@
 
 #define pi 3.1415926
 #define focalLength 1.5
-#define centerXofImage 394
-#define centerYofImage 328.5
+#define centerXofImage 630.4
+#define centerYofImage 525.6
 #define centerXofImageMax 1002.5
 #define centerYofImageMax 852.5
 
