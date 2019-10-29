@@ -359,7 +359,7 @@ public:
 			<< '\n'<< msgPointStamped.point.z*100 << count;
 		msg.data = ss.str();
 		msgPointStamped.header.stamp = ros::Time::now();
-		msgPointStamped.header.frame_id = "odom";
+		msgPointStamped.header.frame_id = "map";
 		msgPointPub.publish(msgPointStamped);
 				
 		ROS_INFO("%s", msg.data.c_str());
