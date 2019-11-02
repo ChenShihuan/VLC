@@ -24,8 +24,8 @@ sensor_msgs::CameraInfo get_default_camera_info_from_image(sensor_msgs::ImagePtr
     // Fill image size
     cam_info_msg.height = img->height;
     cam_info_msg.width = img->width;
-    ROS_INFO_STREAM("The image width is: " << img->width);
-    ROS_INFO_STREAM("The image height is: " << img->height);
+    // ROS_INFO_STREAM("The image width is: " << img->width);
+    // ROS_INFO_STREAM("The image height is: " << img->height);
     // Add the most common distortion model as sensor_msgs/CameraInfo says
     cam_info_msg.distortion_model = "plumb_bob";
     // Don't let distorsion matrix be empty
