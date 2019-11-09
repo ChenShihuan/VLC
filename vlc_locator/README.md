@@ -1,35 +1,45 @@
-这是三灯定位节点，源代码存放在src文件夹中，仅publisher.cpp是有用的源代码，其它是各种测试代码
+这是三灯定位节点，源代码存放在src文件夹中，publisher.cpp是各定位节点源代码，其他是所依赖的函数
 
-1. 使用前请务必设置好灯具坐标信息，代码段如下：
-    //计算位置坐标
-	//焦距
-	double f = 4;
-	//透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于2048x1536)
-	double Center_X = 1024;
-	double Center_Y = 768;
-	//三个LED灯具的真实位置
-	double x1 = -300;
-	double y1 = -300;
-	double x2 = 300;
-	double y2 = -300;
-	double x3 = 300;
-	double y3 = 300;
+1. 使用前请务必设置好相机和灯具坐标信息，代码段如下：
+
+    以下位于vlcCommonInclude.hpp：
+
+    //焦距
+    #define focalLength 1.5
+
+    //经过校正的相机中心
+    #define centerXofImage 630.4
+    #define centerYofImage 525.6
+    #define centerXofImageMax 1002.5
+    #define centerYofImageMax 852.5
+
+    以下位于各定位节点源代码publisher.cpp：
+
+    struct position P1 = {	// LED 序号
+		1,		// ID_max,最大条纹数目 
+		1,		// ID_min，最小条纹数目
+		-470,	// LED灯具的真实位置,x坐标
+		940,	// LED灯具的真实位置,y坐标
+	};
+
+
+
     
 2. 灯具条纹数目要有差别，不同灯具条纹数量至少差一条（数目要用静态图片来数，画面上条纹“飞”的速度不同，条纹数量也有可能是相同的）
 
-3. 条纹数目最少三条以上
-
-4. 启动该节点所使用的命令：
+3. 启动该节点所使用的命令：
     rosrun vlc_locator locator
     locator    可以自动选择双灯和三灯定位。
     locator_2  双灯定位
     locator_3  三灯定位
 
-5. 该节点有运行依赖，依赖于相机通过节点/camera/image所传递的图像，需要该节点运行后定位节点才能运行
+4. 该节点有运行依赖，依赖于相机通过节点/mvcam/image所传递的图像，需要该节点运行后定位节点才能运行
 
-6. 计算出的结果存入结构体 struct XYZ 中，现在为字符串输出该结构体中的数据，如果需要可以改为其它消息格式
+5. 计算出的结果存入结构体 geometry_msgs::Point 中
 
-7. 欢迎编写launch文件，将灯具坐标，节点依赖等作为变量写入launch文件中，就不需要每次改完之后重新编译一次了
+6. 欢迎编写launch文件，将灯具坐标，节点依赖等作为变量写入launch文件中，就不需要每次改完之后重新编译一次了
+
+7. 查看被接收到的图像：rosrun image_view image_view image:=/location/image_show(可选，在本机运行，为规避图像订阅器和VLC定位程序抢图片的问题，在VLC定位程序中将接收到的图像又发布了一次)
 
 8. 关于调试：
     在没有相机的环境下，使用图片进行调试时，为了避免改动量过大，请：
@@ -47,5 +57,7 @@
         }
     3）代码中有大量中间过程的图像输出代码，如需查看将其取消注释即可
  
- 
-9.使用窗口界面查看坐标图像：rosrun image_view image_view image:=/locator/map_show
+
+
+
+（暂时无效）使用窗口界面查看坐标图像：rosrun image_view image_view image:=/locator/map_show
