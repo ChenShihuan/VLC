@@ -311,7 +311,7 @@ public:
       :it_(nh_) //构造函数  
     {  
         image_sub_ = it_.subscribe("/mvcam/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”   
-        image_pub_ = it_.advertise("/location/map_show", 1); //定义ROS图象发布器
+        image_pub_ = it_.advertise("/location/image_show", 1); //定义ROS图象发布器
 		msgPointPub = nh_.advertise<geometry_msgs::PointStamped>("location", 1000);
 		// 初始化输入输出窗口  
 		// cv::namedWindow(INPUT);  
@@ -333,6 +333,7 @@ public:
         try  
         {  
             cv_ptr =  cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::MONO8); //将ROS消息中的图象信息提取，生成新cv类型的图象，复制给CvImage指针  
+			image_pub_.publish(msg);
         }  
         catch(cv_bridge::Exception& e)  //异常处理  
         {  
@@ -378,7 +379,7 @@ public:
 
 		// 在地图坐标纸上打点输出，不过不知道为啥运行不正常了
 		// imgPoint = pointOnMap(imgPoint,msgPointStamped.point);
-		// sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imgPoint).toImageMsg();
+		// sensor_msgs::ImagePtr msg_image = cv_bridge::CvImage(std_msgs::Header(), "mono8", imgPoint).toImageMsg();
 		// image_pub_.publish(msg_image);
 				
 		ros::spin();
