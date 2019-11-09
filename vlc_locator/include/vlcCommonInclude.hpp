@@ -12,9 +12,16 @@
 #include <opencv2/imgproc/imgproc.hpp>  
 
 #define pi 3.1415926
+
+//焦距
 #define focalLength 1.5
+
+//经过校正的相机中心
+
+//1280X960像素
 #define centerXofImage 630.4
 #define centerYofImage 525.6
+//2048X1536像素
 #define centerXofImageMax 1002.5
 #define centerYofImageMax 852.5
 
