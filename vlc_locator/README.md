@@ -21,7 +21,7 @@
 
 4. 启动该节点所使用的命令：
     rosrun vlc_locator locator
-    locator    设计作为可以自动选择双灯和三灯定位，未完善。
+    locator    可以自动选择双灯和三灯定位。
     locator_2  双灯定位
     locator_3  三灯定位
 
