@@ -270,7 +270,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 	//将非0的第一个与第二个灯代入执行定位
 	Point = three_LED(f, Center_X, Center_Y, LEDs[NonZeroID[0]], LEDs[NonZeroID[1]], LEDs[NonZeroID[2]]);
     
-	waitKey(0);
+
 	return Point;
 
 }

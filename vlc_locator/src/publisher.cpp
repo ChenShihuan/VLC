@@ -283,7 +283,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 	
 	
     
-	waitKey(0);
+
 	return Point;
 }
 
