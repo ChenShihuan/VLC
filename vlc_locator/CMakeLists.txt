@@ -57,6 +57,6 @@ target_link_libraries(locator_2_max ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
 
 
-add_definitions(-std=c++11)
+add_definitions(-std=c++17)
 
 
