@@ -37,24 +37,24 @@ using namespace std;
 //----------------------------------------------------------------------------------------------- 
 
 struct position{// LED的位置，对应不同位置的灯具
-	int max;	// ID_max,最大条纹数目 	
-	int min;	// ID_min，最小条纹数目
-	double X;	// LED灯具的真实位置,x坐标
-	double Y;	// LED灯具的真实位置,y坐标
-	};
+    int max;	// ID_max,最大条纹数目 	
+    int min;	// ID_min，最小条纹数目
+    double X;	// LED灯具的真实位置,x坐标
+    double Y;	// LED灯具的真实位置,y坐标
+    };
 
 
 struct LED{	// LED处理过程的结构体，用于存放图像处理过程中的信息以及处理结果
-	int ID;								//	ID,条纹数目
-	double imgLocalX, imgLocalY;	// LED在图像上的像素坐标位置，,x坐标,y坐标
-	double X, Y; 						// LED灯具的真实位置,x坐标,y坐标
-	Mat imgNext, matBinary;			
-	int X_min, X_max, Y_min, Y_max;
-	Mat imgCut;
-	vector<vector<Point> > contours;
-	vector<Vec4i> hierarchy;
-	int num;
-	};
+    int ID;								//	ID,条纹数目
+    double imgLocalX, imgLocalY;	// LED在图像上的像素坐标位置，,x坐标,y坐标
+    double X, Y; 						// LED灯具的真实位置,x坐标,y坐标
+    Mat imgNext, matBinary;			
+    int X_min, X_max, Y_min, Y_max;
+    Mat imgCut;
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    int num;
+    };
 
 
 

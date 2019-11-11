@@ -10,7 +10,7 @@
 #include <sstream>
 #include <boost/assign/list_of.hpp>
 #include <mvsdk/CameraApi.h> // 相机SDK的API头文件，相关API的说明在该文件中可以找到
- 
+
 
 using namespace cv;
 using namespace std;
@@ -48,7 +48,7 @@ sensor_msgs::CameraInfo get_default_camera_info_from_image(sensor_msgs::ImagePtr
 int main(int argc, char** argv)
 {
     std::cout<<"相机节点开始运行"<<std::endl;
-    
+
     int                     iCameraCounts = 1;
     int                     iStatus=-1;
     tSdkCameraDevInfo       tCameraEnumList;
@@ -65,8 +65,8 @@ int main(int argc, char** argv)
     // 以日后可以考虑使用Mat进行完全的重构。(重构了一下失败了，老子不管了～)
     int Image_size_output_flag = 1;
 
-    
- 
+
+
 
     CameraSdkInit(1);
     // 枚举设备，并建立设备列表
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 
     // 如果没有连接设备
     if(iCameraCounts==0){
-	std::cout<<"没有连接设备"<<std::endl;
+    std::cout<<"没有连接设备"<<std::endl;
         return -1;
     }
 
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 
     // 如果初始化失败
     if(iStatus!=CAMERA_STATUS_SUCCESS){
-	std::cout<<"初始化失败"<<std::endl;
+    std::cout<<"初始化失败"<<std::endl;
         return -1;
     }
 
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     CameraPlay(hCamera);
 
     /*其他的相机参数设置
-    例如: 
+    例如:
         CameraSetExposureTime   CameraGetExposureTime  设置/读取曝光时间
         CameraSetImageResolution  CameraGetImageResolution 设置/读取分辨率
         CameraSetGamma、CameraSetConrast、CameraSetGain等设置图像伽马、对比度、RGB数字增益等等。
@@ -113,21 +113,21 @@ int main(int argc, char** argv)
 
     CameraSetAnalogGain(hCamera,100);
     CameraSetExposureTime(hCamera,200);
-	//CameraSetIspOutFormat(hCamera,CAMERA_MEDIA_TYPE_MONO8);
+    //CameraSetIspOutFormat(hCamera,CAMERA_MEDIA_TYPE_MONO8);
     CameraSetMonochrome(hCamera,TRUE);
     CameraSetFrameSpeed(hCamera,2000);
-    
+
     tSdkImageResolution sRoiResolution;
     memset(&sRoiResolution,0,sizeof(sRoiResolution));
     sRoiResolution.iIndex = 0xff; // 设置成0xff表示自定义分辨率，设置成0到N表示选择预设分辨率
     sRoiResolution.iWidth = 2048; // 1024 X 768
-    sRoiResolution.iHeight = 1536; 
+    sRoiResolution.iHeight = 1536;
     sRoiResolution.uSkipMode = 0;
     // sRoiResolution.iWidth = 1024; // 1024 X 768
-    // sRoiResolution.iHeight = 768; 
+    // sRoiResolution.iHeight = 768;
     // sRoiResolution.uSkipMode = 1;
     // sRoiResolution.iWidth = 512; // 512 X 386
-    // sRoiResolution.iHeight = 386; 
+    // sRoiResolution.iHeight = 386;
     // sRoiResolution.uSkipMode = 4;
     sRoiResolution.iWidthFOV = 2048;
     sRoiResolution.iHeightFOV = 1536;
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
     sRoiResolution.uResampleMask = 0;
     CameraSetImageResolution(hCamera,&sRoiResolution);
 
-    
+
     if(tCapability.sIspCapacity.bMonoSensor){   // CAMERA_MEDIA_TYPE_MONO8和CAMERA_MEDIA_TYPE_RGB8 分别对应8位灰度图像和24位彩色图像。
             channel=1;
             CameraSetIspOutFormat(hCamera,CAMERA_MEDIA_TYPE_MONO8);
@@ -155,9 +155,9 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "image_publisher");
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
-    image_transport::CameraPublisher pub = it.advertiseCamera("mvcam/image", 1);  
+    image_transport::CameraPublisher pub = it.advertiseCamera("mvcam/image", 1);
     Mat frame;
-    sensor_msgs::ImagePtr msg;    
+    sensor_msgs::ImagePtr msg;
     sensor_msgs::CameraInfo cam_info_msg;
     std_msgs::Header header;
     header.frame_id = "mvcam";
@@ -166,21 +166,21 @@ int main(int argc, char** argv)
     // cam_info_msg = cam_info_manager.getCameraInfo();
 
     ros::Rate r(fps);
-    while (nh.ok()) 
+    while (nh.ok())
     {
-            /******************************************************/ 
+            /******************************************************/
         if(CameraGetImageBuffer(hCamera,&sFrameInfo,&pbyBuffer,1000) == CAMERA_STATUS_SUCCESS)//获得一帧图像数据。
-		{
-		    CameraImageProcess(hCamera, pbyBuffer, g_pRgbBuffer,&sFrameInfo);//将获得的相机原始输出图像数据进行处理，叠加饱和度、颜色增益和校正、降噪等处理效果，最后得到RGB888格式的图像数据。
-		    		    
-				if (iplImage)
-		        {
-		            cvReleaseImageHeader(&iplImage); // 指向释放标题的指针。
-		        }
-		           
+        {
+            CameraImageProcess(hCamera, pbyBuffer, g_pRgbBuffer,&sFrameInfo);//将获得的相机原始输出图像数据进行处理，叠加饱和度、颜色增益和校正、降噪等处理效果，最后得到RGB888格式的图像数据。
+
+                if (iplImage)
+                {
+                    cvReleaseImageHeader(&iplImage); // 指向释放标题的指针。
+                }
+
             iplImage = cvCreateImageHeader(cvSize(sFrameInfo.iWidth,sFrameInfo.iHeight),IPL_DEPTH_8U,channel);
             cvSetData(iplImage,g_pRgbBuffer,sFrameInfo.iWidth*channel);// 此处只是设置指针，无图像块数据拷贝，不需担心转换效率
-            /******************************************************/    
+            /******************************************************/
             #if 0
             #else
 
@@ -203,15 +203,15 @@ int main(int argc, char** argv)
             pub.publish(*msg, cam_info_msg, ros::Time::now());
             #endif
             waitKey(1);
-                                    
+
             // 在成功调用CameraGetImageBuffer后，必须调用CameraReleaseImageBuffer来释放获得的buffer。
-			// 否则再次调用CameraGetImageBuffer时，程序将被挂起一直阻塞，直到其他线程中调用CameraReleaseImageBuffer来释放了buffer
-			CameraReleaseImageBuffer(hCamera,pbyBuffer);
+            // 否则再次调用CameraGetImageBuffer时，程序将被挂起一直阻塞，直到其他线程中调用CameraReleaseImageBuffer来释放了buffer
+            CameraReleaseImageBuffer(hCamera,pbyBuffer);
 
-		}
+        }
 
-		ros::spinOnce();
-		r.sleep();
+        ros::spinOnce();
+        r.sleep();
     }
 
     CameraUnInit(hCamera);//注意，现反初始化后再free
@@ -242,15 +242,15 @@ int main(int argc, char** argv)
 //            中错误码的定义。
 /******************************************************/
 
-/******************************************************/    
+/******************************************************/
 // iplImage = cvCreateImageHeader(cvSize(width,height),depth,channels);
 // cvSetData(iplImage,data,step);
 //    首先由cvCreateImageHeader()创建IplImage图像头，制定图像的尺寸，深度和通道数；然后由
 //    cvSetData()根据 BYTE*图像数据指针设置IplImage图像头的数据，其中step指定该IplImage图像
 //    每行占的字节数，对于1通道的 IPL_DEPTH_8U图像，step可以等于width。
 //    当不再使用这个新图像时，要调用void cvReleaseImage( IplImage** image )将它的头和图像数据释放！
-/******************************************************/        
-    
+/******************************************************/
+
 /******************************************************/
 // 函数名   : CameraGetImageBuffer
 // 功能描述 : 获得一帧图像数据。为了提高效率，SDK在图像抓取时采用了零拷贝机制，
