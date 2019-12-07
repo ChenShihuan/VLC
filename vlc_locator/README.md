@@ -1,17 +1,26 @@
-这是三灯定位节点，源代码存放在src文件夹中，publisher.cpp是各定位节点源代码，其他是所依赖的函数
+这是定位节点，定位结果为相机镜头外侧镜片中心所在的位置
+源代码存放在src文件夹中，publisher.cpp是各定位节点源代码，其他是所依赖的函数
 
 1. 使用前请务必设置好相机和灯具坐标信息，代码段如下：
 
     以下位于vlcCommonInclude.hpp：
 
-    //焦距
-    #define focalLength 1.5
+        #define pi 3.1415926
 
-    //经过校正的相机中心
-    #define centerXofImage 630.4
-    #define centerYofImage 525.6
-    #define centerXofImageMax 1002.5
-    #define centerYofImageMax 852.5
+        // 灯具高度
+        #define HightofLED 150
+
+        // 焦距
+        #define focalLength 1.5
+
+        // 经过校正的相机中心
+
+        // 1280X960像素
+        #define centerXofImage 630.4
+        #define centerYofImage 525.6
+        // 2048X1536像素
+        #define centerXofImageMax 1002.5
+        #define centerYofImageMax 852.5
 
     以下位于各定位节点源代码publisher.cpp：
 
@@ -45,19 +54,17 @@
     在没有相机的环境下，使用图片进行调试时，为了避免改动量过大，请：
     1）将下面的代码段前一行注释掉，使用后一行来读取图片（因为该函数的输入参数为传递过来的img，所以在这里进行一个“欺骗”，将输入的图片架空）
         cv::Mat grayImage = img;
-        //cv::Mat grayImage = cv::imread("/home/chen/catkin_ws/src/-3030.BMP",0);
+        // cv::Mat grayImage = cv::imread("/home/chen/catkin_ws/src/-3030.BMP",0);
     2）运行一个图像发布节点，具体可以是诸如网络摄像头的节点等（这种程序包网络上一大堆可用的），将此代码段中的话题名称更改为所运行的图像话题的名称，或者将别人的话题名称改为camera/image，进行“欺骗性”图像输入（反正输入进来也是被架空了）
         IMAGE_LISTENER_and_LOCATOR()  
-        :it_(nh_) //构造函数  
+        :it_(nh_) // 构造函数  
         {  
-            image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); //定义图象接受器，订阅话题是“camera/image”
+            image_sub_ = it_.subscribe("/camera/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this); // 定义图象接受器，订阅话题是“camera/image”
             // 初始化输入输出窗口  
             // cv::namedWindow(INPUT);  
             // cv::namedWindow(OUTPUT);  
         }
     3）代码中有大量中间过程的图像输出代码，如需查看将其取消注释即可
- 
-
 
 
 （暂时无效）使用窗口界面查看坐标图像：rosrun image_view image_view image:=/locator/map_show
