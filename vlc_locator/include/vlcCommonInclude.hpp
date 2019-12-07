@@ -21,8 +21,10 @@
 // 灯具高度
 #define HightofLED 150
 
-// 焦距
-#define focalLength 1.5
+// 等效焦距
+// 等效焦距=焦距/分辨率压缩比
+// 例如，在1280X960像素下，f=4/(2048/1280)=2.5
+#define focalLength 2.5
 
 // 经过校正的相机中心
 
