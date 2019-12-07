@@ -6,12 +6,12 @@
   <joint name="vlc_joint" type="fixed">
     <parent link="base_link"/>
     <child link="base_vlc_mvcam"/>
-    <origin xyz="0.060 0 0.105" rpy="0 0 0"/>
+    <origin xyz="0.060 0 0.155" rpy="0 0 0"/>
   </joint>
 
   <link name="base_vlc_mvcam">
     <visual>
-      <origin xyz="0.0 0 -0.03" rpy="0 0 0"/>
+      <origin xyz="0.0 0 -0.08" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://turtlebot3_description/meshes/sensors/mvcam.stl" scale="0.001 0.001 0.001"/>
       </geometry>
