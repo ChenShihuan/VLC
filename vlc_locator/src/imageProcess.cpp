@@ -1,18 +1,23 @@
-//-----------------------------------【头文件包含部分】---------------------------------------  
-//      描述：包含程序所依赖的头文件
-//----------------------------------------------------------------------------------------------  
-#include <imageProcess.hpp>
+/*
+// Copyright 2019 
+// R&C Group
+*/
 
-//-----------------------------------------------------------------------------------------------
-//**********************************************************************************************
-//
-//      *********************             【图像处理函数】              *******************
-//
-//**********************************************************************************************
-//-----------------------------------------------------------------------------------------------
+// -----------------------------------【头文件包含部分】---------------------------------------  
+//     描述：包含程序所依赖的头文件
+// ----------------------------------------------------------------------------------------------  
+#include "imageProcess.hpp"
+
+// -----------------------------------------------------------------------------------------------
+// **********************************************************************************************
+// 
+//     *********************             【图像处理函数】              *******************
+// 
+// **********************************************************************************************
+// -----------------------------------------------------------------------------------------------
 
 
-//threshold自动阈值，类似matlab中的graythresh。为了二值化
+// threshold自动阈值，类似matlab中的graythresh。为了二值化
 double getThreshVal_Otsu_8u(const cv::Mat& _src)
 {
     cv::Size size = _src.size();
@@ -72,72 +77,72 @@ double getThreshVal_Otsu_8u(const cv::Mat& _src)
 
 
 
-//将图片中的LED逐个进行分割
+// 将图片中的LED逐个进行分割
 void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& imgNext)
 {
     Mat temp1= _img.clone();
     
-    //求xmin与xmax
-    int row1 = temp1.rows;//行数
-    int col1 = temp1.cols;//列
-    int j = 0;//注意是从0开始
-    while (j < col1)//j的初值为1
+    // 求xmin与xmax
+    int row1 = temp1.rows;// 行数
+    int col1 = temp1.cols;// 列
+    int j = 0;// 注意是从0开始
+    while (j < col1)// j的初值为1
     {
         double sum1 = 0.0;
-        for (int i = 0;i < row1;i++)//注意没有等于号
+        for (int i = 0;i < row1;i++)// 注意没有等于号
         {
-            uchar* data1 = temp1.ptr<uchar>(i);//ptr<uchar>(i)[j]访问第i行第j列的像素
+            uchar* data1 = temp1.ptr<uchar>(i);// ptr<uchar>(i)[j]访问第i行第j列的像素
             sum1 = data1[j] + sum1;
-        }//将第j列的每一行加完
-        if (sum1>-0.000001 && sum1< 0.000001)//double类型，不能写==0
+        }// 将第j列的每一行加完
+        if (sum1>-0.000001 && sum1< 0.000001)// double类型，不能写==0
         {
             j++;
         }
         else
         {
-            break;//跳出这个while循环
+            break;// 跳出这个while循环
         }
 
     }
     X_min = j;
 
-    while (j < col1)//j的初值为X_min 
+    while (j < col1)// j的初值为X_min 
     {
         double sum1 = 0.0;
         for (int i = 0;i < row1;i++)
         {
-            uchar* data1 = temp1.ptr<uchar>(i);//ptr<uchar>(i)[j]访问第i行第j列的像素
+            uchar* data1 = temp1.ptr<uchar>(i);// ptr<uchar>(i)[j]访问第i行第j列的像素
             sum1 = data1[j] + sum1;
-        }//将第j列的每一行XXXXXX加完
+        }// 将第j列的每一行XXXXXX加完
         if (sum1 != 0)
         {
             j++;
         }
         else
         {
-            break;//跳出这个while循环
+            break;// 跳出这个while循环
         }
     }
     X_max = j;
 
-    //进行切割
+    // 进行切割
     Mat imgCut = temp1(Rect(X_min, 0, X_max - X_min, row1));
     Mat temp = imgCut.clone();
 
 
 
-    //求ymin与ymax
-    int row = temp.rows;//行数
-    int col = temp.cols;//列
+    // 求ymin与ymax
+    int row = temp.rows;// 行数
+    int col = temp.cols;// 列
     int i = 0;
-    while (i < row)//i的初值为1
+    while (i < row)// i的初值为1
     {
         double sum = 0.0;
         uchar* data = temp.ptr<uchar>(i);
-        for (j = 0;j < col;j++)//对每一行中的每一列像素进行相加，ptr<uchar>(i)[j]访问第i行第j列的像素
+        for (j = 0;j < col;j++)// 对每一行中的每一列像素进行相加，ptr<uchar>(i)[j]访问第i行第j列的像素
         {
             sum = data[j] + sum;
-        }//最终获得第i行的列和
+        }// 最终获得第i行的列和
         if (sum>-0.000001 && sum < 0.000001)
         {
             i++;
@@ -145,19 +150,19 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
         else
         {
             Y_min = i;
-            break;//跳出这个while循环
+            break;// 跳出这个while循环
         }
     }
     Y_min = i;
 
-    while (i <= row-16)//i的初值为Y_min
+    while (i <= row-16)// i的初值为Y_min
     {
         double sum = 0.0;
         uchar* data = temp.ptr<uchar>(i);
-        for (j = 0;j < col;j++)//对每一行中的每一列像素进行相加，ptr<uchar>(i)[j]访问第i行第j列的像素
+        for (j = 0;j < col;j++)// 对每一行中的每一列像素进行相加，ptr<uchar>(i)[j]访问第i行第j列的像素
         {
             sum = data[j] + sum;
-        }//最终获得第i行的列和
+        }// 最终获得第i行的列和
         if (sum != 0)
         {
             i++;
@@ -167,16 +172,16 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
             double sum6 = 0.0;
             int iiii = i + 16;
             uchar* data = temp.ptr<uchar>(iiii);
-            for (j = 0;j < col;j++)//对每一行中的每一列像素进行相加，ptr<uchar>(i)[j]访问第i行第j列的像素
+            for (j = 0;j < col;j++)// 对每一行中的每一列像素进行相加，ptr<uchar>(i)[j]访问第i行第j列的像素
             {
                 sum6 = data[j] + sum6;
-            }//最终获得第i行之后20行，即iiii的列和
-            if (sum6 > -0.000001 && sum6 < 0.000001)//如果仍然为0，才跳出
+            }// 最终获得第i行之后20行，即iiii的列和
+            if (sum6 > -0.000001 && sum6 < 0.000001)// 如果仍然为0，才跳出
             {
                 Y_max = i;
-                goto logo;//跳出这个while循环
+                goto logo;// 跳出这个while循环
             }
-            else//否则继续执行
+            else// 否则继续执行
             {
                 i++;
             }
@@ -185,14 +190,14 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
     logo:
     Y_max = i;
 
-    //进行切割
+    // 进行切割
     Mat imgCut1 = temp(Rect(0, Y_min, col, Y_max - Y_min));
-    imgNext = imgCut1.clone();   //clone函数创建新的图片 
+    imgNext = imgCut1.clone();   // clone函数创建新的图片 
 }
 
 
 
-//起到MATLAB中，bwareaopen的功能，去除连通区域少于n的部分
+// 起到MATLAB中，bwareaopen的功能，去除连通区域少于n的部分
 void bwareaopen(Mat &data, int n)
 {
     Mat labels, stats, centroids;
@@ -224,8 +229,8 @@ void bwareaopen(Mat &data, int n)
 
 
 
-//实现对图像的细化
-void thinImage(Mat &srcimage)//单通道、二值化后的图像  
+// 实现对图像的细化
+void thinImage(Mat &srcimage)// 单通道、二值化后的图像  
 {
     using namespace std;
 
