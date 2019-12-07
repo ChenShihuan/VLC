@@ -6,7 +6,7 @@
 
 #define MAX_CROSS_LINE 9
 
-//相机的句柄类型定义
+// 相机的句柄类型定义
 typedef int CameraHandle;
 typedef int INT;
 typedef long LONG;
@@ -32,78 +32,78 @@ typedef void* HMODULE;
 
 #define TRUE 1
 #define FALSE 0
-//图像查表变换的方式
+// 图像查表变换的方式
 typedef enum
 {
-    LUTMODE_PARAM_GEN=0,//通过调节参数动态生成LUT表
-    LUTMODE_PRESET,     //使用预设的LUT表
-    LUTMODE_USER_DEF    //使用用户自定义的LUT表
+    LUTMODE_PARAM_GEN=0,// 通过调节参数动态生成LUT表
+    LUTMODE_PRESET,     // 使用预设的LUT表
+    LUTMODE_USER_DEF    // 使用用户自定义的LUT表
 }emSdkLutMode;
 
-//相机的视频流控制
+// 相机的视频流控制
 typedef enum
 {
-    RUNMODE_PLAY=0,    //正常预览，捕获到图像就显示。（如果相机处于触发模式，则会等待触发帧的到来）
-    RUNMODE_PAUSE,     //暂停，会暂停相机的图像输出，同时也不会去捕获图像
-    RUNMODE_STOP       //停止相机工作。反初始化后，相机就处于停止模式
+    RUNMODE_PLAY=0,    // 正常预览，捕获到图像就显示。（如果相机处于触发模式，则会等待触发帧的到来）
+    RUNMODE_PAUSE,     // 暂停，会暂停相机的图像输出，同时也不会去捕获图像
+    RUNMODE_STOP       // 停止相机工作。反初始化后，相机就处于停止模式
 }emSdkRunMode;
 
-//SDK内部显示接口的显示方式
+// SDK内部显示接口的显示方式
 typedef enum
 {
-    DISPLAYMODE_SCALE=0, //缩放显示模式，缩放到显示控件的尺寸
-    DISPLAYMODE_REAL     //1:1显示模式，当图像尺寸大于显示控件的尺寸时，只显示局部
+    DISPLAYMODE_SCALE=0, // 缩放显示模式，缩放到显示控件的尺寸
+    DISPLAYMODE_REAL     // 1:1显示模式，当图像尺寸大于显示控件的尺寸时，只显示局部
 }emSdkDisplayMode;
 
-//录像状态
+// 录像状态
 typedef enum
 {
-  RECORD_STOP = 0,  //停止
-  RECORD_START,     //录像中
-  RECORD_PAUSE      //暂停
+  RECORD_STOP = 0,  // 停止
+  RECORD_START,     // 录像中
+  RECORD_PAUSE      // 暂停
 }emSdkRecordMode;
 
-//图像的镜像操作
+// 图像的镜像操作
 typedef enum
 {
-    MIRROR_DIRECTION_HORIZONTAL = 0,//水平镜像
-    MIRROR_DIRECTION_VERTICAL       //垂直镜像
+    MIRROR_DIRECTION_HORIZONTAL = 0,// 水平镜像
+    MIRROR_DIRECTION_VERTICAL       // 垂直镜像
 }emSdkMirrorDirection;
 
-//相机视频的帧率
+// 相机视频的帧率
 typedef enum
 {
-    FRAME_SPEED_LOW = 0,  //低速模式
-    FRAME_SPEED_NORMAL,   //普通模式
-    FRAME_SPEED_HIGH,     //高速模式(需要较高的传输带宽,多设备共享传输带宽时会对帧率的稳定性有影响)
-    FRAME_SPEED_SUPER     //超高速模式(需要较高的传输带宽,多设备共享传输带宽时会对帧率的稳定性有影响)
+    FRAME_SPEED_LOW = 0,  // 低速模式
+    FRAME_SPEED_NORMAL,   // 普通模式
+    FRAME_SPEED_HIGH,     // 高速模式(需要较高的传输带宽,多设备共享传输带宽时会对帧率的稳定性有影响)
+    FRAME_SPEED_SUPER     // 超高速模式(需要较高的传输带宽,多设备共享传输带宽时会对帧率的稳定性有影响)
 }emSdkFrameSpeed;
 
-//保存文件的格式类型
+// 保存文件的格式类型
 typedef enum
 {
-    FILE_JPG = 1,//JPG
-    FILE_BMP = 2,//BMP
-    FILE_RAW = 4,//相机输出的bayer格式文件,对于不支持bayer格式输出相机，无法保存为该格式
-    FILE_PNG = 8 //PNG
+    FILE_JPG = 1,// JPG
+    FILE_BMP = 2,// BMP
+    FILE_RAW = 4,// 相机输出的bayer格式文件,对于不支持bayer格式输出相机，无法保存为该格式
+    FILE_PNG = 8 // PNG
 }emSdkFileType;
 
-//相机中的图像传感器的工作模式
+// 相机中的图像传感器的工作模式
 typedef enum
 {
-    CONTINUATION = 0,//连续采集模式
-    SOFT_TRIGGER,    //软件触发模式，由软件发送指令后，传感器开始采集指定帧数的图像，采集完成后，停止输出
-    EXTERNAL_TRIGGER //硬件触发模式，当接收到外部信号，传感器开始采集指定帧数的图像，采集完成后，停止输出
+    CONTINUATION = 0,// 连续采集模式
+    SOFT_TRIGGER,    // 软件触发模式，由软件发送指令后，传感器开始采集指定帧数的图像，采集完成后，停止输出
+    EXTERNAL_TRIGGER // 硬件触发模式，当接收到外部信号，传感器开始采集指定帧数的图像，采集完成后，停止输出
 } emSdkSnapMode;
 
-//自动曝光时抗频闪的频闪
+// 自动曝光时抗频闪的频闪
 typedef enum
 {
-    LIGHT_FREQUENCY_50HZ = 0,//50HZ,一般的灯光都是50HZ
-    LIGHT_FREQUENCY_60HZ     //60HZ,主要是指显示器的
+    LIGHT_FREQUENCY_50HZ = 0,// 50HZ,一般的灯光都是50HZ
+    LIGHT_FREQUENCY_60HZ     // 60HZ,主要是指显示器的
 }emSdkLightFrequency;
 
-//相机的配置参数，分为A,B,C,D 4组进行保存。
+// 相机的配置参数，分为A,B,C,D 4组进行保存。
 typedef enum
 {
     PARAMETER_TEAM_DEFAULT = 0xff,
@@ -140,14 +140,14 @@ PARAM_MODE_BY_NAME方式;如果您希望每台MV-U300都使用不同的参数文
 */
 typedef enum
 {
-  PARAM_MODE_BY_MODEL = 0,  //根据相机型号名从文件中加载参数，例如MV-U300
-  PARAM_MODE_BY_NAME,       //根据设备昵称(tSdkCameraDevInfo.acFriendlyName)从文件中加载参数，例如MV-U300,该昵称可自定义
-  PARAM_MODE_BY_SN,         //根据设备的唯一序列号从文件中加载参数，序列号在出厂时已经写入设备，每台相机拥有不同的序列号。
-  PARAM_MODE_IN_DEVICE      //从设备的固态存储器中加载参数。不是所有的型号都支持从相机中读写参数组，由tSdkCameraCapbility.bParamInDevice决定
+  PARAM_MODE_BY_MODEL = 0,  // 根据相机型号名从文件中加载参数，例如MV-U300
+  PARAM_MODE_BY_NAME,       // 根据设备昵称(tSdkCameraDevInfo.acFriendlyName)从文件中加载参数，例如MV-U300,该昵称可自定义
+  PARAM_MODE_BY_SN,         // 根据设备的唯一序列号从文件中加载参数，序列号在出厂时已经写入设备，每台相机拥有不同的序列号。
+  PARAM_MODE_IN_DEVICE      // 从设备的固态存储器中加载参数。不是所有的型号都支持从相机中读写参数组，由tSdkCameraCapbility.bParamInDevice决定
 }emSdkParameterMode;
 
 
-//SDK生成的相机配置页面掩码值
+// SDK生成的相机配置页面掩码值
 typedef enum
 {
   PROP_SHEET_INDEX_EXPOSURE = 0,
@@ -162,80 +162,80 @@ typedef enum
   PROP_SHEET_INDEX_DEVICE_INFO
 }emSdkPropSheetMask;
 
-//SDK生成的相机配置页面的回调消息类型
+// SDK生成的相机配置页面的回调消息类型
 typedef enum
 {
-  SHEET_MSG_LOAD_PARAM_DEFAULT = 0, //参数被恢复成默认后，触发该消息
-  SHEET_MSG_LOAD_PARAM_GROUP,       //加载指定参数组，触发该消息
-  SHEET_MSG_LOAD_PARAM_FROMFILE,    //从指定文件加载参数后，触发该消息
-  SHEET_MSG_SAVE_PARAM_GROUP        //当前参数组被保存时，触发该消息
+  SHEET_MSG_LOAD_PARAM_DEFAULT = 0, // 参数被恢复成默认后，触发该消息
+  SHEET_MSG_LOAD_PARAM_GROUP,       // 加载指定参数组，触发该消息
+  SHEET_MSG_LOAD_PARAM_FROMFILE,    // 从指定文件加载参数后，触发该消息
+  SHEET_MSG_SAVE_PARAM_GROUP        // 当前参数组被保存时，触发该消息
 }emSdkPropSheetMsg;
 
-//可视化选择参考窗口的类型
+// 可视化选择参考窗口的类型
 typedef enum
 {
   REF_WIN_AUTO_EXPOSURE = 0,
   REF_WIN_WHITE_BALANCE,
 }emSdkRefWinType;
 
-//可视化选择参考窗口的类型
+// 可视化选择参考窗口的类型
 typedef enum
 {
   RES_MODE_PREVIEW = 0,
   RES_MODE_SNAPSHOT,
 }emSdkResolutionMode;
 
-//白平衡时色温模式
+// 白平衡时色温模式
 typedef enum
 {
-  CT_MODE_AUTO = 0, //自动识别色温
-  CT_MODE_PRESET,   //使用指定的预设色温
-  CT_MODE_USER_DEF  //自定义色温(增益和矩阵)
+  CT_MODE_AUTO = 0, // 自动识别色温
+  CT_MODE_PRESET,   // 使用指定的预设色温
+  CT_MODE_USER_DEF  // 自定义色温(增益和矩阵)
 }emSdkClrTmpMode;
 
-//LUT的颜色通道
+// LUT的颜色通道
 typedef enum
 {
-  LUT_CHANNEL_ALL = 0,//R,B,G三通道同时调节
-  LUT_CHANNEL_RED,    //红色通道
-  LUT_CHANNEL_GREEN,  //绿色通道
-  LUT_CHANNEL_BLUE,   //蓝色通道
+  LUT_CHANNEL_ALL = 0,// R,B,G三通道同时调节
+  LUT_CHANNEL_RED,    // 红色通道
+  LUT_CHANNEL_GREEN,  // 绿色通道
+  LUT_CHANNEL_BLUE,   // 蓝色通道
 }emSdkLutChannel;
 
-//ISP处理单元
+// ISP处理单元
 typedef enum
 {
-  ISP_PROCESSSOR_PC = 0,//使用PC的软件ISP模块
-  ISP_PROCESSSOR_DEVICE //使用相机自带的硬件ISP模块
+  ISP_PROCESSSOR_PC = 0,// 使用PC的软件ISP模块
+  ISP_PROCESSSOR_DEVICE // 使用相机自带的硬件ISP模块
 }emSdkIspProcessor;
 
-//闪光灯信号控制方式
+// 闪光灯信号控制方式
 typedef enum
 {
-  STROBE_SYNC_WITH_TRIG_AUTO = 0,    //和触发信号同步，触发后，相机进行曝光时，自动生成STROBE信号。此时，有效极性可设置(CameraSetStrobePolarity)。
-  STROBE_SYNC_WITH_TRIG_MANUAL,      //和触发信号同步，触发后，STROBE延时指定的时间后(CameraSetStrobeDelayTime)，再持续指定时间的脉冲(CameraSetStrobePulseWidth)，有效极性可设置(CameraSetStrobePolarity)。
-  STROBE_ALWAYS_HIGH,                //始终为高，忽略STROBE信号的其他设置
-  STROBE_ALWAYS_LOW                  //始终为低，忽略STROBE信号的其他设置
+  STROBE_SYNC_WITH_TRIG_AUTO = 0,    // 和触发信号同步，触发后，相机进行曝光时，自动生成STROBE信号。此时，有效极性可设置(CameraSetStrobePolarity)。
+  STROBE_SYNC_WITH_TRIG_MANUAL,      // 和触发信号同步，触发后，STROBE延时指定的时间后(CameraSetStrobeDelayTime)，再持续指定时间的脉冲(CameraSetStrobePulseWidth)，有效极性可设置(CameraSetStrobePolarity)。
+  STROBE_ALWAYS_HIGH,                // 始终为高，忽略STROBE信号的其他设置
+  STROBE_ALWAYS_LOW                  // 始终为低，忽略STROBE信号的其他设置
 }emStrobeControl;
 
-//硬件外触发的信号种类
+// 硬件外触发的信号种类
 typedef enum
 {
-  EXT_TRIG_LEADING_EDGE = 0,     //上升沿触发，默认为该方式
-  EXT_TRIG_TRAILING_EDGE,        //下降沿触发
-  EXT_TRIG_HIGH_LEVEL,           //高电平触发,电平宽度决定曝光时间，仅部分型号的相机支持电平触发方式。
-  EXT_TRIG_LOW_LEVEL             //低电平触发,
+  EXT_TRIG_LEADING_EDGE = 0,     // 上升沿触发，默认为该方式
+  EXT_TRIG_TRAILING_EDGE,        // 下降沿触发
+  EXT_TRIG_HIGH_LEVEL,           // 高电平触发,电平宽度决定曝光时间，仅部分型号的相机支持电平触发方式。
+  EXT_TRIG_LOW_LEVEL             // 低电平触发,
 }emExtTrigSignal;
 
-//硬件外触发时的快门方式
+// 硬件外触发时的快门方式
 typedef enum
 {
-  EXT_TRIG_EXP_STANDARD = 0,     //标准方式，默认为该方式。
-  EXT_TRIG_EXP_GRR,              //全局复位方式，部分滚动快门的CMOS型号的相机支持该方式，配合外部机械快门，可以达到全局快门的效果，适合拍高速运动的物体
+  EXT_TRIG_EXP_STANDARD = 0,     // 标准方式，默认为该方式。
+  EXT_TRIG_EXP_GRR,              // 全局复位方式，部分滚动快门的CMOS型号的相机支持该方式，配合外部机械快门，可以达到全局快门的效果，适合拍高速运动的物体
 }emExtTrigShutterMode;
 
 
-//相机的设备信息
+// 相机的设备信息
 typedef struct
 {
     char acProductSeries[32];   // 产品系列
@@ -249,8 +249,8 @@ typedef struct
     UINT uInstance;             // 该型号相机在该电脑上的实例索引号，用于区分同型号多相机
 } tSdkCameraDevInfo;
 
-//tSdkResolutionRange结构体中SKIP、 BIN、RESAMPLE模式的掩码值
-#define MASK_2X2_HD     (1<<0)    //硬件SKIP、BIN、重采样 2X2
+// tSdkResolutionRange结构体中SKIP、 BIN、RESAMPLE模式的掩码值
+#define MASK_2X2_HD     (1<<0)    // 硬件SKIP、BIN、重采样 2X2
 #define MASK_3X3_HD     (1<<1)
 #define MASK_4X4_HD     (1<<2)
 #define MASK_5X5_HD     (1<<3)
@@ -266,7 +266,7 @@ typedef struct
 #define MASK_15X15_HD   (1<<13)
 #define MASK_16X16_HD   (1<<14)
 #define MASK_17X17_HD   (1<<15)
-#define MASK_2X2_SW     (1<<16)   //硬件SKIP、BIN、重采样 2X2
+#define MASK_2X2_SW     (1<<16)   // 硬件SKIP、BIN、重采样 2X2
 #define MASK_3X3_SW     (1<<17)
 #define MASK_4X4_SW     (1<<18)
 #define MASK_5X5_SW     (1<<19)
@@ -283,21 +283,21 @@ typedef struct
 #define MASK_16X16_SW   (1<<30)
 #define MASK_17X17_SW   (1<<31)
 
-//相机的分辨率设定范围，用于构件UI
+// 相机的分辨率设定范围，用于构件UI
 typedef struct
 {
-  INT iHeightMax;             //图像最大高度
-  INT iHeightMin;             //图像最小高度
-  INT iWidthMax;              //图像最大宽度
-  INT iWidthMin;              //图像最小宽度
-  UINT uSkipModeMask;         //SKIP模式掩码，为0，表示不支持SKIP 。bit0为1,表示支持SKIP 2x2 ;bit1为1，表示支持SKIP 3x3....
-  UINT uBinSumModeMask;       //BIN(求和)模式掩码，为0，表示不支持BIN 。bit0为1,表示支持BIN 2x2 ;bit1为1，表示支持BIN 3x3....
-  UINT uBinAverageModeMask;   //BIN(求均值)模式掩码，为0，表示不支持BIN 。bit0为1,表示支持BIN 2x2 ;bit1为1，表示支持BIN 3x3....
-  UINT uResampleMask;         //硬件重采样的掩码
+  INT iHeightMax;             // 图像最大高度
+  INT iHeightMin;             // 图像最小高度
+  INT iWidthMax;              // 图像最大宽度
+  INT iWidthMin;              // 图像最小宽度
+  UINT uSkipModeMask;         // SKIP模式掩码，为0，表示不支持SKIP 。bit0为1,表示支持SKIP 2x2 ;bit1为1，表示支持SKIP 3x3....
+  UINT uBinSumModeMask;       // BIN(求和)模式掩码，为0，表示不支持BIN 。bit0为1,表示支持BIN 2x2 ;bit1为1，表示支持BIN 3x3....
+  UINT uBinAverageModeMask;   // BIN(求均值)模式掩码，为0，表示不支持BIN 。bit0为1,表示支持BIN 2x2 ;bit1为1，表示支持BIN 3x3....
+  UINT uResampleMask;         // 硬件重采样的掩码
 } tSdkResolutionRange;
 
 
-//相机的分辨率描述
+// 相机的分辨率描述
 typedef struct
 {
   INT     iIndex;             // 索引号，[0,N]表示预设的分辨率(N 为预设分辨率的最大个数，一般不超过20),OXFF 表示自定义分辨率(ROI)
@@ -318,136 +318,136 @@ typedef struct
   INT     iHeightZoomSw;      // 软件缩放的高度,不需要进行此操作的分辨率，此变量设置为0.
 } tSdkImageResolution;
 
-//相机白平衡色温模式描述信息
+// 相机白平衡色温模式描述信息
 typedef struct
 {
     INT  iIndex;            // 模式索引号
     char acDescription[32]; // 描述信息
 } tSdkColorTemperatureDes;
 
-//相机帧率描述信息
+// 相机帧率描述信息
 typedef struct
 {
     INT  iIndex;             // 帧率索引号，一般0对应于低速模式，1对应于普通模式，2对应于高速模式
     char acDescription[32];  // 描述信息
 } tSdkFrameSpeed;
 
-//相机曝光功能范围定义
+// 相机曝光功能范围定义
 typedef struct
 {
-    UINT  uiTargetMin;      //自动曝光亮度目标最小值
-    UINT  uiTargetMax;      //自动曝光亮度目标最大值
-    UINT  uiAnalogGainMin;  //模拟增益的最小值，单位为fAnalogGainStep中定义
-    UINT  uiAnalogGainMax;  //模拟增益的最大值，单位为fAnalogGainStep中定义
-    float fAnalogGainStep;  //模拟增益每增加1，对应的增加的放大倍数。例如，uiAnalogGainMin一般为16，fAnalogGainStep一般为0.125，那么最小放大倍数就是16*0.125 = 2倍
-    UINT  uiExposeTimeMin;  //手动模式下，曝光时间的最小值，单位:行。根据CameraGetExposureLineTime可以获得一行对应的时间(微秒),从而得到整帧的曝光时间
-    UINT  uiExposeTimeMax;  //手动模式下，曝光时间的最大值，单位:行
+    UINT  uiTargetMin;      // 自动曝光亮度目标最小值
+    UINT  uiTargetMax;      // 自动曝光亮度目标最大值
+    UINT  uiAnalogGainMin;  // 模拟增益的最小值，单位为fAnalogGainStep中定义
+    UINT  uiAnalogGainMax;  // 模拟增益的最大值，单位为fAnalogGainStep中定义
+    float fAnalogGainStep;  // 模拟增益每增加1，对应的增加的放大倍数。例如，uiAnalogGainMin一般为16，fAnalogGainStep一般为0.125，那么最小放大倍数就是16*0.125 = 2倍
+    UINT  uiExposeTimeMin;  // 手动模式下，曝光时间的最小值，单位:行。根据CameraGetExposureLineTime可以获得一行对应的时间(微秒),从而得到整帧的曝光时间
+    UINT  uiExposeTimeMax;  // 手动模式下，曝光时间的最大值，单位:行
 } tSdkExpose;
 
-//触发模式描述
+// 触发模式描述
 typedef struct
 {
-  INT   iIndex;            //模式索引号
-  char  acDescription[32]; //该模式的描述信息
+  INT   iIndex;            // 模式索引号
+  char  acDescription[32]; // 该模式的描述信息
 } tSdkTrigger;
 
-//传输分包大小描述(主要是针对网络相机有效)
+// 传输分包大小描述(主要是针对网络相机有效)
 typedef struct
 {
-    INT  iIndex;              //分包大小索引号
-    char acDescription[32];   //对应的描述信息
+    INT  iIndex;              // 分包大小索引号
+    char acDescription[32];   // 对应的描述信息
     UINT iPackSize;
 } tSdkPackLength;
 
-//预设的LUT表描述
+// 预设的LUT表描述
 typedef struct
 {
-    INT  iIndex;                //编号
-    char acDescription[32];     //描述信息
+    INT  iIndex;                // 编号
+    char acDescription[32];     // 描述信息
 } tSdkPresetLut;
 
-//AE算法描述
+// AE算法描述
 typedef struct
 {
-    INT  iIndex;                //编号
-    char acDescription[32];     //描述信息
+    INT  iIndex;                // 编号
+    char acDescription[32];     // 描述信息
 } tSdkAeAlgorithm;
 
-//RAW转RGB算法描述
+// RAW转RGB算法描述
 typedef struct
 {
-    INT  iIndex;                //编号
-    char acDescription[32];     //描述信息
+    INT  iIndex;                // 编号
+    char acDescription[32];     // 描述信息
 } tSdkBayerDecodeAlgorithm;
 
 
-//帧率统计信息
+// 帧率统计信息
 typedef struct
 {
-  INT iTotal;           //当前采集的总帧数（包括错误帧）
-    INT iCapture;       //当前采集的有效帧的数量
-    INT iLost;          //当前丢帧的数量
+  INT iTotal;           // 当前采集的总帧数（包括错误帧）
+    INT iCapture;       // 当前采集的有效帧的数量
+    INT iLost;          // 当前丢帧的数量
 } tSdkFrameStatistic;
 
-//相机输出的图像数据格式
+// 相机输出的图像数据格式
 typedef struct
 {
-  INT     iIndex;             //格式种类编号
-  char    acDescription[32];  //描述信息
-  UINT    iMediaType;         //对应的图像格式编码，如CAMERA_MEDIA_TYPE_BAYGR8，在本文件中有定义。
+  INT     iIndex;             // 格式种类编号
+  char    acDescription[32];  // 描述信息
+  UINT    iMediaType;         // 对应的图像格式编码，如CAMERA_MEDIA_TYPE_BAYGR8，在本文件中有定义。
 } tSdkMediaType;
 
-//伽马的设定范围
+// 伽马的设定范围
 typedef struct
 {
-  INT iMin;       //最小值
-  INT iMax;       //最大值
+  INT iMin;       // 最小值
+  INT iMax;       // 最大值
 } tGammaRange;
 
-//对比度的设定范围
+// 对比度的设定范围
 typedef struct
 {
-    INT iMin;   //最小值
-    INT iMax;   //最大值
+    INT iMin;   // 最小值
+    INT iMax;   // 最大值
 } tContrastRange;
 
-//RGB三通道数字增益的设定范围
+// RGB三通道数字增益的设定范围
 typedef struct
 {
-    INT iRGainMin;    //红色增益的最小值
-    INT iRGainMax;    //红色增益的最大值
-    INT iGGainMin;    //绿色增益的最小值
-    INT iGGainMax;    //绿色增益的最大值
-    INT iBGainMin;    //蓝色增益的最小值
-    INT iBGainMax;    //蓝色增益的最大值
+    INT iRGainMin;    // 红色增益的最小值
+    INT iRGainMax;    // 红色增益的最大值
+    INT iGGainMin;    // 绿色增益的最小值
+    INT iGGainMax;    // 绿色增益的最大值
+    INT iBGainMin;    // 蓝色增益的最小值
+    INT iBGainMax;    // 蓝色增益的最大值
 } tRgbGainRange;
 
-//饱和度设定的范围
+// 饱和度设定的范围
 typedef struct
 {
-    INT iMin;   //最小值
-    INT iMax;   //最大值
+    INT iMin;   // 最小值
+    INT iMax;   // 最大值
 } tSaturationRange;
 
-//锐化的设定范围
+// 锐化的设定范围
 typedef struct
 {
-  INT iMin;   //最小值
-  INT iMax;   //最大值
+  INT iMin;   // 最小值
+  INT iMax;   // 最大值
 } tSharpnessRange;
 
-//ISP模块的使能信息
+// ISP模块的使能信息
 typedef struct
 {
-    BOOL bMonoSensor;       //表示该型号相机是否为黑白相机,如果是黑白相机，则颜色相关的功能都无法调节
-    BOOL bWbOnce;           //表示该型号相机是否支持手动白平衡功能
-    BOOL bAutoWb;           //表示该型号相机是否支持自动白平衡功能
-    BOOL bAutoExposure;     //表示该型号相机是否支持自动曝光功能
-    BOOL bManualExposure;   //表示该型号相机是否支持手动曝光功能
-    BOOL bAntiFlick;        //表示该型号相机是否支持抗频闪功能
-    BOOL bDeviceIsp;        //表示该型号相机是否支持硬件ISP功能
-    BOOL bForceUseDeviceIsp;//bDeviceIsp和bForceUseDeviceIsp同时为TRUE时，表示强制只用硬件ISP，不可取消。
-    BOOL bZoomHD;           //相机硬件是否支持图像缩放输出(只能是缩小)。
+    BOOL bMonoSensor;       // 表示该型号相机是否为黑白相机,如果是黑白相机，则颜色相关的功能都无法调节
+    BOOL bWbOnce;           // 表示该型号相机是否支持手动白平衡功能
+    BOOL bAutoWb;           // 表示该型号相机是否支持自动白平衡功能
+    BOOL bAutoExposure;     // 表示该型号相机是否支持自动曝光功能
+    BOOL bManualExposure;   // 表示该型号相机是否支持手动曝光功能
+    BOOL bAntiFlick;        // 表示该型号相机是否支持抗频闪功能
+    BOOL bDeviceIsp;        // 表示该型号相机是否支持硬件ISP功能
+    BOOL bForceUseDeviceIsp;// bDeviceIsp和bForceUseDeviceIsp同时为TRUE时，表示强制只用硬件ISP，不可取消。
+    BOOL bZoomHD;           // 相机硬件是否支持图像缩放输出(只能是缩小)。
 } tSdkIspCapacity;
 
 /* 定义整合的设备描述信息，这些信息可以用于动态构建UI */
@@ -507,7 +507,7 @@ typedef struct
 } tSdkCameraCapbility;
 
 
-//图像帧头信息
+// 图像帧头信息
 typedef struct
 {
   UINT    uiMediaType;    // 图像格式,Image Format
@@ -528,22 +528,22 @@ typedef struct
   float   fBgain;         // 该帧图像处理的蓝色数字增益倍数，对于黑白相机无意义，为1
 }tSdkFrameHead;
 
-//图像帧描述
+// 图像帧描述
 typedef struct sCameraFrame
 {
-  tSdkFrameHead   head;     //帧头
-  BYTE *          pBuffer;  //数据区
+  tSdkFrameHead   head;     // 帧头
+  BYTE *          pBuffer;  // 数据区
 }tSdkFrame;
 
-//图像捕获的回调函数定义
+// 图像捕获的回调函数定义
 typedef void (*CAMERA_SNAP_PROC)(CameraHandle hCamera, BYTE *pFrameBuffer, tSdkFrameHead* pFrameHead,PVOID pContext);
 
-//SDK生成的相机配置页面的消息回调函数定义
+// SDK生成的相机配置页面的消息回调函数定义
 typedef void (*CAMERA_PAGE_MSG_PROC)(CameraHandle hCamera,UINT MSG,UINT uParam,PVOID pContext);
 
 
-//----------------------------IMAGE FORMAT DEFINE------------------------------------
-//----------------------------图像格式定义-------------------------------------------
+// ----------------------------IMAGE FORMAT DEFINE------------------------------------
+// ----------------------------图像格式定义-------------------------------------------
 #define CAMERA_MEDIA_TYPE_MONO                           0x01000000
 #define CAMERA_MEDIA_TYPE_RGB                            0x02000000
 #define CAMERA_MEDIA_TYPE_COLOR                          0x02000000
@@ -640,7 +640,7 @@ typedef void (*CAMERA_PAGE_MSG_PROC)(CameraHandle hCamera,UINT MSG,UINT uParam,P
 #define CAMERA_MEDIA_TYPE_YUV422_8           (CAMERA_MEDIA_TYPE_COLOR | CAMERA_MEDIA_TYPE_OCCUPY16BIT | 0x0032)
 #define CAMERA_MEDIA_TYPE_YUV8_UYV           (CAMERA_MEDIA_TYPE_COLOR | CAMERA_MEDIA_TYPE_OCCUPY24BIT | 0x0020)
 #define CAMERA_MEDIA_TYPE_YCBCR8_CBYCR       (CAMERA_MEDIA_TYPE_COLOR | CAMERA_MEDIA_TYPE_OCCUPY24BIT | 0x003A)
-//CAMERA_MEDIA_TYPE_YCBCR422_8 : YYYYCbCrCbCr
+// CAMERA_MEDIA_TYPE_YCBCR422_8 : YYYYCbCrCbCr
 #define CAMERA_MEDIA_TYPE_YCBCR422_8             (CAMERA_MEDIA_TYPE_COLOR | CAMERA_MEDIA_TYPE_OCCUPY16BIT | 0x003B)
 #define CAMERA_MEDIA_TYPE_YCBCR422_8_CBYCRY      (CAMERA_MEDIA_TYPE_COLOR | CAMERA_MEDIA_TYPE_OCCUPY16BIT | 0x0043)
 #define CAMERA_MEDIA_TYPE_YCBCR411_8_CBYYCRYY    (CAMERA_MEDIA_TYPE_COLOR | CAMERA_MEDIA_TYPE_OCCUPY12BIT | 0x003C)

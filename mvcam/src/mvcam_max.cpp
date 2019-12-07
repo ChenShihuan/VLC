@@ -53,12 +53,12 @@ int main(int argc, char** argv)
     int                     iStatus=-1;
     tSdkCameraDevInfo       tCameraEnumList;
     int                     hCamera;
-    tSdkCameraCapbility     tCapability;      //设备描述信息
+    tSdkCameraCapbility     tCapability;      // 设备描述信息
     tSdkFrameHead           sFrameInfo;
     BYTE*			        pbyBuffer;
     int                     fps = 120;
-    int                     channel=1;        //8位灰度图像和24位彩色图像控制，1——8位灰度图像，3——24位彩色图像。
-    IplImage *iplImage = NULL;//有毒吧，放着mat不用，用这玩意儿。。。。。
+    int                     channel=1;        // 8位灰度图像和24位彩色图像控制，1——8位灰度图像，3——24位彩色图像。
+    IplImage *iplImage = NULL;// 有毒吧，放着mat不用，用这玩意儿。。。。。
     // 使用IplImage的原因可能是为了可以在C中使用相同的代码。但是我们ROS所使用的
     // 数据发送函数使用的是Mat的数据类型，与IplImage可能存在不兼容的问题，保险起见，
     // 此问题暂时通过将IplImage转换为Mat来解决，因为ROS环境完全是C++，不涉及C，所
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 
     CameraSetAnalogGain(hCamera,100);
     CameraSetExposureTime(hCamera,200);
-    //CameraSetIspOutFormat(hCamera,CAMERA_MEDIA_TYPE_MONO8);
+    // CameraSetIspOutFormat(hCamera,CAMERA_MEDIA_TYPE_MONO8);
     CameraSetMonochrome(hCamera,TRUE);
     CameraSetFrameSpeed(hCamera,2000);
 
@@ -169,9 +169,9 @@ int main(int argc, char** argv)
     while (nh.ok())
     {
             /******************************************************/
-        if(CameraGetImageBuffer(hCamera,&sFrameInfo,&pbyBuffer,1000) == CAMERA_STATUS_SUCCESS)//获得一帧图像数据。
+        if(CameraGetImageBuffer(hCamera,&sFrameInfo,&pbyBuffer,1000) == CAMERA_STATUS_SUCCESS)// 获得一帧图像数据。
         {
-            CameraImageProcess(hCamera, pbyBuffer, g_pRgbBuffer,&sFrameInfo);//将获得的相机原始输出图像数据进行处理，叠加饱和度、颜色增益和校正、降噪等处理效果，最后得到RGB888格式的图像数据。
+            CameraImageProcess(hCamera, pbyBuffer, g_pRgbBuffer,&sFrameInfo);// 将获得的相机原始输出图像数据进行处理，叠加饱和度、颜色增益和校正、降噪等处理效果，最后得到RGB888格式的图像数据。
 
                 if (iplImage)
                 {
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
 
             frame = cvarrToMat(iplImage);
             cv::cvtColor(frame,frame,cv::COLOR_BGR2GRAY);
-            //resize(frame,frame,Size(1280,960),0,0,INTER_NEAREST);
+            // resize(frame,frame,Size(1280,960),0,0,INTER_NEAREST);
 
             if(Image_size_output_flag){
                 cout << "工业相机运行正常！" << endl;
@@ -199,7 +199,7 @@ int main(int argc, char** argv)
             sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", frame).toImageMsg();
             cam_info_msg = get_default_camera_info_from_image(msg);
             cam_info_manager.setCameraInfo(cam_info_msg);
-            //pub.publish(msg);
+            // pub.publish(msg);
             pub.publish(*msg, cam_info_msg, ros::Time::now());
             #endif
             waitKey(1);
@@ -214,7 +214,7 @@ int main(int argc, char** argv)
         r.sleep();
     }
 
-    CameraUnInit(hCamera);//注意，现反初始化后再free
+    CameraUnInit(hCamera);// 注意，现反初始化后再free
     free(g_pRgbBuffer);
 
     return 0;
@@ -222,68 +222,68 @@ int main(int argc, char** argv)
 
 
 /******************************************************/
-//
-//          使用方法
-//
-//1. 打开文件夹“运行库安装”，使用sh文件安装运行库
-//2. 运行节点：
-//   rosrun mvcam mvcam
-//3. 使用窗口界面查看图像：
-//   rosrun image_view image_view image:=/camera/image
+// 
+//         使用方法
+// 
+// 1. 打开文件夹“运行库安装”，使用sh文件安装运行库
+// 2. 运行节点：
+//  rosrun mvcam mvcam
+// 3. 使用窗口界面查看图像：
+//  rosrun image_view image_view image:=/camera/image
 /******************************************************/
 
 /******************************************************/
 // 函数名   : CameraSetAeState
 // 功能描述 : 设置相机曝光的模式。自动或者手动。
 // 参数     : hCamera   相机的句柄，由CameraInit函数获得。
-//            bAeState    TRUE，使能自动曝光；FALSE，停止自动曝光。
+//           bAeState    TRUE，使能自动曝光；FALSE，停止自动曝光。
 // 返回值   : 成功时，返回CAMERA_STATUS_SUCCESS (0);
-//            否则返回非0值的错误码,请参考CameraStatus.h
-//            中错误码的定义。
+//           否则返回非0值的错误码,请参考CameraStatus.h
+//           中错误码的定义。
 /******************************************************/
 
 /******************************************************/
 // iplImage = cvCreateImageHeader(cvSize(width,height),depth,channels);
 // cvSetData(iplImage,data,step);
-//    首先由cvCreateImageHeader()创建IplImage图像头，制定图像的尺寸，深度和通道数；然后由
-//    cvSetData()根据 BYTE*图像数据指针设置IplImage图像头的数据，其中step指定该IplImage图像
-//    每行占的字节数，对于1通道的 IPL_DEPTH_8U图像，step可以等于width。
-//    当不再使用这个新图像时，要调用void cvReleaseImage( IplImage** image )将它的头和图像数据释放！
+//   首先由cvCreateImageHeader()创建IplImage图像头，制定图像的尺寸，深度和通道数；然后由
+//   cvSetData()根据 BYTE*图像数据指针设置IplImage图像头的数据，其中step指定该IplImage图像
+//   每行占的字节数，对于1通道的 IPL_DEPTH_8U图像，step可以等于width。
+//   当不再使用这个新图像时，要调用void cvReleaseImage( IplImage** image )将它的头和图像数据释放！
 /******************************************************/
 
 /******************************************************/
 // 函数名   : CameraGetImageBuffer
 // 功能描述 : 获得一帧图像数据。为了提高效率，SDK在图像抓取时采用了零拷贝机制，
-//        CameraGetImageBuffer实际获得是内核中的一个缓冲区地址，
-//        该函数成功调用后，必须调用CameraReleaseImageBuffer释放由
-//        CameraGetImageBuffer得到的缓冲区,以便让内核继续使用
-//        该缓冲区。
+//       CameraGetImageBuffer实际获得是内核中的一个缓冲区地址，
+//       该函数成功调用后，必须调用CameraReleaseImageBuffer释放由
+//       CameraGetImageBuffer得到的缓冲区,以便让内核继续使用
+//       该缓冲区。
 // 参数     : hCamera   相机的句柄，由CameraInit函数获得。
-//            pFrameInfo  图像的帧头信息指针。
-//            pbyBuffer   指向图像的数据的缓冲区指针。由于
-//              采用了零拷贝机制来提高效率，因此
-//              这里使用了一个指向指针的指针。
-//            UINT wTimes 抓取图像的超时时间。单位毫秒。在
-//              wTimes时间内还未获得图像，则该函数
-//              会返回超时信息。
+//           pFrameInfo  图像的帧头信息指针。
+//           pbyBuffer   指向图像的数据的缓冲区指针。由于
+//             采用了零拷贝机制来提高效率，因此
+//             这里使用了一个指向指针的指针。
+//           UINT wTimes 抓取图像的超时时间。单位毫秒。在
+//             wTimes时间内还未获得图像，则该函数
+//             会返回超时信息。
 // 返回值   : 成功时，返回CAMERA_STATUS_SUCCESS (0);
-//            否则返回非0值的错误码,请参考CameraStatus.h
-//            中错误码的定义。
+//           否则返回非0值的错误码,请参考CameraStatus.h
+//           中错误码的定义。
 /******************************************************/
 
 /******************************************************/
 // 函数名   : CameraImageProcess
 // 功能描述 : 将获得的相机原始输出图像数据进行处理，叠加饱和度、
-//        颜色增益和校正、降噪等处理效果，最后得到RGB888
-//        格式的图像数据。
+//       颜色增益和校正、降噪等处理效果，最后得到RGB888
+//       格式的图像数据。
 // 参数     : hCamera  相机的句柄，由CameraInit函数获得。
-//            pbyIn    输入图像数据的缓冲区地址，不能为NULL。
-//            pbyOut   处理后图像输出的缓冲区地址，不能为NULL。
-//            pFrInfo  输入图像的帧头信息，处理完成后，帧头信息
-//             中的图像格式uiMediaType会随之改变。
+//           pbyIn    输入图像数据的缓冲区地址，不能为NULL。
+//           pbyOut   处理后图像输出的缓冲区地址，不能为NULL。
+//           pFrInfo  输入图像的帧头信息，处理完成后，帧头信息
+//            中的图像格式uiMediaType会随之改变。
 // 返回值   : 成功时，返回CAMERA_STATUS_SUCCESS (0);
-//            否则返回非0值的错误码,请参考CameraStatus.h
-//            中错误码的定义。
+//           否则返回非0值的错误码,请参考CameraStatus.h
+//           中错误码的定义。
 /******************************************************/
 
 
@@ -297,37 +297,37 @@ int main(int argc, char** argv)
 // 函数名   : CameraInitRecord
 // 功能描述 : 初始化一次录像。
 // 参数     : hCamera   相机的句柄，由CameraInit函数获得。
-//            iFormat   录像的格式，当前只支持不压缩和MSCV两种方式。
-//              0:不压缩；1:MSCV方式压缩。
-//            pcSavePath  录像文件保存的路径。
-//            b2GLimit    如果为TRUE,则文件大于2G时自动分割。
-//            dwQuality   录像的质量因子，越大，则质量越好。范围1到100.
-//            iFrameRate  录像的帧率。建议设定的比实际采集帧率大，
-//              这样就不会漏帧。
+//           iFormat   录像的格式，当前只支持不压缩和MSCV两种方式。
+//             0:不压缩；1:MSCV方式压缩。
+//           pcSavePath  录像文件保存的路径。
+//           b2GLimit    如果为TRUE,则文件大于2G时自动分割。
+//           dwQuality   录像的质量因子，越大，则质量越好。范围1到100.
+//           iFrameRate  录像的帧率。建议设定的比实际采集帧率大，
+//             这样就不会漏帧。
 // 返回值   : 成功时，返回CAMERA_STATUS_SUCCESS (0);
-//            否则返回非0值的错误码,请参考CameraStatus.h
-//            中错误码的定义。
+//           否则返回非0值的错误码,请参考CameraStatus.h
+//           中错误码的定义。
 /******************************************************/
 /******************************************************/
 // 函数名   : CameraStopRecord
 // 功能描述 : 结束本次录像。当CameraInitRecord后，可以通过该函数
-//        来结束一次录像，并完成文件保存操作。
+//       来结束一次录像，并完成文件保存操作。
 // 参数     : hCamera   相机的句柄，由CameraInit函数获得。
 // 返回值   : 成功时，返回CAMERA_STATUS_SUCCESS (0);
-//            否则返回非0值的错误码,请参考CameraStatus.h
-//            中错误码的定义。
+//           否则返回非0值的错误码,请参考CameraStatus.h
+//           中错误码的定义。
 /******************************************************/
 /******************************************************/
 // 函数名   : CameraPushFrame
 // 功能描述 : 将一帧数据存入录像流中。必须调用CameraInitRecord
-//        才能调用该函数。CameraStopRecord调用后，不能再调用
-//        该函数。由于我们的帧头信息中携带了图像采集的时间戳
-//        信息，因此录像可以精准的时间同步，而不受帧率不稳定
-//        的影响。
+//       才能调用该函数。CameraStopRecord调用后，不能再调用
+//       该函数。由于我们的帧头信息中携带了图像采集的时间戳
+//       信息，因此录像可以精准的时间同步，而不受帧率不稳定
+//       的影响。
 // 参数     : hCamera     相机的句柄，由CameraInit函数获得。
-//            pbyImageBuffer    图像的数据缓冲区，必须是RGB格式。
-//            pFrInfo           图像的帧头信息。
+//           pbyImageBuffer    图像的数据缓冲区，必须是RGB格式。
+//           pFrInfo           图像的帧头信息。
 // 返回值   : 成功时，返回CAMERA_STATUS_SUCCESS (0);
-//            否则返回非0值的错误码,请参考CameraStatus.h
-//            中错误码的定义。
+//           否则返回非0值的错误码,请参考CameraStatus.h
+//           中错误码的定义。
 /******************************************************/

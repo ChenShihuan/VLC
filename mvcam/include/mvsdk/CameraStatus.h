@@ -72,28 +72,28 @@ typedef int CameraSdkStatus;
 
 
 
-//和AIA制定的标准相同
+// 和AIA制定的标准相同
 /*#define CAMERA_AIA_SUCCESS                        0x0000 */
-#define CAMERA_AIA_PACKET_RESEND                          0x0100 //该帧需要重传
-#define CAMERA_AIA_NOT_IMPLEMENTED                        0x8001 //设备不支持的命令
-#define CAMERA_AIA_INVALID_PARAMETER                      0x8002 //命令参数非法
-#define CAMERA_AIA_INVALID_ADDRESS                        0x8003 //不可访问的地址
-#define CAMERA_AIA_WRITE_PROTECT                          0x8004 //访问的对象不可写
-#define CAMERA_AIA_BAD_ALIGNMENT                          0x8005 //访问的地址没有按照要求对齐
-#define CAMERA_AIA_ACCESS_DENIED                          0x8006 //没有访问权限
-#define CAMERA_AIA_BUSY                                   0x8007 //命令正在处理中
-#define CAMERA_AIA_DEPRECATED                             0x8008 //0x8008-0x0800B  0x800F  该指令已经废弃
-#define CAMERA_AIA_PACKET_UNAVAILABLE                     0x800C //包无效
-#define CAMERA_AIA_DATA_OVERRUN                           0x800D //数据溢出，通常是收到的数据比需要的多
-#define CAMERA_AIA_INVALID_HEADER                         0x800E //数据包头部中某些区域与协议不匹配
-#define CAMERA_AIA_PACKET_NOT_YET_AVAILABLE               0x8010 //图像分包数据还未准备好，多用于触发模式，应用程序访问超时
-#define CAMERA_AIA_PACKET_AND_PREV_REMOVED_FROM_MEMORY    0x8011 //需要访问的分包已经不存在。多用于重传时数据已经不在缓冲区中
-#define CAMERA_AIA_PACKET_REMOVED_FROM_MEMORY             0x8012 //CAMERA_AIA_PACKET_AND_PREV_REMOVED_FROM_MEMORY
-#define CAMERA_AIA_NO_REF_TIME                            0x0813 //没有参考时钟源。多用于时间同步的命令执行时
-#define CAMERA_AIA_PACKET_TEMPORARILY_UNAVAILABLE         0x0814 //由于信道带宽问题，当前分包暂时不可用，需稍后进行访问
-#define CAMERA_AIA_OVERFLOW                               0x0815 //设备端数据溢出，通常是队列已满
-#define CAMERA_AIA_ACTION_LATE                            0x0816 //命令执行已经超过有效的指定时间
-#define CAMERA_AIA_ERROR                                  0x8FFF //错误
+#define CAMERA_AIA_PACKET_RESEND                          0x0100 // 该帧需要重传
+#define CAMERA_AIA_NOT_IMPLEMENTED                        0x8001 // 设备不支持的命令
+#define CAMERA_AIA_INVALID_PARAMETER                      0x8002 // 命令参数非法
+#define CAMERA_AIA_INVALID_ADDRESS                        0x8003 // 不可访问的地址
+#define CAMERA_AIA_WRITE_PROTECT                          0x8004 // 访问的对象不可写
+#define CAMERA_AIA_BAD_ALIGNMENT                          0x8005 // 访问的地址没有按照要求对齐
+#define CAMERA_AIA_ACCESS_DENIED                          0x8006 // 没有访问权限
+#define CAMERA_AIA_BUSY                                   0x8007 // 命令正在处理中
+#define CAMERA_AIA_DEPRECATED                             0x8008 // 0x8008-0x0800B  0x800F  该指令已经废弃
+#define CAMERA_AIA_PACKET_UNAVAILABLE                     0x800C // 包无效
+#define CAMERA_AIA_DATA_OVERRUN                           0x800D // 数据溢出，通常是收到的数据比需要的多
+#define CAMERA_AIA_INVALID_HEADER                         0x800E // 数据包头部中某些区域与协议不匹配
+#define CAMERA_AIA_PACKET_NOT_YET_AVAILABLE               0x8010 // 图像分包数据还未准备好，多用于触发模式，应用程序访问超时
+#define CAMERA_AIA_PACKET_AND_PREV_REMOVED_FROM_MEMORY    0x8011 // 需要访问的分包已经不存在。多用于重传时数据已经不在缓冲区中
+#define CAMERA_AIA_PACKET_REMOVED_FROM_MEMORY             0x8012 // CAMERA_AIA_PACKET_AND_PREV_REMOVED_FROM_MEMORY
+#define CAMERA_AIA_NO_REF_TIME                            0x0813 // 没有参考时钟源。多用于时间同步的命令执行时
+#define CAMERA_AIA_PACKET_TEMPORARILY_UNAVAILABLE         0x0814 // 由于信道带宽问题，当前分包暂时不可用，需稍后进行访问
+#define CAMERA_AIA_OVERFLOW                               0x0815 // 设备端数据溢出，通常是队列已满
+#define CAMERA_AIA_ACTION_LATE                            0x0816 // 命令执行已经超过有效的指定时间
+#define CAMERA_AIA_ERROR                                  0x8FFF // 错误
 
 
 
