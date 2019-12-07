@@ -247,6 +247,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     double f = focalLength;
     // 灯具高度
     double Hight_of_LED = HightofLED;
+    double Pixel_Size = PixelSize;
     // 透镜焦点在image sensor上的位置(与图像的像素有关，此数据适用于800x600)
     double Center_X = centerXofImage;
     double Center_Y = centerYofImage;
@@ -269,14 +270,14 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     }
     // 将非0的第一个与第二个灯(以及第三个灯)代入执行定位
     if ( NonZeroID[2] != 0 ) {
-        Point = three_LED(f, Center_X, Center_Y,Hight_of_LED,
+        Point = three_LED(f, Center_X, Center_Y,Hight_of_LED,Pixel_Size,
                             LEDs[NonZeroID[0]],
                             LEDs[NonZeroID[1]],
                             LEDs[NonZeroID[2]]);
         cout << "3LED"<< '\n';
     }
     else {
-        Point = double_LED(f, Center_X, Center_Y,Hight_of_LED,
+        Point = double_LED(f, Center_X, Center_Y,Hight_of_LED,Pixel_Size,
                             LEDs[NonZeroID[0]],
                             LEDs[NonZeroID[1]]);
         cout << "2LED"<< '\n';

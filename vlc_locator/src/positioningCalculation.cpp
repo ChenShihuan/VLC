@@ -31,6 +31,7 @@ geometry_msgs::Point double_LED(double f,
                                double Center_X,
                                double Center_Y,
                                double Hight_of_LED,
+                               double Pixel_Size,
                                struct LED D1,
                                struct LED D2) {
     double ImgX1;
@@ -172,11 +173,11 @@ geometry_msgs::Point double_LED(double f,
         break;
     }
 
-    double d_12 = sqrt(pow((ImgX1 - ImgX2), 2) + pow((ImgY1 - ImgY2), 2))*3.2e-3;
+    double d_12 = sqrt(pow((ImgX1 - ImgX2), 2) + pow((ImgY1 - ImgY2), 2))*Pixel_Size;
     double D_12 = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
     double H = D_12 / d_12*f;
-    double X_r = ((ImgX1 + ImgX2) / 2 - Center_X)*3.2e-3*H / f;
-    double Y_r = ((ImgY1 + ImgY2) / 2 - Center_Y)*3.2e-3*H / f;
+    double X_r = ((ImgX1 + ImgX2) / 2 - Center_X)*Pixel_Size*H / f;
+    double Y_r = ((ImgY1 + ImgY2) / 2 - Center_Y)*Pixel_Size*H / f;
     double X_c = (x1 + x2) / 2;
     double Y_c = (y1 + y2) / 2;
     double X = X_r;
@@ -206,6 +207,7 @@ geometry_msgs::Point three_LED(double f,
                                double Center_X,
                                double Center_Y,
                                double Hight_of_LED,
+                               double Pixel_Size,
                                struct LED D1,
                                struct LED D2,
                                struct LED D3) {
@@ -223,9 +225,9 @@ geometry_msgs::Point three_LED(double f,
     double y3 = D3.Y;
 
     // 三灯定位
-    double d_12 = sqrt(pow((ImgX1 - ImgX2), 2) + pow((ImgY1 - ImgY2), 2))*3.2e-3;
-    double d_13 = sqrt(pow((ImgX1 - ImgX3), 2) + pow((ImgY1 - ImgY3), 2))*3.2e-3;
-    double d_23 = sqrt(pow((ImgX2 - ImgX3), 2) + pow((ImgY2 - ImgY3), 2))*3.2e-3;
+    double d_12 = sqrt(pow((ImgX1 - ImgX2), 2) + pow((ImgY1 - ImgY2), 2))*Pixel_Size;
+    double d_13 = sqrt(pow((ImgX1 - ImgX3), 2) + pow((ImgY1 - ImgY3), 2))*Pixel_Size;
+    double d_23 = sqrt(pow((ImgX2 - ImgX3), 2) + pow((ImgY2 - ImgY3), 2))*Pixel_Size;
     double D_12 = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
     double D_13 = sqrt(pow((x1 - x3), 2) + pow((y1 - y3), 2));
     double D_23 = sqrt(pow((x2 - x3), 2) + pow((y2 - y3), 2));
@@ -234,9 +236,9 @@ geometry_msgs::Point three_LED(double f,
     // cout << "H=" << H << '\n';
 
     // 计算水平方向上摄像头到3个LED的距离
-    double d_1 = sqrt(pow((ImgX1 - Center_X), 2) + pow((ImgY1 - Center_Y), 2))*3.2e-3;
-    double d_2 = sqrt(pow((ImgX2 - Center_X), 2) + pow((ImgY2 - Center_Y), 2))*3.2e-3;
-    double d_3 = sqrt(pow((ImgX3 - Center_X), 2) + pow((ImgY3 - Center_Y), 2))*3.2e-3;
+    double d_1 = sqrt(pow((ImgX1 - Center_X), 2) + pow((ImgY1 - Center_Y), 2))*Pixel_Size;
+    double d_2 = sqrt(pow((ImgX2 - Center_X), 2) + pow((ImgY2 - Center_Y), 2))*Pixel_Size;
+    double d_3 = sqrt(pow((ImgX3 - Center_X), 2) + pow((ImgY3 - Center_Y), 2))*Pixel_Size;
 
     // 对应真实的距离
     double D_1 = H / f*d_1;

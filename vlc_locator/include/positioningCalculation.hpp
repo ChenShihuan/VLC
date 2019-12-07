@@ -20,7 +20,20 @@
 // -----------------------------------------------------------------------------------------------
 
 cv::Mat pointOnMap(cv::Mat imgPoint,geometry_msgs::Point point);
-geometry_msgs::Point double_LED(double f,double Center_X, double Center_Y, double Hight_of_LED, struct LED A,struct LED B);
-geometry_msgs::Point three_LED(double f, double Center_X, double Center_Y, double Hight_of_LED, struct LED A,struct LED B,struct LED C);
+geometry_msgs::Point double_LED(double f,
+                               double Center_X,
+                               double Center_Y,
+                               double Hight_of_LED,
+                               double Pixel_Size,
+                               struct LED D1,
+                               struct LED D2);
+geometry_msgs::Point three_LED(double f,
+                               double Center_X,
+                               double Center_Y,
+                               double Hight_of_LED,
+                               double Pixel_Size,
+                               struct LED D1,
+                               struct LED D2,
+                               struct LED D3) ;
 
 #endif
