@@ -27,8 +27,9 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 // int main()
 // 1 2/3 4/5 6/7     9/10     11/12
 {
-    struct LED unkonwn, A, B, C, D, E, F;
-    vector<struct LED> LEDs {A, B, C, D, E, F};
+    // struct LED unkonwn, A, B, C, D, E, F;
+    // vector<struct LED> LEDs {A, B, C, D, E, F};
+    vector<struct LED> LEDs {};
     geometry_msgs::Point Point;
     struct position P1 = {  // LED 序号
         1,  // ID_max,最大条纹数目
@@ -116,6 +117,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     // imshow("matBinary-1", matBinary);// 用于分割的
 
     for (int ii = 1; ii < 7; ii++) {
+        struct LED unkonwn;
         int X_min, X_max, Y_min, Y_max;
         Mat imgNext;
         ls_LED(matBinary, X_min, X_max, Y_min, Y_max, imgNext);
@@ -213,8 +215,8 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 
 
 
-        // 将以上的unknown结构体的值一起赋予某个灯具，释放出unknown
-        LEDs.at(ii) = unkonwn;
+        // 使用push_back将unknown结构体的值一起插入到vector末尾，赋予某个灯具，释放出unknown
+        LEDs.push_back(unkonwn);
         // switch (ii) {
         // case 1:
         //     A = unkonwn;
@@ -237,12 +239,12 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
         // }
     }
 
-    cout << "a="<< A.ID << '\n';
-    cout << "b="<< B.ID << '\n';
-    cout << "c="<< C.ID << '\n';
-    cout << "d="<< D.ID << '\n';
-    cout << "e="<< E.ID << '\n';
-    cout << "f="<< F.ID << '\n';
+    cout << "a="<< LEDs.at[1].ID << '\n';
+    cout << "b="<< LEDs.at[2].ID << '\n';
+    cout << "c="<< LEDs.at[3].ID << '\n';
+    cout << "d="<< LEDs.at[4].ID << '\n';
+    cout << "e="<< LEDs.at[5].ID << '\n';
+    cout << "f="<< LEDs.at[6].ID << '\n';
     // cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
     // cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
     // cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
