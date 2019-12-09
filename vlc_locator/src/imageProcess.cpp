@@ -371,18 +371,18 @@ void thinImage(Mat &srcimage)// 单通道、二值化后的图像
 
 int IDidentification(cv::Mat imageLED){
     // 获取中间列像素，并转置为行矩阵
+    // imageLED = (Mat_ < float >(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
     cv::Mat col = imageLED.col(imageLED.size().height / 2);
     col = col.t();  // 转置为行矩阵
-
+    
     // 将中间列像素计数连续相同像素，并转义
-    int flag = col.at[0];  // 获取第一个像素
     vector<int> SamePxielCount {};
     int pxielCount = 0;
     int samePxielRange;
     int startPxiel = 0;
     int endPxiel;
     // 转义，例如001100001111转义为2244
-    for (endPxiel = 0; endPxiel < col.size().width; endPxiel ++){
+    for (endPxiel = 0; endPxiel < col.size().width; endPxiel ++) {
         if (col.at[endPxiel] != col.at[startPxiel]){
             samePxielRange = endPxiel - startPxiel;
             SamePxielCount.at[pxielCount] = samePxielRange;
@@ -394,7 +394,29 @@ int IDidentification(cv::Mat imageLED){
     // 获取转义数组中的最小值，即为一个字节所对应的像素
     int bit = std::min_element(SamePxielCount.begin, SamePxielCount.end);
 
-    
+    // 将转义数组再转为数据位数组
+    vector<int> Bit {};
+    pxielCount = 0;
+    int sameBitRaneg;
 
+    int pxielFlag = col.at[0];  // 获取第一个像素
+    //  ！！！！！！！！！！！！！此处操作存疑，像素高电平是否为1，如果不是，可能要在二值化处理，
+    //  或在使用条件判断当取到高电平时赋值为1
+
+    for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount ++){
+        samePxielRange = SamePxielCount.at[pxielCount];
+        sameBitRaneg = samePxielRange / bit;
+        for (int bitCount = 0; bitCount < sameBitRaneg; bitCount ++) {
+            Bit.push_back(bitCount);  // 在Bit末尾插入sameBitRaneg个数的像素，像素数值由pxielFlag决定
+        }
+        pxielFlag = ~pxielFlag;
+        // 一轮填入完成后对像素标志取反，因为转义数组的相邻两个成员指代的数据位总是反的
+    }
+
+    // 寻找数据位中的消息头，比如101010
+
+    // 在两个消息头之间提取ROI区域，即位ID信息
+    int ID;
+    return ID;
 }
 
