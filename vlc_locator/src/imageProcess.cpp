@@ -7,6 +7,7 @@
 //     描述：包含程序所依赖的头文件
 // ----------------------------------------------------------------------------------------------  
 #include "imageProcess.hpp"
+#include <algorithm>
 
 // -----------------------------------------------------------------------------------------------
 // **********************************************************************************************
@@ -366,5 +367,34 @@ void thinImage(Mat &srcimage)// 单通道、二值化后的图像
         }
         deletelist1.clear();
     }
+}
+
+int IDidentification(cv::Mat imageLED){
+    // 获取中间列像素，并转置为行矩阵
+    cv::Mat col = imageLED.col(imageLED.size().height / 2);
+    col = col.t();  // 转置为行矩阵
+
+    // 将中间列像素计数连续相同像素，并转义
+    int flag = col.at[0];  // 获取第一个像素
+    vector<int> SamePxielCount {};
+    int pxielCount = 0;
+    int samePxielRange;
+    int startPxiel = 0;
+    int endPxiel;
+    // 转义，例如001100001111转义为2244
+    for (endPxiel = 0; endPxiel < col.size().width; endPxiel ++){
+        if (col.at[endPxiel] != col.at[startPxiel]){
+            samePxielRange = endPxiel - startPxiel;
+            SamePxielCount.at[pxielCount] = samePxielRange;
+            pxielCount ++;
+            startPxiel = endPxiel;
+        }
+    }
+
+    // 获取转义数组中的最小值，即为一个字节所对应的像素
+    int bit = std::min_element(SamePxielCount.begin, SamePxielCount.end);
+
+    
+
 }
 
