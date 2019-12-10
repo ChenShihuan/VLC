@@ -23,10 +23,9 @@ Mat imgPoint;
 // -----------------------------------【Get_coordinate()函数】------------------------------------
 //     描述：灰度图像传入，定位计算
 // -----------------------------------------------------------------------------------------------
-geometry_msgs::Point Get_coordinate(cv::Mat img)
-// int main()
-// 1 2/3 4/5 6/7     9/10     11/12
-{
+geometry_msgs::Point Get_coordinate(cv::Mat img) {
+    // int main() {
+    // 1 2/3 4/5 6/7     9/10     11/12
     // struct LED unkonwn, A, B, C, D, E, F;
     // vector<struct LED> LEDs {A, B, C, D, E, F};
     vector<struct LED> LEDs {};
@@ -142,8 +141,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
                 if (r - 360 > 0) {  // 将r扩大
                     // LED1圆外面像素重载为原图
                     matBinary1.at<uchar>(i, j) = matBinary.at<uchar>(i, j);
-                }
-                else {
+                } else {
                     matBinary1.at<uchar>(i, j) = 0;
                     // 将第 i 行第 j 列像素值设置为255,二值化后为0和255
                 }
@@ -182,7 +180,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
         }
 
         // 根据ID判断对应的LED，并写入坐标值
-        for(int numOfPosition = 0; numOfPosition < Position.size(); numOfPosition ++){
+        for (int numOfPosition = 0; numOfPosition < Position.size(); numOfPosition ++) {
             if (unkonwn.ID <= Position.at(numOfPosition).max && unkonwn.ID >= Position.at(numOfPosition).min)
             {unkonwn.X = Position.at(numOfPosition).X;
             unkonwn.Y = Position.at(numOfPosition).Y;
@@ -281,14 +279,13 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     }
     // 将非0的第一个与第二个灯(以及第三个灯)代入执行定位
     if ( NonZeroID[2] != 0 ) {
-        Point = three_LED(f, Center_X, Center_Y,Hight_of_LED,Pixel_Size,
+        Point = three_LED(f, Center_X, Center_Y, Hight_of_LED, Pixel_Size,
                             LEDs[NonZeroID[0]],
                             LEDs[NonZeroID[1]],
                             LEDs[NonZeroID[2]]);
         cout << "3LED"<< '\n';
-    }
-    else {
-        Point = double_LED(f, Center_X, Center_Y,Hight_of_LED,Pixel_Size,
+    } else {
+        Point = double_LED(f, Center_X, Center_Y, Hight_of_LED, Pixel_Size,
                             LEDs[NonZeroID[0]],
                             LEDs[NonZeroID[1]]);
         cout << "2LED"<< '\n';
@@ -302,8 +299,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
 //           描述：接受话题“webcam/image_raw” 的图像
 //           来源: http:// blog.csdn.net/robogreen/article/details/50488215
 // -----------------------------------------------------------------------------------------------
-class IMAGE_LISTENER_and_LOCATOR
-{
+class IMAGE_LISTENER_and_LOCATOR {
 private:
     ros::NodeHandle nh_;  // 定义ROS句柄
     image_transport::ImageTransport it_;  // 定义一个image_transport实例
@@ -313,7 +309,7 @@ private:
 
 public:
     IMAGE_LISTENER_and_LOCATOR()
-      :it_(nh_) {   // 构造函数
+    :it_(nh_) {   // 构造函数
         // 定义图象接受器，订阅话题是“camera/image”
         image_sub_ = it_.subscribe("/mvcam/image", 1, &IMAGE_LISTENER_and_LOCATOR::convert_callback, this);
         image_pub_ = it_.advertise("/location/image_show", 1);  // 定义ROS图象发布器
@@ -333,7 +329,7 @@ public:
     void convert_callback(const sensor_msgs::ImageConstPtr& msg) {
         cv_bridge::CvImagePtr cv_ptr;  // 声明一个CvImage指针的实例
         cv::Mat image_show;
-        
+
         try {
             // 将ROS消息中的图象信息提取，生成新cv类型的图象，复制给CvImage指针
             cv_ptr =  cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::MONO8);
@@ -391,7 +387,6 @@ public:
         loop_rate.sleep();
         ++count;
         }
-
     }
 };
 
@@ -400,9 +395,8 @@ public:
 //     描述：主函数，发布定位信息
 //     rosrun vlc_locator publisher
 // -----------------------------------------------------------------------------------------------
-int main(int argc, char** argv)
-{
-    imgPoint = cv::imread("home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR);
+int main(int argc, char** argv) {
+    // imgPoint = cv::imread("home/rc/catkin_ws/src/VLC/vlc_locator/坐标纸.jpg", CV_LOAD_IMAGE_COLOR);
     ros::init(argc, argv, "IMAGE_LISTENER_and_LOCATOR");
     IMAGE_LISTENER_and_LOCATOR obj;
     ros::spin();
