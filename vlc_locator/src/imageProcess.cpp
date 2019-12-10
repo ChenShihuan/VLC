@@ -369,7 +369,7 @@ void thinImage(Mat &srcimage)// 单通道、二值化后的图像
     }
 }
 
-// 将像素列解码为数位
+// // 将像素列解码为数位
 cv::Mat PxielToBit(const cv::Mat col) {
     // 将中间列像素计数连续相同像素，并转义
     vector<int> SamePxielCount {};
@@ -410,8 +410,8 @@ cv::Mat PxielToBit(const cv::Mat col) {
         pxielFlag = ~pxielFlag;
         // 一轮填入完成后对像素标志取反，因为转义数组的相邻两个成员指代的数据位总是反的
     }
-    cv::Mat Bit = Mat(BitVector, true);  // 根据文档这里貌似是一行n列
-    return Bit;
+
+    return  Mat(BitVector, true);  // 根据文档这里貌似是一行n列
 }
 
 // ID识别函数
@@ -434,5 +434,96 @@ int IDidentification(cv::Mat imageLED) {
     // minMaxLoc(image_matched, &minVal, &maxVal, &minLoc, &maxLoc, Mat());  // 用于检测矩阵中最大值和最小值的位置
     int ID;
     return ID;
+}
+
+CvPoint getNextMinLoc(IplImage* result , int templatWidth,int templatHeight,double maxValIn , CvPoint lastLoc){
+
+        int y,x;
+        int startY,startX,endY,endX;
+
+        //计算大矩形的坐标
+        startY = lastLoc.y - templatHeight;
+        startX = lastLoc.x - templatWidth;
+
+        //计算大矩形的的坐标 
+        endY = lastLoc.y + templatHeight;
+        endX = lastLoc.x + templatWidth;
+
+        //不允许矩形越界
+        startY = startY < 0 ? 0 : startY;
+        startX = startX < 0 ? 0 : startX;
+        endY = endY > result->height-1 ? result->height-1 : endY;
+        endX = endX > result->width - 1 ? result->width - 1 : endX; 
+
+        //将大矩形内部 赋值为最大值 使得 以后找的最小值 不会位于该区域  避免找到重叠的目标       
+        for(y=startY;y<endY;y++){
+                for(x=startX;x<endX;x++){
+                  cvSetReal2D(result,y,x,maxValIn);
+                }
+        }
+        double minVal,maxVal;
+        CvPoint minLoc,maxLoc;
+
+        //查找result中的最小值 及其所在坐标        
+        cvMinMaxLoc(result,&minVal,&maxVal,&minLoc,&maxLoc,NULL);
+        return minLoc;
+}
+
+int main(int argc, char* argv[]){
+
+        IplImage*src,*templat,*result,*show;
+        int srcW,templatW,srcH,templatH,resultW,resultH;
+        //加载源图像
+        src = cvLoadImage("/home/chen/图片/lena.png" , CV_LOAD_IMAGE_GRAYSCALE);
+
+        //加载用于显示结果的图像
+        show = cvLoadImage("/home/chen/图片/lena.png");//就是源图像
+        //加载模板图像
+        templat = cvLoadImage("/home/chen/图片/template.png" , CV_LOAD_IMAGE_GRAYSCALE);
+
+        if(!src || !templat){
+                printf("打开图片失败");
+                return 0;
+        }
+
+        srcW = src->width;
+        srcH = src->height;
+
+        templatW = templat->width;
+        templatH = templat->height;
+
+        if(srcW<templatW || srcH<templatH){
+                printf("模板不能比原图小");
+                return 0;
+        }
+
+        //计算结果矩阵的宽度和高度
+        resultW = srcW - templatW + 1;
+        resultH = srcH - templatH + 1;
+
+        //创建存放结果的空间
+        result = cvCreateImage(cvSize(resultW,resultH),32,1);
+
+        double minVal,maxVal;
+        CvPoint minLoc,maxLoc;
+
+        //进行模板匹配
+        cvMatchTemplate(src,templat,result,CV_TM_SQDIFF);
+        //第一次查找最小值  即找到第一个最像的目标      
+        cvMinMaxLoc(result,&minVal,&maxVal,&minLoc,&maxLoc,NULL);
+        //绘制第一个查找结果到图像上        
+        cvRectangle(show,minLoc,cvPoint(minLoc.x+templat->width,minLoc.y+templat->height),CV_RGB(0,255,0),1);
+
+
+        //查找第二个结果
+        minLoc = getNextMinLoc( result , templat->width,templat->height,  maxVal ,  minLoc);
+        //绘制第二个结果        
+        cvRectangle(show,minLoc,cvPoint(minLoc.x+templat->width,minLoc.y+templat->height),CV_RGB(0,255,0),1);
+        //显示结果
+        cvNamedWindow("show");
+        cvShowImage("show",show);
+        cvWaitKey(0);
+
+        return 0;
 }
 
