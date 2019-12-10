@@ -1,19 +1,19 @@
 /*
-// Copyright 2019 
+// Copyright 2019
 // R&C Group
 */
 
-// -----------------------------------【头文件包含部分】---------------------------------------  
+// -----------------------------------【头文件包含部分】---------------------------------------
 //     描述：包含程序所依赖的头文件
-// ----------------------------------------------------------------------------------------------  
+// ----------------------------------------------------------------------------------------------
 #include "imageProcess.hpp"
 #include <algorithm>
 
 // -----------------------------------------------------------------------------------------------
 // **********************************************************************************************
-// 
+//
 //     *********************             【图像处理函数】              *******************
-// 
+//
 // **********************************************************************************************
 // -----------------------------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ double getThreshVal_Otsu_8u(const cv::Mat& _src)
 void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& imgNext)
 {
     Mat temp1= _img.clone();
-    
+
     // 求xmin与xmax
     int row1 = temp1.rows;// 行数
     int col1 = temp1.cols;// 列
@@ -107,7 +107,7 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
     }
     X_min = j;
 
-    while (j < col1)// j的初值为X_min 
+    while (j < col1)// j的初值为X_min
     {
         double sum1 = 0.0;
         for (int i = 0;i < row1;i++)
@@ -193,7 +193,7 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
 
     // 进行切割
     Mat imgCut1 = temp(Rect(0, Y_min, col, Y_max - Y_min));
-    imgNext = imgCut1.clone();   // clone函数创建新的图片 
+    imgNext = imgCut1.clone();   // clone函数创建新的图片
 }
 
 
@@ -231,7 +231,7 @@ void bwareaopen(Mat &data, int n)
 
 
 // 实现对图像的细化
-void thinImage(Mat &srcimage)// 单通道、二值化后的图像  
+void thinImage(Mat &srcimage)// 单通道、二值化后的图像
 {
     using namespace std;
 
@@ -369,24 +369,20 @@ void thinImage(Mat &srcimage)// 单通道、二值化后的图像
     }
 }
 
-int IDidentification(cv::Mat imageLED){
-    // 获取中间列像素，并转置为行矩阵
-    // imageLED = (Mat_ < float >(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cv::Mat col = imageLED.col(imageLED.size().height / 2);
-    col = col.t();  // 转置为行矩阵
-    
+// 将像素列解码为数位
+cv::Mat PxielToBit(const cv::Mat col) {
     // 将中间列像素计数连续相同像素，并转义
     vector<int> SamePxielCount {};
-    int pxielCount = 0;
+    int pxielCount = 0;  // 专门用作SamePxielCount下标
     int samePxielRange;
     int startPxiel = 0;
     int endPxiel;
     // 转义，例如001100001111转义为2244
     for (endPxiel = 0; endPxiel < col.size().width; endPxiel ++) {
-        if (col.at[endPxiel] != col.at[startPxiel]){
+        if (col.at[endPxiel] != col.at[startPxiel]) {
             samePxielRange = endPxiel - startPxiel;
             SamePxielCount.at[pxielCount] = samePxielRange;
-            pxielCount ++;
+            pxielCount++;
             startPxiel = endPxiel;
         }
     }
@@ -395,7 +391,7 @@ int IDidentification(cv::Mat imageLED){
     int bit = std::min_element(SamePxielCount.begin, SamePxielCount.end);
 
     // 将转义数组再转为数据位数组
-    vector<int> Bit {};
+    vector<int> BitVector {};
     pxielCount = 0;
     int sameBitRaneg;
 
@@ -403,19 +399,39 @@ int IDidentification(cv::Mat imageLED){
     //  ！！！！！！！！！！！！！此处操作存疑，像素高电平是否为1，如果不是，可能要在二值化处理，
     //  或在使用条件判断当取到高电平时赋值为1
 
-    for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount ++){
+    for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount++) {
         samePxielRange = SamePxielCount.at[pxielCount];
         sameBitRaneg = samePxielRange / bit;
         for (int bitCount = 0; bitCount < sameBitRaneg; bitCount ++) {
-            Bit.push_back(bitCount);  // 在Bit末尾插入sameBitRaneg个数的像素，像素数值由pxielFlag决定
+            BitVector.push_back(bitCount);
+            // 在Bit末尾插入sameBitRaneg个数的像素，像素数值由pxielFlag决定
         }
+        pxielFlag = 1;
         pxielFlag = ~pxielFlag;
         // 一轮填入完成后对像素标志取反，因为转义数组的相邻两个成员指代的数据位总是反的
     }
+    cv::Mat Bit = Mat(BitVector, true);  // 根据文档这里貌似是一行n列
+    return Bit;
+}
 
-    // 寻找数据位中的消息头，比如101010
+// ID识别函数
+int IDidentification(cv::Mat imageLED) {
+    // 获取中间列像素，并转置为行矩阵
+    // imageLED = (Mat_ < float >(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    cv::Mat col = imageLED.col(imageLED.size().height / 2);
+    col = col.t();  // 转置为行矩阵
+
+    // 将获取的数据位矩阵作为待匹配矩阵
+    cv::Mat image_source = PxielToBit(col);
+
+    // 用模板匹配寻找数据位中的消息头，比如101010
+    cv::Mat image_template = (cv::Mat_<double>(1, 6) << 1, 0, 1, 0, 1, 0); // 根据文档PxielToBit转出来的可能是一行n列，此处行列可能为(6, 1)
+    cv::Mat image_matched;
+    //模板匹配
+    cv::matchTemplate(image_source, image_template, image_matched, cv::TM_CCOEFF_NORMED);
 
     // 在两个消息头之间提取ROI区域，即位ID信息
+    minMaxLoc(image_matched, &minVal, &maxVal, &minLoc, &maxLoc, Mat());  // 用于检测矩阵中最大值和最小值的位置
     int ID;
     return ID;
 }
