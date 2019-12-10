@@ -27,13 +27,13 @@ cv::Mat pointOnMap(cv::Mat imgPoint, geometry_msgs::Point point) {
 // ---------------------------【geometry_msgs::Point double_LED函数】----------------------------
 //     描述：双灯定位计算
 // -----------------------------------------------------------------------------------------------
-geometry_msgs::Point double_LED(double f,
-                               double Center_X,
-                               double Center_Y,
-                               double Hight_of_LED,
-                               double Pixel_Size,
-                               struct LED D1,
-                               struct LED D2) {
+geometry_msgs::Point double_LED(const double f,
+                               const double Center_X,
+                               const double Center_Y,
+                               const double Hight_of_LED,
+                               const double Pixel_Size,
+                               const struct LED D1,
+                               const struct LED D2) {
     double ImgX1;
     double ImgY1;
     double ImgX2;
@@ -48,8 +48,8 @@ geometry_msgs::Point double_LED(double f,
     // cout << "D2="<< D2.ID << '\n';
     // 计算角度
     double alpha;
-    if (D1.X == D2.X ){
-        if (D1.Y<D2.Y){
+    if ( D1.X == D2.X ) {
+        if (D1.Y < D2.Y) {
             ImgX1 = D1.imgLocalX;
             ImgY1 = D1.imgLocalY;
             ImgX2 = D2.imgLocalX;
@@ -58,10 +58,7 @@ geometry_msgs::Point double_LED(double f,
             y1 = D1.Y;
             x2 = D2.X;
             y2 = D2.Y;
-        }
-
-        else
-        {
+        } else {
             ImgX1 = D2.imgLocalX;
             ImgY1 = D2.imgLocalY;
             ImgX2 = D1.imgLocalX;
@@ -80,8 +77,7 @@ geometry_msgs::Point double_LED(double f,
         // alpha = (3*pi/4)-(pi/4);
         // }
 
-    }
-    else if (D1.Y == D2.Y) {
+    } else if (D1.Y == D2.Y) {
         if (D1.X < D2.X) {
             ImgX1 = D1.imgLocalX;
             ImgY1 = D1.imgLocalY;
@@ -91,9 +87,7 @@ geometry_msgs::Point double_LED(double f,
             y1 = D1.Y;
             x2 = D2.X;
             y2 = D2.Y;
-        }
-
-        else {
+        } else {
             ImgX1 = D2.imgLocalX;
             ImgY1 = D2.imgLocalY;
             ImgX2 = D1.imgLocalX;
@@ -111,8 +105,7 @@ geometry_msgs::Point double_LED(double f,
         // else{
         // alpha = (3*pi/4)+(pi/4);
         // }
-    }
-    else {
+    } else {
         if (D1.X < D2.X) {
             ImgX1 = D1.imgLocalX;
             ImgY1 = D1.imgLocalY;
@@ -122,9 +115,7 @@ geometry_msgs::Point double_LED(double f,
             y1 = D1.Y;
             x2 = D2.X;
             y2 = D2.Y;
-        }
-
-        else {
+        } else {
             ImgX1 = D2.imgLocalX;
             ImgY1 = D2.imgLocalY;
             ImgX2 = D1.imgLocalX;
@@ -144,8 +135,7 @@ geometry_msgs::Point double_LED(double f,
     double angle;
     if (ImgX2 == ImgX1) {
         angle = (pi / 2);
-    }
-    else {
+    } else {
         angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
     }
 
@@ -203,14 +193,14 @@ geometry_msgs::Point double_LED(double f,
 // ---------------------------【geometry_msgs::Point three_LED函数】----------------------------
 //     描述：三灯定位计算
 // -----------------------------------------------------------------------------------------------
-geometry_msgs::Point three_LED(double f,
-                               double Center_X,
-                               double Center_Y,
-                               double Hight_of_LED,
-                               double Pixel_Size,
-                               struct LED D1,
-                               struct LED D2,
-                               struct LED D3) {
+geometry_msgs::Point three_LED(const double f,
+                               const double Center_X,
+                               const double Center_Y,
+                               const double Hight_of_LED,
+                               const double Pixel_Size,
+                               const struct LED D1,
+                               const struct LED D2,
+                               const struct LED D3) {
     double ImgX1 = D1.imgLocalX;
     double ImgY1 = D1.imgLocalY;
     double ImgX2 = D2.imgLocalX;
