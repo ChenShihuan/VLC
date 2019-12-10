@@ -237,12 +237,12 @@ geometry_msgs::Point Get_coordinate(cv::Mat img) {
         // }
     }
 
-    cout << "a="<< LEDs.at[1].ID << '\n';
-    cout << "b="<< LEDs.at[2].ID << '\n';
-    cout << "c="<< LEDs.at[3].ID << '\n';
-    cout << "d="<< LEDs.at[4].ID << '\n';
-    cout << "e="<< LEDs.at[5].ID << '\n';
-    cout << "f="<< LEDs.at[6].ID << '\n';
+    cout << "a="<< LEDs.at(0).ID << '\n';
+    cout << "a="<< LEDs.at(1).ID << '\n';
+    cout << "a="<< LEDs.at(2).ID << '\n';
+    cout << "a="<< LEDs.at(3).ID << '\n';
+    cout << "a="<< LEDs.at(4).ID << '\n';
+    cout << "a="<< LEDs.at(5).ID << '\n';
     // cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
     // cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
     // cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
