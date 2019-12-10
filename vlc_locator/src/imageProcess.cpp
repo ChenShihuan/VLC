@@ -431,7 +431,7 @@ int IDidentification(cv::Mat imageLED) {
     cv::matchTemplate(image_source, image_template, image_matched, cv::TM_CCOEFF_NORMED);
 
     // 在两个消息头之间提取ROI区域，即位ID信息
-    minMaxLoc(image_matched, &minVal, &maxVal, &minLoc, &maxLoc, Mat());  // 用于检测矩阵中最大值和最小值的位置
+    // minMaxLoc(image_matched, &minVal, &maxVal, &minLoc, &maxLoc, Mat());  // 用于检测矩阵中最大值和最小值的位置
     int ID;
     return ID;
 }
