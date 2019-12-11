@@ -55,7 +55,12 @@ add_executable(locator_2_max
 )
 target_link_libraries(locator_2_max ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
-
+#find_package(OpenCV REQUIRED)
+add_executable(test
+  src/test.cpp
+  src/imageProcess.cpp
+)
+target_link_libraries(test ${catkin_LIBRARIES}  ${OpenCV_LIBS})
 
 add_definitions(-std=c++17)
 
