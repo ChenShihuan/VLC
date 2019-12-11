@@ -373,7 +373,8 @@ void thinImage(Mat &srcimage)// 单通道、二值化后的图像
 cv::Mat PxielToBit(const cv::Mat imageLED) {
     cv::Mat col = imageLED.col(imageLED.size().height / 2);
     col = col.t();  // 转置为行矩阵
-    col =  (cv::Mat_<uchar>(1, 18) << 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0); 
+    // col =  (cv::Mat_<uchar>(1, 18) << 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0); // 测试用例
+
     cout << "col = "<< col <<endl;
     // 将中间列像素计数连续相同像素，并转义，例如001100001111转义为2244
     vector<int> SamePxielCount {};
