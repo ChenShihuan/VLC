@@ -30,6 +30,6 @@ double getThreshVal_Otsu_8u(const cv::Mat& _src);
 void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& imgNext);
 void bwareaopen(Mat &data, int n);
 void thinImage(Mat &srcimage);
-cv::Mat PxielToBit(const cv::Mat col);
+cv::Mat PxielToBit(const cv::Mat imageLED);
 
 #endif

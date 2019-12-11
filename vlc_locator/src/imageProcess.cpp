@@ -370,32 +370,28 @@ void thinImage(Mat &srcimage)// 单通道、二值化后的图像
 }
 
 // 将像素列解码为数位
-cv::Mat PxielToBit(const cv::Mat col) {
-    // 将中间列像素计数连续相同像素，并转义
+cv::Mat PxielToBit(const cv::Mat imageLED) {
+    cv::Mat col = imageLED.col(imageLED.size().height / 2);
+    col = col.t();  // 转置为行矩阵
+    col =  (cv::Mat_<uchar>(1, 18) << 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0); 
+    cout << "col = "<< col <<endl;
+    // 将中间列像素计数连续相同像素，并转义，例如001100001111转义为2244
     vector<int> SamePxielCount {};
-    int pxielCount = 0;  // 专门用作SamePxielCount下标
-    int samePxielRange;
-    int startPxiel = 0;
-    int endPxiel;
-    int a,b;
-    // 转义，例如001100001111转义为2244
-    for (endPxiel = 0; endPxiel <= col.size().width; endPxiel ++) {
-        // 此处存在问题：第一个像素不能读取，只能读取第二个
-        // 可能存在的问题：LED图像切割出来边缘是否会存在边缘影响后面的数据位识别
-        // （图像切割算法应该是根据亮条纹的出现来裁切，应该不会出现这个问题）
-        // 解决方式：若转义数组中的最小值出现在头部和尾部，则舍去
-        a = col.at<Vec<double, 1>>(1)[startPxiel];
-        b = col.at<Vec<double, 1>>(1)[endPxiel];
-        if (a != b) {
-            samePxielRange = endPxiel - startPxiel;
-            SamePxielCount.push_back(samePxielRange);
+    int pxielCount = 0;
+    MatIterator_<uchar> start, it, end;
+    for( it = col.begin<uchar>(), end = col.end<uchar>(), start = it; it != end + 1; it++) {
+        if (*start != *it) {
+            SamePxielCount.push_back(pxielCount);
+            pxielCount = 1;
+            start = it;
+        } else {
             pxielCount++;
-            startPxiel = endPxiel;
-        }
+        }  
     }
 
     // 获取转义数组中的最小值，即为一个字节所对应的像素
     int bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
+    cout << "bit = "<< bit <<endl;
 
     // 将转义数组再转为数据位数组
     vector<int> BitVector {};
@@ -404,15 +400,14 @@ cv::Mat PxielToBit(const cv::Mat col) {
 
     // 识别图像第一个像素的高低电平，转化为数据为，高电平即位1
     int pxielFlag;
-    if (col.at<Vec3b>(1)[0] == 255) {
+    if (*col.begin<uchar>() == 255 || *col.begin<uchar>() == 1) {
         pxielFlag = 1;
     } else {
-        pxielFlag = col.at<Vec3b>(1)[0];  // 获取第一个像素
+        pxielFlag = *col.begin<uchar>();  // 获取第一个像素
     }
 
     for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount++) {
-        samePxielRange = SamePxielCount.at(pxielCount);
-        sameBitRaneg = samePxielRange / bit;
+        sameBitRaneg = SamePxielCount.at(pxielCount) / bit;
         for (int bitCount = 0; bitCount < sameBitRaneg; bitCount ++) {
             BitVector.push_back(pxielFlag);
             // 在Bit末尾插入sameBitRaneg个数的像素，像素数值由pxielFlag决定
@@ -420,21 +415,16 @@ cv::Mat PxielToBit(const cv::Mat col) {
         pxielFlag = !pxielFlag;
         // 一轮填入完成后对像素标志取反，因为转义数组的相邻两个成员指代的数据位总是反的
     }
-    cv::Mat Bit = Mat(BitVector, true);
-    cout << "Bit = "<< Bit <<endl;
-
+    
+    // cout << "Bit = "<< Mat(BitVector, true).t() <<endl;
     return  Mat(BitVector, true).t();  // 根据文档这里是一列n行，所以进行转置
 }
 
 // ID识别函数
-int IDidentification(cv::Mat imageLED) {
-    // 获取中间列像素，并转置为行矩阵
-    // imageLED = (Mat_ < float >(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
-    cv::Mat col = imageLED.col(imageLED.size().height / 2);
-    col = col.t();  // 转置为行矩阵
+int IDidentification(const cv::Mat imageLED) {
 
     // 将获取的数据位矩阵作为待匹配矩阵
-    cv::Mat image_source = PxielToBit(col);
+    cv::Mat image_source = PxielToBit(imageLED);
 
     // 用模板匹配寻找数据位中的消息头，比如101010
     cv::Mat image_template = (cv::Mat_<double>(1, 6) << 1, 0, 1, 0, 1, 0);
