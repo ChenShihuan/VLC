@@ -369,16 +369,23 @@ void thinImage(Mat &srcimage)// 单通道、二值化后的图像
     }
 }
 
-// 将像素列解码为数位
-cv::Mat convertPxielColToBit(cv::Mat col) {
-    // col =  (cv::Mat_<uchar>(1, 18) << 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0); // 测试用例
-    // cout << "col = "<< col <<endl;
+/* -------------------【 将像素列解码为数位 】----------------
+功能：
+    将输入的已由列矩阵转置为行矩阵的像素列解码为数位
+输入数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的像素列
+输出数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的数位，由vector通过Mat(BitVector, true).t()生成
+--------------------------------------------------------------------------*/
+cv::Mat convertPxielRowToBit(cv::Mat row) {
+    // row =  (cv::Mat_<uchar>(1, 18) << 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0); // 测试用例
+    // cout << "row = "<< row <<endl;
 
     // 将中间列像素计数连续相同像素，并转义，例如001100001111转义为2244
     std::vector<int> SamePxielCount {};
     int pxielCount = 0;
     MatIterator_<uchar> start, it, end;
-    for( it = col.begin<uchar>(), end = col.end<uchar>(), start = it; it != end; it++) {
+    for( it = row.begin<uchar>(), end = row.end<uchar>(), start = it; it != end; it++) {
         if (*start != *it) {
             SamePxielCount.push_back(pxielCount);
             pxielCount = 1;
@@ -402,10 +409,10 @@ cv::Mat convertPxielColToBit(cv::Mat col) {
 
     // 识别图像第一个像素的高低电平，转化为数据位，高电平即位1
     int pxielFlag;
-    if (*col.begin<uchar>() == 255 || *col.begin<uchar>() == 1) {
+    if (*row.begin<uchar>() == 255 || *row.begin<uchar>() == 1) {
         pxielFlag = 1;
     } else {
-        pxielFlag = *col.begin<uchar>();  // 获取第一个像素
+        pxielFlag = *row.begin<uchar>();  // 获取第一个像素
     }
 
     for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount++) {
@@ -422,28 +429,42 @@ cv::Mat convertPxielColToBit(cv::Mat col) {
     return  Mat(BitVector, true).t();  // 根据文档这里是一列n行，所以进行转置
 }
 
-// 消息数据获取
+/* -------------------【 消息数据获取 】----------------
+功能：
+    输入待识别的LED灯图像和字节头矩阵，输出数据节矩阵，例如：
+    cv::Mat msgDate = getMsgDate(imageLED, msgHeaderStampTest);
+输入数据类型：
+    const cv::Mat imageLED 待识别的LED灯图像
+    cv::Mat headerStamp 字节头矩阵，注意，此参数仅接收CV_8U格式的cv::Mat_<uchar>(i, j)的一维矩阵，
+        输入示例 cv::Mat msgHeaderStampTest = (cv::Mat_<uchar>(1, 5) <<  0, 1, 0, 1, 0);
+输出数据类型：
+    正常情况 CV_8U格式的行矩阵
+        正常输出示例 msgDate = [  0,   0,   1,   1,   0,   0,   1,   0,   1,   1,   1]
+    异常情况 0矩阵，引发异常的原因包括：检测到的消息头区域重叠造成colRange提取消息区域出错；
+        没有检测到消息头区域造成vector.at出现数组越界出错。处理第一种异常会通过迭代继续检测
+        后面的部分直到无法找到而输出报错0矩阵；处理第二种异常直接返回输出报错0矩阵
+        异常输出示例 msgDate = [  0]
+--------------------------------------------------------------------------*/ 
 cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
 // cv::Mat getMsgDate(const cv::Mat imageLED) {
     // https://stackoverflow.com/questions/32737420/multiple-results-in-opencvsharp3-matchtemplate
     // 将获取的数据位矩阵作为待匹配矩阵
     cv::Mat col = imageLED.col(imageLED.size().height / 2);
     col = col.t();  // 转置为行矩阵
-    cv::Mat ref = convertPxielColToBit(col);
+    cv::Mat ref = convertPxielRowToBit(col);
     ref.convertTo(ref, CV_8U);
     std::cout << "Bit = "<< ref <<std::endl;
 
     // cv::cvtColor(headerStamp,headerStamp,cv::COLOR_BGR2GRAY);
     // cv::Mat headerStamp = (cv::Mat_<uchar>(1, 3) << 0, 1, 0);
-    
+
     // 用模板匹配寻找数据位中的消息头
-    cv::Mat res(ref.rows-headerStamp.rows+1, ref.cols-headerStamp.cols+1, CV_8U);
+    std::vector<int> HeaderStamp {};
+    cv::Mat res(ref.rows - headerStamp.rows + 1, ref.cols-headerStamp.cols + 1, CV_8U);
     cv::matchTemplate(ref, headerStamp, res, CV_TM_CCOEFF_NORMED);
     cv::threshold(res, res, 0.8, 1., CV_THRESH_TOZERO);
-    std::vector<int> HeaderStamp {};
 
-    while (true)
-    {
+    while (true) {
         double minval, maxval, threshold = 0.8;
         cv::Point minloc, maxloc;
         cv::minMaxLoc(res, &minval, &maxval, &minloc, &maxloc);
@@ -452,14 +473,33 @@ cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
             HeaderStamp.push_back(maxloc.x);
             // 漫水填充已经识别到的区域
             cv::floodFill(res, maxloc, cv::Scalar(0), 0, cv::Scalar(.1), cv::Scalar(1.));
-        } else
+        } else {
             break;
+        }
     }
 
     // 在两个消息头之间提取ROI区域，即位ID信息
     // cv::Mat MsgData;
     // MsgData = ref.colRange(HeaderStamp.at(0) + headerStamp.size().width, HeaderStamp.at(1));
     // cout << "MsgData = "<< MsgData <<endl;
-    return ref.colRange(HeaderStamp.at(0) + headerStamp.size().width, HeaderStamp.at(1));
+    int ptrHeaderStamp = 0;
+    getROI:
+    try {
+        return ref.colRange(HeaderStamp.at(ptrHeaderStamp) + headerStamp.size().width,
+                            HeaderStamp.at(ptrHeaderStamp + 1));
+    } catch ( cv::Exception& e ) {  // 异常处理
+        ptrHeaderStamp++;
+        // const char* err_msg = e.what();
+        // std::cout << "exception caught: " << err_msg << std::endl;
+        if (ptrHeaderStamp + 1 >= HeaderStamp.size()) {
+            std::cout << "此LED图像ID无法识别" << std::endl;
+            return cv::Mat_<uchar>(1, 1) << 0;
+        } else {
+            goto getROI;
+        }
+    } catch ( std::out_of_range& e ) {  // 异常处理
+        std::cout << "此LED图像ID无法识别" << std::endl;
+        return cv::Mat_<uchar>(1, 1) << 0;
+    }
 }
 
