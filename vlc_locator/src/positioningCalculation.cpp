@@ -24,9 +24,19 @@ cv::Mat pointOnMap(cv::Mat imgPoint, geometry_msgs::Point point) {
     return imgPoint;
 }
 
-// ---------------------------【geometry_msgs::Point double_LED函数】----------------------------
-//     描述：双灯定位计算
-// -----------------------------------------------------------------------------------------------
+/* -------------------【geometry_msgs::Point double_LED函数】----------------
+功能：双灯定位计算
+输入数据类型：
+    const double f, 焦距
+    const double Center_X, 图像X轴中心点
+    const double Center_Y, 图像Y轴中心点
+    const double Hight_of_LED, LED高度
+    const double Pixel_Size, CMOS的像素尺寸
+    const struct LED D1, 第一个灯的信息
+    const struct LED D2  第二个灯的信息
+输出数据类型
+    geometry_msgs::Point point ROS的geometry_msgs::Point格式描述的点
+-------------------------------------------------------------------------- */
 geometry_msgs::Point double_LED(const double f,
                                const double Center_X,
                                const double Center_Y,
@@ -190,9 +200,20 @@ geometry_msgs::Point double_LED(const double f,
     return point;
 }
 
-// ---------------------------【geometry_msgs::Point three_LED函数】----------------------------
-//     描述：三灯定位计算
-// -----------------------------------------------------------------------------------------------
+/* ------------------【geometry_msgs::Point three_LED函数】---------------
+功能：三灯定位计算
+输入数据类型：
+    const double f, 焦距
+    const double Center_X, 图像X轴中心点
+    const double Center_Y, 图像Y轴中心点
+    const double Hight_of_LED, LED高度
+    const double Pixel_Size, CMOS的像素尺寸
+    const struct LED D1, 第一个灯的信息
+    const struct LED D2  第二个灯的信息
+    const struct LED D2  第三个灯的信息
+输出数据类型
+    geometry_msgs::Point point ROS的geometry_msgs::Point格式描述的点
+--------------------------------------------------------------------------*/
 geometry_msgs::Point three_LED(const double f,
                                const double Center_X,
                                const double Center_Y,
