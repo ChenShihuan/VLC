@@ -8,7 +8,7 @@
 
 // ID识别函数
 int main() {
-    cv::Mat imageLED = imread("/home/chen/图片/800-1-1.bmp");
+    cv::Mat imageLED = imread("/home/chen/图片/1000-1-1.bmp");
     imshow("input", imageLED);
     // resize(imageLED,imageLED,Size(30,30),0,0,INTER_NEAREST);
     cv::cvtColor(imageLED,imageLED,cv::COLOR_BGR2GRAY);
