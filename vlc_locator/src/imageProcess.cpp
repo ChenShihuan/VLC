@@ -378,8 +378,7 @@ cv::Mat convertPxielColToBit(cv::Mat col) {
     std::vector<int> SamePxielCount {};
     int pxielCount = 0;
     MatIterator_<uchar> start, it, end;
-    // 最后一个像素范围无法记录！！！！
-    for( it = col.begin<uchar>(), end = col.end<uchar>(), start = it; it != end + 1; it++) {
+    for( it = col.begin<uchar>(), end = col.end<uchar>(), start = it; it != end; it++) {
         if (*start != *it) {
             SamePxielCount.push_back(pxielCount);
             pxielCount = 1;
@@ -388,6 +387,9 @@ cv::Mat convertPxielColToBit(cv::Mat col) {
             pxielCount++;
         }
     }
+    // 对最后一个像素特殊处理，因为不能适用前面的条件判断
+    pxielCount++;
+    SamePxielCount.push_back(pxielCount);
 
     // 获取转义数组中的最小值，即为一个字节所对应的像素
     int bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
