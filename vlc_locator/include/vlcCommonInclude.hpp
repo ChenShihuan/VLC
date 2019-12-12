@@ -42,12 +42,15 @@
 #define centerXofImageMax 1002.5
 #define centerYofImageMax 852.5
 
+// 消息头矩阵，比如101010
+const cv::Mat msgHeaderStamp = (cv::Mat_<uchar>(1, 6) << 1, 0, 1, 0, 1, 0);
+
 // -----------------------------------【命名空间声明部分】--------------------------------------  
 //     描述：包含程序所使用的命名空间  
 // -----------------------------------------------------------------------------------------------  
 
-using namespace cv;
-using namespace std;
+// using namespace cv;
+// using namespace std;
 
 // ----------------------------------·【结构体】--------------------------------------------
 //     描述：定义各种结构体  
@@ -65,11 +68,11 @@ struct LED{	// LED处理过程的结构体，用于存放图像处理过程中�
     int ID;								// 	ID,条纹数目
     double imgLocalX, imgLocalY;	// LED在图像上的像素坐标位置，,x坐标,y坐标
     double X, Y; 						// LED灯具的真实位置,x坐标,y坐标
-    Mat imgNext, matBinary;			
+    cv::Mat imgNext, matBinary;			
     int X_min, X_max, Y_min, Y_max;
-    Mat imgCut;
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
+    cv::Mat imgCut;
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
     int num;
     };
 

@@ -20,7 +20,7 @@ cv::Mat pointOnMap(cv::Mat imgPoint, geometry_msgs::Point point) {
     // -- 在平面地图上打点输出
     double xxx = 5*point.x;
     double yyy = 5*point.y;
-    circle(imgPoint, Point(270+xxx, 512-yyy), 10, Scalar(0, 0, 255));
+    circle(imgPoint, cv::Point(270+xxx, 512-yyy), 10, cv::Scalar(0, 0, 255));
     return imgPoint;
 }
 

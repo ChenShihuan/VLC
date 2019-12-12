@@ -17,8 +17,8 @@
 // ----------------------------------·【结构体】--------------------------------------------
 //     描述：定义各种结构体
 // -----------------------------------------------------------------------------------------------
-vector<struct LED> LEDs {};
-Mat imgPoint;
+std::vector<struct LED> LEDs {};
+cv::Mat imgPoint;
 
 // -----------------------------------【Get_coordinate()函数】------------------------------------
 //     描述：灰度图像传入，定位计算
@@ -228,12 +228,12 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
         }
     }
 
-    cout << "a="<< A.ID << '\n';
-    cout << "b="<< B.ID << '\n';
-    cout << "c="<< C.ID << '\n';
-    cout << "d="<< D.ID << '\n';
-    cout << "e="<< E.ID << '\n';
-    cout << "f="<< F.ID << '\n';
+    std::cout << "a="<< A.ID << '\n';
+    std::cout << "b="<< B.ID << '\n';
+    std::cout << "c="<< C.ID << '\n';
+    std::cout << "d="<< D.ID << '\n';
+    std::cout << "e="<< E.ID << '\n';
+    std::cout << "f="<< F.ID << '\n';
     // cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
     // cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
     // cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
@@ -253,7 +253,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     double Center_Y = centerYofImage;
 
     // 找出非0的ID，并将它在vector<struct LED> LEDs中的位置存入数组NonZeroID
-    vector<struct LED> LEDs {A, B, C, D, E, F};
+    std::vector<struct LED> LEDs {A, B, C, D, E, F};
     // cout << "test ID="<< LEDs[0].ID << '\n';
     int NonZeroID[LEDs.size()] {};
     int getNonZeroID = 0;
@@ -261,7 +261,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     for (int findNonZeroID = 0; findNonZeroID < LEDs.size() ; findNonZeroID++) {
         if (LEDs.at(findNonZeroID).ID != 0) {
             NonZeroID[getNonZeroID] = findNonZeroID;
-            cout << "LEDofNonZeroID="<< NonZeroID[getNonZeroID] << '\n';
+            std::cout << "LEDofNonZeroID="<< NonZeroID[getNonZeroID] << '\n';
             getNonZeroID++;
         }
         if (getNonZeroID == 3) {
@@ -273,7 +273,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
                         LEDs[NonZeroID[0]],
                         LEDs[NonZeroID[1]],
                         LEDs[NonZeroID[2]]);
-    cout << "3LED"<< '\n';
+    std::cout << "3LED"<< '\n';
 
     return Point;
 }

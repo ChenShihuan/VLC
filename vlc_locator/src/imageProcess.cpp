@@ -370,16 +370,15 @@ void thinImage(Mat &srcimage)// 单通道、二值化后的图像
 }
 
 // 将像素列解码为数位
-cv::Mat PxielToBit(const cv::Mat imageLED) {
-    cv::Mat col = imageLED.col(imageLED.size().height / 2);
-    col = col.t();  // 转置为行矩阵
+cv::Mat convertPxielColToBit(cv::Mat col) {
     // col =  (cv::Mat_<uchar>(1, 18) << 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0); // 测试用例
+    // cout << "col = "<< col <<endl;
 
-    cout << "col = "<< col <<endl;
     // 将中间列像素计数连续相同像素，并转义，例如001100001111转义为2244
-    vector<int> SamePxielCount {};
+    std::vector<int> SamePxielCount {};
     int pxielCount = 0;
     MatIterator_<uchar> start, it, end;
+    // 最后一个像素范围无法记录！！！！
     for( it = col.begin<uchar>(), end = col.end<uchar>(), start = it; it != end + 1; it++) {
         if (*start != *it) {
             SamePxielCount.push_back(pxielCount);
@@ -387,19 +386,19 @@ cv::Mat PxielToBit(const cv::Mat imageLED) {
             start = it;
         } else {
             pxielCount++;
-        }  
+        }
     }
 
     // 获取转义数组中的最小值，即为一个字节所对应的像素
     int bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
-    cout << "bit = "<< bit <<endl;
+    std::cout << "bit = "<< bit <<std::endl;
 
     // 将转义数组再转为数据位数组
-    vector<int> BitVector {};
+    std::vector<int> BitVector {};
     pxielCount = 0;
     int sameBitRaneg;
 
-    // 识别图像第一个像素的高低电平，转化为数据为，高电平即位1
+    // 识别图像第一个像素的高低电平，转化为数据位，高电平即位1
     int pxielFlag;
     if (*col.begin<uchar>() == 255 || *col.begin<uchar>() == 1) {
         pxielFlag = 1;
@@ -416,130 +415,49 @@ cv::Mat PxielToBit(const cv::Mat imageLED) {
         pxielFlag = !pxielFlag;
         // 一轮填入完成后对像素标志取反，因为转义数组的相邻两个成员指代的数据位总是反的
     }
-    
+
     // cout << "Bit = "<< Mat(BitVector, true).t() <<endl;
     return  Mat(BitVector, true).t();  // 根据文档这里是一列n行，所以进行转置
 }
 
-// ID识别函数
-int IDidentification(const cv::Mat imageLED) {
-
+// 消息数据获取
+cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
+// cv::Mat getMsgDate(const cv::Mat imageLED) {
+    // https://stackoverflow.com/questions/32737420/multiple-results-in-opencvsharp3-matchtemplate
     // 将获取的数据位矩阵作为待匹配矩阵
-    cv::Mat image_source = PxielToBit(imageLED);
+    cv::Mat col = imageLED.col(imageLED.size().height / 2);
+    col = col.t();  // 转置为行矩阵
+    cv::Mat ref = convertPxielColToBit(col);
+    ref.convertTo(ref, CV_8U);
+    std::cout << "Bit = "<< ref <<std::endl;
 
-    // 用模板匹配寻找数据位中的消息头，比如101010
-    cv::Mat image_template = (cv::Mat_<double>(1, 6) << 1, 0, 1, 0, 1, 0);
-    cv::Mat image_matched;
-    //模板匹配
-    cv::matchTemplate(image_source, image_template, image_matched, cv::TM_CCOEFF_NORMED);
+    // cv::cvtColor(headerStamp,headerStamp,cv::COLOR_BGR2GRAY);
+    // cv::Mat headerStamp = (cv::Mat_<uchar>(1, 3) << 0, 1, 0);
+    
+    // 用模板匹配寻找数据位中的消息头
+    cv::Mat res(ref.rows-headerStamp.rows+1, ref.cols-headerStamp.cols+1, CV_8U);
+    cv::matchTemplate(ref, headerStamp, res, CV_TM_CCOEFF_NORMED);
+    cv::threshold(res, res, 0.8, 1., CV_THRESH_TOZERO);
+    std::vector<int> HeaderStamp {};
+
+    while (true)
+    {
+        double minval, maxval, threshold = 0.8;
+        cv::Point minloc, maxloc;
+        cv::minMaxLoc(res, &minval, &maxval, &minloc, &maxloc);
+
+        if (maxval >= threshold) {
+            HeaderStamp.push_back(maxloc.x);
+            // 漫水填充已经识别到的区域
+            cv::floodFill(res, maxloc, cv::Scalar(0), 0, cv::Scalar(.1), cv::Scalar(1.));
+        } else
+            break;
+    }
 
     // 在两个消息头之间提取ROI区域，即位ID信息
-    // minMaxLoc(image_matched, &minVal, &maxVal, &minLoc, &maxLoc, Mat());  // 用于检测矩阵中最大值和最小值的位置
-    int ID;
-    return ID;
+    // cv::Mat MsgData;
+    // MsgData = ref.colRange(HeaderStamp.at(0) + headerStamp.size().width, HeaderStamp.at(1));
+    // cout << "MsgData = "<< MsgData <<endl;
+    return ref.colRange(HeaderStamp.at(0) + headerStamp.size().width, HeaderStamp.at(1));
 }
-
-// CvPoint getNextMinLoc(IplImage* result , int templatWidth,int templatHeight,double maxValIn , CvPoint lastLoc){
-
-//     int y,x;
-//     int startY,startX,endY,endX;
-
-//     //计算大矩形的坐标
-//     startY = lastLoc.y - templatHeight;
-//     startX = lastLoc.x - templatWidth;
-
-//     //计算大矩形的的坐标 
-//     endY = lastLoc.y + templatHeight;
-//     endX = lastLoc.x + templatWidth;
-
-//     //不允许矩形越界
-//     startY = startY < 0 ? 0 : startY;
-//     startX = startX < 0 ? 0 : startX;
-//     endY = endY > result->height-1 ? result->height-1 : endY;
-//     endX = endX > result->width - 1 ? result->width - 1 : endX; 
-
-//     //将大矩形内部 赋值为最大值 使得 以后找的最小值 不会位于该区域  避免找到重叠的目标       
-//     for(y=startY;y<endY;y++){
-//             for(x=startX;x<endX;x++){
-//                 cvSetReal2D(result,y,x,maxValIn);
-//             }
-//     }
-//     double minVal,maxVal;
-//     CvPoint minLoc,maxLoc;
-
-//     //查找result中的最小值 及其所在坐标        
-//     cvMinMaxLoc(result,&minVal,&maxVal,&minLoc,&maxLoc,NULL);
-//     return minLoc;
-// }
-
-// // ID识别函数
-// int IDidentification(cv::Mat imageLED) {
-//     // https://blog.csdn.net/u014751607/article/details/60953994
-//     // 获取中间列像素，并转置为行矩阵
-//     // imageLED = (Mat_ < float >(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
-//     cv::Mat col = imageLED.col(imageLED.size().height / 2);
-//     col = col.t();  // 转置为行矩阵
-
-//     IplImage*src,*templat,*result,*show;
-//     // cv::Mat src, templat, result, show;
-//     int srcW,templatW,srcH,templatH,resultW,resultH;
-//     //加载源图像
-//     // 将获取的数据位矩阵作为待匹配矩阵
-//     cv::Mat src = PxielToBit(col);
-//     // src = cvLoadImage("/home/chen/图片/lena.png" , CV_LOAD_IMAGE_GRAYSCALE);
-
-//     //加载用于显示结果的图像
-//     // show = cvLoadImage("/home/chen/图片/lena.png");//就是源图像
-
-//     //加载模板图像
-//     templat = (cv::Mat_<double>(1, 6) << 1, 0, 1, 0, 1, 0); // 根据文档PxielToBit转出来的可能是一行n列，此处行列可能为(6, 1)
-//     // templat = cvLoadImage("/home/chen/图片/template.png" , CV_LOAD_IMAGE_GRAYSCALE);
-
-//     if(!src || !templat){
-//             printf("打开图片失败");
-//             return 0;
-//     }
-
-//     srcW = src->width;
-//     srcH = src->height;
-
-//     templatW = templat->width;
-//     templatH = templat->height;
-
-//     if(srcW<templatW || srcH<templatH){
-//             printf("模板不能比原图小");
-//             return 0;
-//     }
-
-//     //计算结果矩阵的宽度和高度
-//     resultW = srcW - templatW + 1;
-//     resultH = srcH - templatH + 1;
-
-//     //创建存放结果的空间
-//     result = cvCreateImage(cvSize(resultW,resultH),32,1);
-
-//     double minVal,maxVal;
-//     CvPoint minLoc,maxLoc;
-
-//     //进行模板匹配
-//     cvMatchTemplate(src,templat,result,CV_TM_SQDIFF);
-
-//     //第一次查找最小值  即找到第一个最像的目标      
-//     cvMinMaxLoc(result,&minVal,&maxVal,&minLoc,&maxLoc,NULL);
-//     //绘制第一个查找结果到图像上        
-//     // cvRectangle(show,minLoc,cvPoint(minLoc.x+templat->width,minLoc.y+templat->height),CV_RGB(0,255,0),1);
-
-
-//     //查找第二个结果
-//     minLoc = getNextMinLoc( result , templat->width,templat->height,  maxVal ,  minLoc);
-//     //绘制第二个结果        
-//     // cvRectangle(show,minLoc,cvPoint(minLoc.x+templat->width,minLoc.y+templat->height),CV_RGB(0,255,0),1);
-
-//     //显示结果
-//     // cvNamedWindow("show");
-//     // cvShowImage("show",show);
-//     // cvWaitKey(0);
-
-//     return 0;
-// }
 

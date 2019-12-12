@@ -17,8 +17,8 @@
 // ----------------------------------·【结构体】--------------------------------------------
 //     描述：定义各种结构体
 // -----------------------------------------------------------------------------------------------
-vector<struct LED> LEDs {};
-Mat imgPoint;
+std::vector<struct LED> LEDs {};
+cv::Mat imgPoint;
 
 // -----------------------------------【Get_coordinate()函数】------------------------------------
 //     描述：灰度图像传入，定位计算
@@ -28,7 +28,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img) {
     // 1 2/3 4/5 6/7     9/10     11/12
     // struct LED unkonwn, A, B, C, D, E, F;
     // vector<struct LED> LEDs {A, B, C, D, E, F};
-    vector<struct LED> LEDs {};
+    std::vector<struct LED> LEDs {};
     geometry_msgs::Point Point;
     struct position P1 = {  // LED 序号
         1,  // ID_max,最大条纹数目
@@ -79,7 +79,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img) {
         // 470,  // LED灯具的真实位置,x坐标
         // -420,  // LED灯具的真实位置,y坐标
     };
-    vector<struct position> Position {P1, P2, P3, P4, P5, P6};
+    std::vector<struct position> Position {P1, P2, P3, P4, P5, P6};
 
     // 获取图片尺寸与800之比值，用于识别过于靠近边缘的灯具。
     cv::Size s = img.size();
@@ -237,12 +237,12 @@ geometry_msgs::Point Get_coordinate(cv::Mat img) {
         // }
     }
 
-    cout << "a="<< LEDs.at(0).ID << '\n';
-    cout << "a="<< LEDs.at(1).ID << '\n';
-    cout << "a="<< LEDs.at(2).ID << '\n';
-    cout << "a="<< LEDs.at(3).ID << '\n';
-    cout << "a="<< LEDs.at(4).ID << '\n';
-    cout << "a="<< LEDs.at(5).ID << '\n';
+    std::cout << "a="<< LEDs.at(0).ID << '\n';
+    std::cout << "a="<< LEDs.at(1).ID << '\n';
+    std::cout << "a="<< LEDs.at(2).ID << '\n';
+    std::cout << "a="<< LEDs.at(3).ID << '\n';
+    std::cout << "a="<< LEDs.at(4).ID << '\n';
+    std::cout << "a="<< LEDs.at(5).ID << '\n';
     // cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
     // cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
     // cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
@@ -270,7 +270,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img) {
     for (int findNonZeroID = 0; findNonZeroID < LEDs.size() ; findNonZeroID++) {
         if (LEDs.at(findNonZeroID).ID != 0) {
             NonZeroID[getNonZeroID] = findNonZeroID;
-            cout << "LEDofNonZeroID="<< NonZeroID[getNonZeroID] << '\n';
+            std::cout << "LEDofNonZeroID="<< NonZeroID[getNonZeroID] << '\n';
             getNonZeroID++;
         }
         if (getNonZeroID == 3) {
@@ -283,12 +283,12 @@ geometry_msgs::Point Get_coordinate(cv::Mat img) {
                             LEDs[NonZeroID[0]],
                             LEDs[NonZeroID[1]],
                             LEDs[NonZeroID[2]]);
-        cout << "3LED"<< '\n';
+        std::cout << "3LED"<< '\n';
     } else {
         Point = double_LED(f, Center_X, Center_Y, Hight_of_LED, Pixel_Size,
                             LEDs[NonZeroID[0]],
                             LEDs[NonZeroID[1]]);
-        cout << "2LED"<< '\n';
+        std::cout << "2LED"<< '\n';
     }
 
     return Point;
