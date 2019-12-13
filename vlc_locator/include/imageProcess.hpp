@@ -11,12 +11,6 @@
 
 #include "vlcCommonInclude.hpp"
 
-// -----------------------------------【命名空间声明部分】--------------------------------------
-//     描述：包含程序所使用的命名空间
-// -----------------------------------------------------------------------------------------------
-
-using namespace cv;
-
 // -----------------------------------------------------------------------------------------------
 // **********************************************************************************************
 // 
@@ -27,11 +21,10 @@ using namespace cv;
 
 
 double getThreshVal_Otsu_8u(const cv::Mat& _src);
-void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& imgNext);
-void bwareaopen(Mat &data, int n);
-void thinImage(Mat &srcimage);
+void ls_LED(const cv::Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, cv::Mat& imgNext);
+void bwareaopen(cv::Mat &data, int n);
+void thinImage(cv::Mat &srcimage);
 cv::Mat convertPxielRowToBit(cv::Mat col);
 cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp);
-// cv::Mat getMsgDate(const cv::Mat imageLED);
 
 #endif

@@ -21,6 +21,7 @@
 // threshold自动阈值，类似matlab中的graythresh。为了二值化
 double getThreshVal_Otsu_8u(const cv::Mat& _src)
 {
+    using namespace cv;
     cv::Size size = _src.size();
     if (_src.isContinuous())
     {
@@ -79,8 +80,9 @@ double getThreshVal_Otsu_8u(const cv::Mat& _src)
 
 
 // 将图片中的LED逐个进行分割
-void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat& imgNext)
+void ls_LED(const cv::Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, cv::Mat& imgNext)
 {
+    using namespace cv;
     Mat temp1= _img.clone();
 
     // 求xmin与xmax
@@ -199,8 +201,9 @@ void ls_LED(const Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, Mat
 
 
 // 起到MATLAB中，bwareaopen的功能，去除连通区域少于n的部分
-void bwareaopen(Mat &data, int n)
+void bwareaopen(cv::Mat &data, int n)
 {
+    using namespace cv;
     Mat labels, stats, centroids;
     connectedComponentsWithStats(data, labels, stats, centroids, 8, CV_16U);
     int regions_count = stats.rows - 1;
@@ -231,8 +234,9 @@ void bwareaopen(Mat &data, int n)
 
 
 // 实现对图像的细化
-void thinImage(Mat &srcimage)// 单通道、二值化后的图像
+void thinImage(cv::Mat &srcimage)// 单通道、二值化后的图像
 {
+    using namespace cv;
     using namespace std;
 
     vector<Point> deletelist1;
@@ -384,7 +388,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     // 将中间列像素计数连续相同像素，并转义，例如001100001111转义为2244
     std::vector<int> SamePxielCount {};
     int pxielCount = 0;
-    MatIterator_<uchar> start, it, end;
+    cv::MatIterator_<uchar> start, it, end;
     for( it = row.begin<uchar>(), end = row.end<uchar>(), start = it; it != end; it++) {
         if (*start != *it) {
             SamePxielCount.push_back(pxielCount);
@@ -426,7 +430,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     }
 
     // cout << "Bit = "<< Mat(BitVector, true).t() <<endl;
-    return  Mat(BitVector, true).t();  // 根据文档这里是一列n行，所以进行转置
+    return  cv::Mat(BitVector, true).t();  // 根据文档这里是一列n行，所以进行转置
 }
 
 /* -------------------【 消息数据获取 】----------------
