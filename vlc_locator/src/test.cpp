@@ -5,6 +5,7 @@
 #include <sstream>
 #include "imageProcess.hpp"
 #include "positioningCalculation.hpp"
+using namespace cv;
 
 // ID识别函数
 int main() {
