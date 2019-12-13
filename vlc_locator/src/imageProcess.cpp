@@ -492,6 +492,7 @@ cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
         ptrHeaderStamp++;
         // const char* err_msg = e.what();
         // std::cout << "exception caught: " << err_msg << std::endl;
+        std::cout << "正常现象，切勿惊慌" << std::endl;
         goto getROI;        
     } catch ( std::out_of_range& e ) {  // 异常处理
         std::cout << "此LED图像ID无法识别" << std::endl;
