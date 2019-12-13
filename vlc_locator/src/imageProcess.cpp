@@ -376,7 +376,7 @@ void thinImage(Mat &srcimage)// 单通道、二值化后的图像
     cv::Mat row 已由列矩阵转置为行矩阵的像素列
 输出数据类型：
     cv::Mat row 已由列矩阵转置为行矩阵的数位，由vector通过Mat(BitVector, true).t()生成
---------------------------------------------------------------------------*/
+------------------------------------------------------------*/
 cv::Mat convertPxielRowToBit(cv::Mat row) {
     // row =  (cv::Mat_<uchar>(1, 18) << 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0); // 测试用例
     // cout << "row = "<< row <<endl;
@@ -445,7 +445,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
         处理第一种异常会通过goto迭代继续检测后面的部分直到越界成为第二种情况；处理第二种异
         常直接返回输出报错0矩阵。
         异常输出示例 msgDate = [  0]
---------------------------------------------------------------------------*/ 
+--------------------------------------------------------*/ 
 cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
 // cv::Mat getMsgDate(const cv::Mat imageLED) {
     // https://stackoverflow.com/questions/32737420/multiple-results-in-opencvsharp3-matchtemplate
