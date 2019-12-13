@@ -441,8 +441,9 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     正常情况 CV_8U格式的行矩阵
         正常输出示例 msgDate = [  0,   0,   1,   1,   0,   0,   1,   0,   1,   1,   1]
     异常情况 0矩阵，引发异常的原因包括：检测到的消息头区域重叠造成colRange提取消息区域出错；
-        没有检测到消息头区域造成vector.at出现数组越界出错。处理第一种异常会通过迭代继续检测
-        后面的部分直到无法找到而输出报错0矩阵；处理第二种异常直接返回输出报错0矩阵
+        检测到最后一个消息头区域或者没有检测到消息头区域造成vector.at出现数组越界出错。
+        处理第一种异常会通过goto迭代继续检测后面的部分直到越界成为第二种情况；处理第二种异
+        常直接返回输出报错0矩阵。
         异常输出示例 msgDate = [  0]
 --------------------------------------------------------------------------*/ 
 cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
@@ -491,12 +492,7 @@ cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
         ptrHeaderStamp++;
         // const char* err_msg = e.what();
         // std::cout << "exception caught: " << err_msg << std::endl;
-        if (ptrHeaderStamp + 1 >= HeaderStamp.size()) {
-            std::cout << "此LED图像ID无法识别" << std::endl;
-            return cv::Mat_<uchar>(1, 1) << 0;
-        } else {
-            goto getROI;
-        }
+        goto getROI;        
     } catch ( std::out_of_range& e ) {  // 异常处理
         std::cout << "此LED图像ID无法识别" << std::endl;
         return cv::Mat_<uchar>(1, 1) << 0;
