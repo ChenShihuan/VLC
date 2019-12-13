@@ -24,6 +24,7 @@
 //     描述：灰度图像传入，定位计算
 // -----------------------------------------------------------------------------------------------
 geometry_msgs::Point Get_coordinate(cv::Mat img) {
+    using namespace cv;
     // int main() {
     // 1 2/3 4/5 6/7     9/10     11/12
     // struct LED unkonwn, A, B, C, D, E, F;

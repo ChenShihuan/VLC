@@ -26,7 +26,7 @@ cv::Mat imgPoint;
 geometry_msgs::Point Get_coordinate(cv::Mat img)
 // int main()
 // 1 2/3 4/5 6/7     9/10     11/12
-{
+{   using namespace cv;
     struct LED unkonwn, A, B, C, D, E, F;
     geometry_msgs::Point Point;
     struct position P1 = {  // LED 序号
