@@ -23,11 +23,13 @@ cv::Mat imgPoint;
 // -----------------------------------【Get_coordinate()函数】------------------------------------
 //     描述：灰度图像传入，定位计算
 // -----------------------------------------------------------------------------------------------
-geometry_msgs::Point Get_coordinate(cv::Mat img)
-// int main()
-// 1 2/3 4/5 6/7     9/10     11/12
-{   using namespace cv;
-    struct LED unkonwn, A, B, C, D, E, F;
+geometry_msgs::Point Get_coordinate(cv::Mat img) {
+    using namespace cv;
+    // int main() {
+    // 1 2/3 4/5 6/7     9/10     11/12
+    // struct LED unkonwn, A, B, C, D, E, F;
+    // vector<struct LED> LEDs {A, B, C, D, E, F};
+    std::vector<struct LED> LEDs {};
     geometry_msgs::Point Point;
     struct position P1 = {  // LED 序号
         1,  // ID_max,最大条纹数目
@@ -39,19 +41,19 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     struct position P2 = {  // LED 序号
         10,  // ID_max,最大条纹数目
         8,  // ID_min，最小条纹数目
-        -470,  // LED灯具的真实位置,x坐标
-        0,  // LED灯具的真实位置,y坐标
         // -470,  // LED灯具的真实位置,x坐标
-        // 490,  // LED灯具的真实位置,y坐标
+        // 0,  // LED灯具的真实位置,y坐标
+        -470,  // LED灯具的真实位置,x坐标
+        490,  // LED灯具的真实位置,y坐标
     };
 
     struct position P3 = {  // LED 序号
         3,  // ID_max,最大条纹数目
         2,  // ID_min，最小条纹数目
-        -470,  // LED灯具的真实位置,x坐标
-        -940,  // LED灯具的真实位置,y坐标
-        // -440,  // LED灯具的真实位置,x坐标
-        // -420,  // LED灯具的真实位置,y坐标
+        // -470,  // LED灯具的真实位置,x坐标
+        // -940,  // LED灯具的真实位置,y坐标
+        440,  // LED灯具的真实位置,x坐标
+        -420,  // LED灯具的真实位置,y坐标
     };
 
     struct position P4 = {  // LED 序号
@@ -64,20 +66,21 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     struct position P5 = {  // LED 序号
         7,  // ID_max,最大条纹数目
         6,  // ID_min，最小条纹数目
-        470,  // LED灯具的真实位置,x坐标
-        0,  // LED灯具的真实位置,y坐标
-        // 460,  // LED灯具的真实位置,x坐标
-        // 500,  // LED灯具的真实位置,y坐标
+        // 470,  // LED灯具的真实位置,x坐标
+        // 0,  // LED灯具的真实位置,y坐标
+        460,  // LED灯具的真实位置,x坐标
+        500,  // LED灯具的真实位置,y坐标
     };
 
     struct position P6 = {  // LED 序号
         5,  // ID_max,最大条纹数目
         4,  // ID_min，最小条纹数目
-        470,  // LED灯具的真实位置,x坐标
-        -940,  // LED灯具的真实位置,y坐标
         // 470,  // LED灯具的真实位置,x坐标
-        // -420,  // LED灯具的真实位置,y坐标
+        // -940,  // LED灯具的真实位置,y坐标
+        -470,  // LED灯具的真实位置,x坐标
+        -420,  // LED灯具的真实位置,y坐标
     };
+    std::vector<struct position> Position {P1, P2, P3, P4, P5, P6};
 
     // 获取图片尺寸与800之比值，用于识别过于靠近边缘的灯具。
     cv::Size s = img.size();
@@ -114,6 +117,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     // imshow("matBinary-1", matBinary);// 用于分割的
 
     for (int ii = 1; ii < 7; ii++) {
+        struct LED unkonwn;
         int X_min, X_max, Y_min, Y_max;
         Mat imgNext;
         ls_LED(matBinary, X_min, X_max, Y_min, Y_max, imgNext);
@@ -138,8 +142,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
                 if (r - 360 > 0) {  // 将r扩大
                     // LED1圆外面像素重载为原图
                     matBinary1.at<uchar>(i, j) = matBinary.at<uchar>(i, j);
-                }
-                else {
+                } else {
                     matBinary1.at<uchar>(i, j) = 0;
                     // 将第 i 行第 j 列像素值设置为255,二值化后为0和255
                 }
@@ -178,62 +181,23 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
         }
 
         // 根据ID判断对应的LED，并写入坐标值
-        if (unkonwn.ID <= P1.max && unkonwn.ID >= P1.min)
-            {unkonwn.X = P1.X;
-            unkonwn.Y = P1.Y;
-            unkonwn.num = 1;}
-        else if (unkonwn.ID <= P2.max && unkonwn.ID >= P2.min)
-            {unkonwn.X = P2.X;
-            unkonwn.Y = P2.Y;
-            unkonwn.num = 2;}
-        else if (unkonwn.ID <= P3.max && unkonwn.ID >= P3.min)
-            {unkonwn.X = P3.X;
-            unkonwn.Y = P3.Y;
-            unkonwn.num = 3;}
-        else if (unkonwn.ID <= P4.max && unkonwn.ID >= P4.min)
-            {unkonwn.X = P4.X;
-            unkonwn.Y = P4.Y;
-            unkonwn.num = 4;}
-        else if (unkonwn.ID <= P5.max && unkonwn.ID >= P5.min)
-            {unkonwn.X = P5.X;
-            unkonwn.Y = P5.Y;
-            unkonwn.num = 5;}
-        else if (unkonwn.ID <= P6.max && unkonwn.ID >= P6.min)
-            {unkonwn.X = P6.X;
-            unkonwn.Y = P6.Y;
-            unkonwn.num = 6;}
-
-
-
-        // 将以上的unknown结构体的值一起赋予某个灯具，释放出unknown
-        switch (ii) {
-        case 1:
-            A = unkonwn;
-            break;
-        case 2:
-            B = unkonwn;
-            break;
-        case 3:
-            C = unkonwn;
-            break;
-        case 4:
-            D = unkonwn;
-            break;
-        case 5:
-            E = unkonwn;
-            break;
-        case 6:
-            F = unkonwn;
-            break;
+        for (int numOfPosition = 0; numOfPosition < Position.size(); numOfPosition ++) {
+            if (unkonwn.ID <= Position.at(numOfPosition).max && unkonwn.ID >= Position.at(numOfPosition).min)
+            {unkonwn.X = Position.at(numOfPosition).X;
+            unkonwn.Y = Position.at(numOfPosition).Y;
+            unkonwn.num = numOfPosition + 1;}  // 为了遵循人类的计数方法，从第一个开始标号标记
         }
+
+        // 使用push_back将unknown结构体的值一起插入到vector末尾，赋予某个灯具，释放出unknown
+        LEDs.push_back(unkonwn);
     }
 
-    std::cout << "a="<< A.ID << '\n';
-    std::cout << "b="<< B.ID << '\n';
-    std::cout << "c="<< C.ID << '\n';
-    std::cout << "d="<< D.ID << '\n';
-    std::cout << "e="<< E.ID << '\n';
-    std::cout << "f="<< F.ID << '\n';
+    std::cout << "a="<< LEDs.at(0).ID << '\n';
+    std::cout << "b="<< LEDs.at(1).ID << '\n';
+    std::cout << "c="<< LEDs.at(2).ID << '\n';
+    std::cout << "d="<< LEDs.at(3).ID << '\n';
+    std::cout << "e="<< LEDs.at(4).ID << '\n';
+    std::cout << "f="<< LEDs.at(5).ID << '\n';
     // cout << "a=" << A.ID << '\n' << A.imgLocalX << '\n' << A.imgLocalY << '\n';
     // cout << "b=" << B.ID << '\n' << B.imgLocalX << '\n' << B.imgLocalY << '\n';
     // cout << "c=" << C.ID << '\n' << C.imgLocalX << '\n' << C.imgLocalY << '\n';
@@ -253,7 +217,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
     double Center_Y = centerYofImage;
 
     // 找出非0的ID，并将它在vector<struct LED> LEDs中的位置存入数组NonZeroID
-    std::vector<struct LED> LEDs {A, B, C, D, E, F};
+
     // cout << "test ID="<< LEDs[0].ID << '\n';
     int NonZeroID[LEDs.size()] {};
     int getNonZeroID = 0;
@@ -269,11 +233,14 @@ geometry_msgs::Point Get_coordinate(cv::Mat img)
         }
     }
     // 将非0的第一个与第二个灯(以及第三个灯)代入执行定位
-    Point = three_LED(f, Center_X, Center_Y,Hight_of_LED,Pixel_Size,
+    vlp::Point PointByVLP;
+
+    Point = PointByVLP.VLPbyLED(f, Center_X, Center_Y, Hight_of_LED, Pixel_Size,
                         LEDs[NonZeroID[0]],
                         LEDs[NonZeroID[1]],
                         LEDs[NonZeroID[2]]);
     std::cout << "3LED"<< '\n';
+
 
     return Point;
 }
