@@ -24,6 +24,7 @@ double getThreshVal_Otsu_8u(const cv::Mat& _src);
 void ls_LED(const cv::Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max, cv::Mat& imgNext);
 void bwareaopen(cv::Mat &data, int n);
 void thinImage(cv::Mat &srcimage);
+cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold);
 cv::Mat convertPxielRowToBit(cv::Mat col);
 cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp);
 

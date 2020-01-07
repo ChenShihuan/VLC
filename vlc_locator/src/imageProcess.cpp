@@ -373,6 +373,54 @@ void thinImage(cv::Mat &srcimage)// 单通道、二值化后的图像
     }
 }
 
+/* -------------------【 LED图像预处理 】----------------
+功能：
+    LED图像预处理，从原LED图像计算每行非0像素均值（理论上非0像素，实际上是某个阈值以上，目的是排除背景）
+    统计为列矩阵，并二值化处理为可供解码的像素列
+输入数据类型：
+    cv::Mat imgLED 切割出来的LED图像
+    int threshold 背景阈值
+输出数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的数位，由vector通过Mat(BitVector, true).t()生成
+------------------------------------------------------------*/
+cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
+    cv::cvtColor(imgLED,imgLED,cv::COLOR_BGR2GRAY);
+    // 创建掩模，用于均值运算。
+    cv::Mat maskOfimgLED;
+    cv::threshold(imgLED, maskOfimgLED, backgroundThreshold, 1, cv::THRESH_BINARY);
+
+    // 取阈值以上值的均值，逻辑是运用掩模，其中的数值为0或者1，为1的地方，计算出image中所有元素的均值，为0的地方，不计算
+    cv::Mat meanRowOfPxiel = imgLED.col(0).t();
+    int meanOfPxielRow;  //.val[0]表示第一个通道的均值
+    cv::MatIterator_<uchar> it, end;
+    int RowOfimgLED = 0;
+    for( it = meanRowOfPxiel.begin<uchar>(), end = meanRowOfPxiel.end<uchar>(); it != end; it++) {
+        meanOfPxielRow = cv::mean(imgLED.row(RowOfimgLED), maskOfimgLED.row(RowOfimgLED)).val[0];
+        RowOfimgLED ++;
+        std::cout << "值 = "<< meanOfPxielRow <<std::endl;
+        *it = meanOfPxielRow;
+    }
+    std::cout << "插值前 = "<< meanRowOfPxiel <<std::endl;
+    std::cout << "meanRowOfPxiel.rows = "<< meanRowOfPxiel.cols <<std::endl;
+
+    // 插值
+    cv::resize(meanRowOfPxiel, meanRowOfPxiel, cv::Size(meanRowOfPxiel.cols*3.9, 1), cv::INTER_CUBIC);
+    std::cout << "插值后 = "<< meanRowOfPxiel <<std::endl;
+
+    // 局部自适应阈值二值化
+    cv::Mat binRowOfPxiel;
+    cv::adaptiveThreshold(meanRowOfPxiel, binRowOfPxiel,
+                            255, cv::ADAPTIVE_THRESH_MEAN_C,
+                            cv::THRESH_BINARY, 45, 0);
+    std::cout << "插值后 = "<< binRowOfPxiel.t() <<std::endl;
+    cv::Mat binShow;
+    cv::resize(binRowOfPxiel, binShow, cv::Size(binRowOfPxiel.cols, 100), cv::INTER_CUBIC);
+    cv::imshow("binShow", binShow);
+    return binRowOfPxiel;
+    // return {};
+}
+
+
 /* -------------------【 将像素列解码为数位 】----------------
 功能：
     将输入的已由列矩阵转置为行矩阵的像素列解码为数位
@@ -454,11 +502,12 @@ cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
 // cv::Mat getMsgDate(const cv::Mat imageLED) {
     // https://stackoverflow.com/questions/32737420/multiple-results-in-opencvsharp3-matchtemplate
     // 将获取的数据位矩阵作为待匹配矩阵
-    cv::Mat col = imageLED.col(imageLED.size().height / 2);
+    cv::Mat col = imageLED.col(imageLED.size().width / 2);
     col = col.t();  // 转置为行矩阵
+    std::cout << "col = "<< col <<std::endl;
     cv::Mat ref = convertPxielRowToBit(col);
     ref.convertTo(ref, CV_8U);
-    std::cout << "Bit = "<< ref <<std::endl;
+    std::cout << "Bit = "<< ref.t() <<std::endl;
 
     // cv::cvtColor(headerStamp,headerStamp,cv::COLOR_BGR2GRAY);
     // cv::Mat headerStamp = (cv::Mat_<uchar>(1, 3) << 0, 1, 0);
