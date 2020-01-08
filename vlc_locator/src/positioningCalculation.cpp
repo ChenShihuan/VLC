@@ -42,6 +42,7 @@ geometry_msgs::Point double_LED(const double f,
     double y1;
     double x2;
     double y2;
+    double distance = 500; //需要的定位中心距离工业相机的中心距离为500mm
 
 
     // cout << "D1="<< D1.ID << '\n';
@@ -183,8 +184,8 @@ geometry_msgs::Point double_LED(const double f,
 
     geometry_msgs::Point point;
     // mm转化为m
-    point.x = XX / 1000;
-    point.y = YY / 1000;
+    point.x = (XX / 1000) - distance * cos(angle);
+    point.y = (YY / 1000) - distance * sin(angle);
     point.z = (Hight_of_LED - H/100) / 1000;
 
     return point;
@@ -213,6 +214,124 @@ geometry_msgs::Point three_LED(const double f,
     double y2 = D2.Y;
     double x3 = D3.X;
     double y3 = D3.Y;
+    
+    //计算角度//
+    double alpha;
+if ( D1.X == D2.X ) {
+        if (D1.Y < D2.Y) {
+            ImgX1 = D1.imgLocalX;
+            ImgY1 = D1.imgLocalY;
+            ImgX2 = D2.imgLocalX;
+            ImgY2 = D2.imgLocalY;
+            x1 = D1.X;
+            y1 = D1.Y;
+            x2 = D2.X;
+            y2 = D2.Y;
+        } else {
+            ImgX1 = D2.imgLocalX;
+            ImgY1 = D2.imgLocalY;
+            ImgX2 = D1.imgLocalX;
+            ImgY2 = D1.imgLocalY;
+            x1 = D2.X;
+            y1 = D2.Y;
+            x2 = D1.X;
+            y2 = D1.Y;
+        }
+        alpha = (pi/2);
+        // if (y1<y2){
+        // alpha = (pi/4)+(pi/4);
+        // }
+
+        // else{
+        // alpha = (3*pi/4)-(pi/4);
+        // }
+
+    } else if (D1.Y == D2.Y) {
+        if (D1.X < D2.X) {
+            ImgX1 = D1.imgLocalX;
+            ImgY1 = D1.imgLocalY;
+            ImgX2 = D2.imgLocalX;
+            ImgY2 = D2.imgLocalY;
+            x1 = D1.X;
+            y1 = D1.Y;
+            x2 = D2.X;
+            y2 = D2.Y;
+        } else {
+            ImgX1 = D2.imgLocalX;
+            ImgY1 = D2.imgLocalY;
+            ImgX2 = D1.imgLocalX;
+            ImgY2 = D1.imgLocalY;
+            x1 = D2.X;
+            y1 = D2.Y;
+            x2 = D1.X;
+            y2 = D1.Y;
+        }
+        alpha = 0;
+        // if (x1<x2){
+        // alpha = (pi/4)-(pi/4);
+        // }
+
+        // else{
+        // alpha = (3*pi/4)+(pi/4);
+        // }
+    } else {
+        if (D1.X < D2.X) {
+            ImgX1 = D1.imgLocalX;
+            ImgY1 = D1.imgLocalY;
+            ImgX2 = D2.imgLocalX;
+            ImgY2 = D2.imgLocalY;
+            x1 = D1.X;
+            y1 = D1.Y;
+            x2 = D2.X;
+            y2 = D2.Y;
+        } else {
+            ImgX1 = D2.imgLocalX;
+            ImgY1 = D2.imgLocalY;
+            ImgX2 = D1.imgLocalX;
+            ImgY2 = D1.imgLocalY;
+            x1 = D2.X;
+            y1 = D2.Y;
+            x2 = D1.X;
+            y2 = D1.Y;
+        }
+
+        alpha = atan((D2.Y - D1.Y) / (D2.X - D1.X));
+
+        // cout << "alpha=" << alpha / pi * 180 << '\n';
+    }
+
+
+    double angle;
+    if (ImgX2 == ImgX1) {
+        angle = (pi / 2);
+    } else {
+        angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+    }
+
+    // cout << "angle1=" << angle / pi * 180 << '\n';
+
+    // 由于对称性，要对角度做进一步处理
+    bool ABC = ImgY2 < ImgY1;
+    bool EFG = ImgX2 > ImgX1;
+    int ABCD = ABC * 2 + EFG;
+    // ABCD = 3;
+    // cout << "ABCD=" << ABCD << '\n';
+
+    switch (ABCD) {
+    case 0:
+        angle = - angle + alpha;
+        break;
+    case 1:
+        angle = pi - angle + alpha;
+        break;
+    case 2:
+        angle = - angle + alpha;
+        break;
+    case 3:
+        angle = pi - angle + alpha;
+        break;
+    }
+
 
     // 三灯定位
     double d_12 = sqrt(pow((ImgX1 - ImgX2), 2) + pow((ImgY1 - ImgY2), 2))*Pixel_Size;
@@ -247,8 +366,8 @@ geometry_msgs::Point three_LED(const double f,
     double b2 = 2 * (y2 - y3);
     double c2 = pow(x3, 2) - pow(x2, 2) + pow(y3, 2) - pow(y2, 2) - r3 + r2;
 
-    double XX = (c2 * b1 - c1 * b2) / (a1*b2 - a2 * b1);
-    double YY = (c2 * a1 - c1 * a2) / (a2*b1 - a1 * b2);
+    double XX = (c2 * b1 - c1 * b2) / (a1*b2 - a2 * b1) - distance*cos(angle);
+    double YY = (c2 * a1 - c1 * a2) / (a2*b1 - a1 * b2) - distance*sin(angle);
 
     geometry_msgs::Point point;
     // mm转化为m
@@ -258,4 +377,6 @@ geometry_msgs::Point three_LED(const double f,
 
     return point;
 }
+
+
 
