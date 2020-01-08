@@ -6,13 +6,164 @@
 #include "imageProcess.hpp"
 #include "positioningCalculation.hpp"
 using namespace cv;
+using namespace std;
+
+struct PxielPoint {
+    double i;
+    int val;
+};
+
+
+Mat polyfit(vector<Point>& in_point, int n)
+{
+	int size = in_point.size();
+	//所求未知数个数
+	int x_num = n + 1;
+	//构造矩阵U和Y
+	Mat mat_u(size, x_num, CV_64F);
+	Mat mat_y(size, 1, CV_64F);
+ 
+	for (int i = 0; i < mat_u.rows; ++i)
+		for (int j = 0; j < mat_u.cols; ++j)
+		{
+			mat_u.at<double>(i, j) = pow(in_point[i].x, j);
+		}
+ 
+	for (int i = 0; i < mat_y.rows; ++i)
+	{
+		mat_y.at<double>(i, 0) = in_point[i].y;
+	}
+ 
+	//矩阵运算，获得系数矩阵K
+	Mat mat_k(x_num, 1, CV_64F);
+	mat_k = (mat_u.t()*mat_u).inv()*mat_u.t()*mat_y;
+	cout << mat_k << endl;
+	return mat_k;
+}
+
+
+
+
+
+
 
 // ID识别函数
 int main() {
-    cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0011.jpg");
-    // imshow("input", imageLED1);
+    //准确的ROI捕获
+    cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0013.jpg");
+    // resize(imageLED1,imageLED1,Size(1280,960),0,0,INTER_NEAREST);
+    //转换为灰度图
+	Mat grayImage;//�Ҷ�ͼ
+	cv::cvtColor(imageLED1, grayImage, cv::COLOR_BGR2GRAY);
+	//imshow("grayImage", grayImage);
+    ///二值化
+	double m_threshold;//
+	cv::Mat matBinary;//
+	m_threshold = getThreshVal_Otsu_8u(grayImage);//
+	threshold(grayImage, matBinary, m_threshold, 255, 0); //
+	// imshow("matBinary", matBinary);
+
+    Mat matBinary6 = matBinary.clone();
+    //
+	Mat element = getStructuringElement(MORPH_ELLIPSE, Size(20, 20));
+	morphologyEx(matBinary, matBinary, MORPH_CLOSE, element);
+
+	//
+	bwareaopen(matBinary, 500);
+	// imshow("matBinary-1", matBinary);//连通区域
+
+    int Img_local_X1, Img_local_Y1, Img_local_X2, Img_local_Y2, Img_local_X3, Img_local_Y3;
+	Mat img1_next, matBinary11, img2_next, matBinary2, img3_next, matBinary3;
+	int X1_min, X1_max, Y1_min, Y1_max, X2_min, X2_max, Y2_min, Y2_max, X3_min, X3_max, Y3_min, Y3_max;
+    
+    for (int ii = 1;ii < 4;ii++)
+	{
+		int X_min, X_max, Y_min, Y_max;
+		Mat img_next;
+		ls_LED(matBinary, X_min, X_max, Y_min, Y_max, img_next);
+
+		//获得LED1像素中心的位置
+		double Img_local_X = (X_max + X_min) / 2;
+		double Img_local_Y = (Y_max + Y_min) / 2;
+
+        // 将原图中LED1部分的区域变黑
+        // 获取图像的行列
+		double rowB = matBinary.rows;//// 二值化图像的行数
+		double colB = matBinary.cols;//二值化图像的列数
+		Mat matBinary1 = matBinary.clone();//����һ��ͼ������ȥ��LED1��ͼ
+
+
+		for (double i = 0;i < rowB;i++)
+		{
+			for (double j = 0;j < colB;j++)
+			{
+				double r = pow((i - Img_local_Y), 2) + pow((j - Img_local_X), 2) - pow(((abs(X_max - X_min)) / 2 - 2), 2);//pow(x,y)����x��y�η�
+				if (r - 360 > 0)//
+				{
+					//
+					matBinary1.at<uchar>(i, j) = matBinary.at<uchar>(i, j);
+				}
+				else
+				{
+					matBinary1.at<uchar>(i, j) = 0;//
+				}
+			}
+		}
+		matBinary = matBinary1.clone();
+		bwareaopen(matBinary, 500);//
+		switch (ii)
+		{
+		case 1:
+			img1_next = img_next.clone();
+			Img_local_X1 = Img_local_X;
+			Img_local_Y1 = Img_local_Y;
+			matBinary11 = matBinary1.clone();
+			//���
+			X1_min = X_min;
+			X1_max = X_max;
+			Y1_min = Y_min;
+			Y1_max = Y_max;
+			break;
+		case 2:
+			img2_next = img_next.clone();
+			Img_local_X2 = Img_local_X;
+			Img_local_Y2 = Img_local_Y;
+			matBinary2 = matBinary1.clone();
+			//���
+			X2_min = X_min;
+			X2_max = X_max;
+			Y2_min = Y_min;
+			Y2_max = Y_max;
+			break;
+		case 3:
+			img3_next = img_next.clone();
+			Img_local_X3 = Img_local_X;
+			Img_local_Y3 = Img_local_Y;
+			matBinary3 = matBinary1.clone();
+			//���
+			X3_min = X_min;
+			X3_max = X_max;
+			Y3_min = Y_min;
+			Y3_max = Y_max;
+			break;
+		}
+	}
+
+
+
+
+
+
+///////////////////////**************************************//////////////////
+    // imshow("imageLED1", imageLED1);
     //提取ROI区域
-    cv::Mat imageLED=imageLED1(Rect(895,780,988-895,870-780));
+    // setMouseCallback("imageLED1", on_mouse,0);
+    // cv::Mat imageLED=imageLED1(Rect(895,780,988-895,870-780));
+    // cv::Mat imageLED=imageLED1(Rect(X1_min, Y1_min, X1_max - X1_min, Y1_max - Y1_min));
+    cv::Mat imageLED=imageLED1(Rect(X2_min, Y2_min, X2_max - X2_min, Y2_max - Y2_min));
+    // cv::Mat imageLED=imageLED1(Rect(X3_min, Y3_min, X3_max - X3_min, Y3_max - Y3_min));
+    // double m_threshold1 = getThreshVal_Otsu_8u(imageLED);
+
     imshow("input_ROI", imageLED);
     // resize(imageLED,imageLED,Size(30,30),0,0,INTER_NEAREST);
     cv::cvtColor(imageLED,imageLED,cv::COLOR_BGR2GRAY);//转换为黑白
@@ -69,8 +220,7 @@ int main() {
             }
             
         }
-        
-        msgDate.at<uchar>(i)=sum1/num;
+
     }
 
 
@@ -82,34 +232,119 @@ int main() {
     //插值
     //关于插值，可以参考https://blog.csdn.net/guyuealian/article/details/85097633
     cv::Mat msgDate_resize;
-    std::cout << "size:" << msgDate.size() << std::endl;
-    std::cout << "row:" << msgDate.rows << std::endl;
-    std::cout << "col:" << msgDate.cols << std::endl;
+    // std::cout << "size:" << msgDate.size() << std::endl;
+    // std::cout << "row:" << msgDate.rows << std::endl;
+    // std::cout << "col:" << msgDate.cols << std::endl;
 
     cv::resize(msgDate,msgDate_resize,Size(1,msgDate.rows*3.9),INTER_CUBIC);
     std::cout << "msgDate_resize= "<< msgDate_resize.t() <<std::endl;//将插值后的输出出来
+    // std::cout << "123456= "<< msgDate_resize.size() <<std::endl;
+
+
+    vector<Point> in_point {};//（x,y）x就是第几个像素，y就是对应像素值
+
+    for(int i=0; i<=msgDate_resize.rows; i++)
+    {
+        // in_point[i].x=i;
+        // in_point[i].y=msgDate_resize.at<uchar>(i);
+        in_point.push_back(Point(i,msgDate_resize.at<uchar>(i)));
+    }
+    std::cout << "123456= "<< in_point[7*9+6+5*9] <<std::endl;
+    
+    int n = 3;//**************************n次拟合*************************
+	Mat mat_k = polyfit(in_point, n);
+
+    //计算结果可视化
+	Mat out(1500, 1500, CV_8UC3,Scalar::all(0));
+ 
+	//画出拟合曲线
+	for (int i = in_point[0].x; i < in_point[size(in_point)-1].x; ++i)
+	{
+		Point2d ipt;
+		ipt.x = i;
+		ipt.y = 0;
+		for (int j = 0; j < n + 1; ++j)
+		{
+			ipt.y += mat_k.at<double>(j, 0)*pow(i,j);
+		}
+		circle(out, ipt, 1, Scalar(255, 255, 255), CV_FILLED, CV_AA);
+	}
+ 
+	//画出原始散点
+	for (int i = 0; i < size(in_point); ++i)
+	{
+		Point ipt = in_point[i];
+		circle(out, ipt, 1, Scalar(0, 0, 255), CV_FILLED, CV_AA);
+	}
+ 
+	imshow("n次拟合", out);
+    
 
     //采样
     std::vector<int> BitVector {};
+    std::vector<int> BitVector1 {};
+    std::vector<int> m_threshold2 {};
+    // for(int i = in_point[0].x; i < in_point[size(in_point)-1].x; ++i)
+    // {
+    //     Point2d ipt;
+	// 	ipt.x = i;
+	// 	ipt.y = 0;
+	// 	for (int j = 0; j < n + 1; ++j)
+	// 	{
+	// 		ipt.y += mat_k.at<double>(j, 0)*pow(i,j);
+	// 	}
+    //     m_threshold2.push_back(ipt.y);
+    // }
+    // std::cout << "66666666666666666666666= "<< m_threshold2.size()<<std::endl;//将采样后的输出出来
+    // std::cout << "1111111111111111111111111= "<< msgDate_resize.size()<<std::endl;
+
     double pxielFlag;
-    for(int i=1;i<=msgDate_resize.rows;i=i+9)
+    for(int i=0;i<=msgDate_resize.rows;i=i+9)
     {
         BitVector.push_back(msgDate_resize.at<uchar>(i));
+        BitVector1.push_back(msgDate_resize.at<uchar>(i));
+        Point2d ipt;
+		ipt.x = i;
+		ipt.y = 0;
+		for (int j = 0; j < n + 1; ++j)
+		{
+			ipt.y += mat_k.at<double>(j, 0)*pow(i,j);
+		}
+        m_threshold2.push_back(ipt.y);
+
     }
 
     Mat BitVector_Mat = Mat(BitVector, true).t();
-    std::cout << "msgDate_resize= "<< Mat(BitVector, true).t()<<std::endl;//将插值后的输出出来
+    std::cout << "msgDate_resize= "<< Mat(BitVector, true).t()<<std::endl;//将采样后的输出出来
+    std::cout << "m_threshold2= "<< Mat(m_threshold2, true).t()<<std::endl;//将采样后的输出出来
+
+
+    //多项式阈值判决
+    for (int i=0;i!=BitVector1.size();i++)
+    {
+        if (BitVector1[i]<=m_threshold2[i])
+        {
+            BitVector1[i]=0;
+        }
+        else
+        {
+            BitVector1[i]=1;
+        }
+        
+    }
+    std::cout << "阈值判决1= "<< Mat(BitVector1, true).t()<<std::endl;
 
 
     //阈值判断
-    double m_threshold;  // 获取自动阈值
-    m_threshold = getThreshVal_Otsu_8u(BitVector_Mat);  // 获取自动阈值
-    m_threshold = m_threshold + 23;
-    std::cout << "m_threshold= "<< m_threshold<<std::endl;
+    double m_threshold1 = getThreshVal_Otsu_8u(msgDate_resize);  // 获取自动阈值
+
+    // double m_threshold1 = m_threshold;
+    // m_threshold1=80;
+    std::cout << "m_threshold1= "<< m_threshold1<<std::endl;
 
     for (int i=0;i!=BitVector.size();i++)
     {
-        if (BitVector[i]<m_threshold)
+        if (BitVector[i]<=m_threshold1)
         {
             BitVector[i]=0;
         }
@@ -121,7 +356,8 @@ int main() {
     }
     // std::cout << "阈值判决= "<< Mat(BitVector, true).t()<<std::endl;
 
-    cv::Mat msgDataVector=Mat(BitVector, true).t();
+    // cv::Mat msgDataVector=Mat(BitVector, true).t();
+    cv::Mat msgDataVector=Mat(BitVector1, true).t();
     msgDataVector.convertTo(msgDataVector, CV_8U);
     std::cout << "阈值判决= "<< msgDataVector<<std::endl;
 
