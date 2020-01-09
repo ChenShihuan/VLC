@@ -387,7 +387,8 @@ cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
     cv::cvtColor(imgLED,imgLED,cv::COLOR_BGR2GRAY);
     // 创建掩模，用于均值运算。
     cv::Mat maskOfimgLED;
-    cv::threshold(imgLED, maskOfimgLED, backgroundThreshold, 1, cv::THRESH_BINARY);
+    cv::threshold(imgLED, maskOfimgLED, backgroundThreshold, 255, cv::THRESH_BINARY);
+    cv::imshow("maskOfimgLED", maskOfimgLED);
 
     // 取阈值以上值的均值，逻辑是运用掩模，其中的数值为0或者1，为1的地方，计算出image中所有元素的均值，为0的地方，不计算
     cv::Mat meanRowOfPxiel = imgLED.col(0).t();
@@ -410,10 +411,11 @@ cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
     // 局部自适应阈值二值化
     cv::Mat binRowOfPxiel;
     cv::adaptiveThreshold(meanRowOfPxiel, binRowOfPxiel,
-                            255, cv::ADAPTIVE_THRESH_MEAN_C,
-                            cv::THRESH_BINARY, 45, 0);
+                            1, cv::ADAPTIVE_THRESH_GAUSSIAN_C,
+                            cv::THRESH_BINARY, 21, 0);
     std::cout << "插值后 = "<< binRowOfPxiel.t() <<std::endl;
     cv::Mat binShow;
+    threshold(binRowOfPxiel, binShow, 0, 255, cv::THRESH_BINARY);
     cv::resize(binRowOfPxiel, binShow, cv::Size(binRowOfPxiel.cols, 100), cv::INTER_CUBIC);
     cv::imshow("binShow", binShow);
     return binRowOfPxiel;
@@ -502,8 +504,8 @@ cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
 // cv::Mat getMsgDate(const cv::Mat imageLED) {
     // https://stackoverflow.com/questions/32737420/multiple-results-in-opencvsharp3-matchtemplate
     // 将获取的数据位矩阵作为待匹配矩阵
-    cv::Mat col = imageLED.col(imageLED.size().width / 2);
-    col = col.t();  // 转置为行矩阵
+    cv::Mat col = ImagePreProcessing(imageLED, 20);
+    // col = col.t();  // 转置为行矩阵
     std::cout << "col = "<< col <<std::endl;
     cv::Mat ref = convertPxielRowToBit(col);
     ref.convertTo(ref, CV_8U);

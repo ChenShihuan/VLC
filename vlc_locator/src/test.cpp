@@ -7,16 +7,27 @@
 #include "positioningCalculation.hpp"
 
 int main() {
-    cv::Mat imageLED = cv::imread("vlc_locator/8kTest/frame0015-2.jpg");
+    cv::Mat imageLED = cv::imread("vlc_locator/test image/frame0010-2.jpg");
     imshow("input", imageLED);
 
-    imageLED = ImagePreProcessing(imageLED, 20);
+    // imageLED = ImagePreProcessing(imageLED, 20);
+
+
+
+    // cv::Mat bit;
+    // bit = ImagePreProcessing(imageLED, 20);
+    // std::cout << "Bit = "<< bit <<std::endl;
+    cv::Mat msgHeaderStampTest = (cv::Mat_<uchar>(1, 5) <<  0, 1, 0, 1, 0);
+    cv::Mat msgDate = getMsgDate(imageLED, msgHeaderStampTest);
+
+    std::cout << "msgDate = "<< msgDate <<std::endl;
     cvWaitKey(0);
     return 0;
 }
 
 // ID识别函数
 // int main() {
+//     using namespace cv;
 //     cv::Mat imageLED = cv::imread("vlc_locator/8kTest/frame0015-1.jpg");
 //     imshow("input", imageLED);
 //     resize(imageLED,imageLED,Size(30,30),0,0,INTER_NEAREST);
@@ -30,7 +41,7 @@ int main() {
 //     threshold(imageLED, imageLED, 100, 255, 0);  // 二值化
 //     cv::imshow("二值化", imageLED);
 
-//     获取中间列像素，并转置为行矩阵
+//     // 获取中间列像素，并转置为行矩阵
 //     imageLED = (Mat_ < float >(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
 //     cv::Mat col = imageLED.col(imageLED.size().height / 2);
 //     col = col.t();  // 转置为行矩阵
