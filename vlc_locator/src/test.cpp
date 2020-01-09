@@ -379,7 +379,7 @@ int main() {
     std::cout << "多项式阈值判决结果= "<<endl<< Mat(BitVector_ploy, true).t()<<std::endl;
 
 
-    ////////////////////////////////////pixel区域阈值判决
+    ////////////////////////////////////pixel区域阈值判决*********************************
     eachpixel_sample;
     std::vector<int> BitVector_eachpixel_ =BitVector;
 
@@ -514,7 +514,7 @@ int main() {
             {
                 goto sample_again;
             }
-            sample_point=0;
+            sample_point=-1;
             which_threshold++;
         }
         if (which_threshold==2)
@@ -524,12 +524,12 @@ int main() {
             {
                 goto sample_again;
             }
-            sample_point=0;
+            sample_point=-1;
             which_threshold++;
         }
     }
 
-    std::cout << "LED_ID="<<LED_ID << std::endl;
+    std::cout << "LED_IDhahahah="<<LED_ID << std::endl;
 
     
     
