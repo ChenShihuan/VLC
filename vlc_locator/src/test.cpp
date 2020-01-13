@@ -7,7 +7,7 @@
 #include "positioningCalculation.hpp"
 using namespace cv;
 using namespace std;
-int which_threshold=3;//一个键位来定义到底用哪种方法
+int which_threshold=0;//一个键位来定义到底用哪种方法
 
 struct PxielPoint {
     double i;
@@ -50,8 +50,9 @@ Mat polyfit(vector<Point>& in_point, int n)
 // ID识别函数
 int main() {
 //**********************************先进行准确的ROI捕获******************************************
-    cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0015.jpg");
-    // resize(imageLED1,imageLED1,Size(1280,960),0,0,INTER_NEAREST);
+    cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0013.jpg");
+    // std::cout<<"原图片尺寸"<<imageLED1.size()<<endl;
+    // resize(imageLED1,imageLED1,Size(1280,960),0,0,INTER_NEAREST);//减少1.6倍
     //转换为灰度图
 	Mat grayImage;//定义灰度图
 	cv::cvtColor(imageLED1, grayImage, cv::COLOR_BGR2GRAY);
@@ -154,8 +155,8 @@ int main() {
     // imshow("imageLED1", imageLED1);
     //提取ROI区域
     ///////////////////////*******************通过下面来选取某个ROI区域*******************//////////////////
-    // cv::Mat imageLED=imageLED1(Rect(X1_min, Y1_min, X1_max - X1_min, Y1_max - Y1_min));
-    cv::Mat imageLED=imageLED1(Rect(X2_min, Y2_min, X2_max - X2_min, Y2_max - Y2_min));
+    cv::Mat imageLED=imageLED1(Rect(X1_min, Y1_min, X1_max - X1_min, Y1_max - Y1_min));
+    // cv::Mat imageLED=imageLED1(Rect(X2_min, Y2_min, X2_max - X2_min, Y2_max - Y2_min));
     // cv::Mat imageLED=imageLED1(Rect(X3_min, Y3_min, X3_max - X3_min, Y3_max - Y3_min));
 
     imshow("select_ROI", imageLED);//输出对应的ROI区域
@@ -222,8 +223,8 @@ int main() {
     // std::cout << "size:" << msgDate.size() << std::endl;
     // std::cout << "row:" << msgDate.rows << std::endl;
     // std::cout << "col:" << msgDate.cols << std::endl;
-
-    cv::resize(msgDate,msgDate_resize,Size(1,msgDate.rows*3.9),INTER_CUBIC);
+    double chazhi=3.9;//大小变了，对应插值变但采样不变
+    cv::resize(msgDate,msgDate_resize,Size(1,msgDate.rows*chazhi),INTER_CUBIC);
     // std::cout << "插值后信号数目 = "<< msgDate_resize.rows <<std::endl;
     std::cout << "插值msgDate_resize= "<< msgDate_resize.t() <<std::endl;//将插值后的输出出来
     // std::cout << "123456= "<< msgDate_resize.size() <<std::endl;
@@ -329,8 +330,9 @@ int main() {
 //////////////////////////////**************************采样*****************************************
     
     int sample_point=0;//采样点（0～9）
+    int sample_interval=9;//采样间隔
 
-    sample_again: std::cout << "******sample_again"<<sample_point<<"   次"<<std::endl;
+    sample_again: std::cout << "******sample_again   "<<sample_point<<"   次"<<std::endl;
 
     std::vector<int> BitVector {};//自适应阈值
     // std::vector<int> BitVector1 {};
@@ -339,7 +341,7 @@ int main() {
     std::vector<int> adaptive_threshold {};//局部自适应阈值
 
     double pxielFlag;
-    for(int i=sample_point;i<=msgDate_resize.rows;i=i+9)
+    for(int i=sample_point;i<=msgDate_resize.rows;i=i+sample_interval)
     {
         BitVector.push_back(msgDate_resize.at<uchar>(i));//数据采样
         eachpixel_sample.push_back(eachpixel_threshold[i]);//小范围的自适应阈值采样
@@ -446,7 +448,7 @@ int main() {
         }
         
     }
-    std::cout << "局部自适应阈值判决= "<< Mat(BitVector_adaptive_threshold_, true).t()<<std::endl;
+    // std::cout << "局部自适应阈值判决= "<< Mat(BitVector_adaptive_threshold_, true).t()<<std::endl;
     ////////////////////////////////////方法4：局部自适应阈值判决*********************************
 
 
@@ -458,7 +460,7 @@ int main() {
 
     // double m_threshold1 = m_threshold;
     // m_threshold1=80;
-    std::cout << "m_threshold1= "<< m_threshold1<<std::endl;
+    // std::cout << "m_threshold1= "<< m_threshold1<<std::endl;
 
     for (int i=0;i!=BitVector.size();i++)
     {
@@ -564,7 +566,7 @@ int main() {
         if (which_threshold==0)//采用第一种方法
         {
             sample_point++;
-            if (sample_point<=9)
+            if (sample_point<=sample_interval)
             {
                 goto sample_again;//重新采样
             }
@@ -575,7 +577,7 @@ int main() {
         {
             
             sample_point++;
-            if (sample_point<=9)
+            if (sample_point<=sample_interval)
             {
                 goto sample_again;
             }
@@ -585,7 +587,7 @@ int main() {
         if (which_threshold==2)
         {
             sample_point++;
-            if (sample_point<=9)
+            if (sample_point<=sample_interval)
             {
                 goto sample_again;
             }
@@ -595,7 +597,7 @@ int main() {
         if (which_threshold==3)
         {
             sample_point++;
-            if (sample_point<=9)
+            if (sample_point<=sample_interval)
             {
                 goto sample_again;
             }
