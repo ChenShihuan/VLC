@@ -7,7 +7,7 @@
 #include "positioningCalculation.hpp"
 using namespace cv;
 using namespace std;
-int which_threshold=3;//一个键位来定义到底用哪种方法
+int which_threshold=0;//一个键位来定义到底用哪种方法
 
 struct PxielPoint {
     double i;
@@ -330,7 +330,7 @@ int main() {
     
     int sample_point=0;//采样点（0～9）
 
-    sample_again: std::cout << "******************sample_again***************"<<std::endl;
+    sample_again: std::cout << "******sample_again"<<sample_point<<"   次"<<std::endl;
 
     std::vector<int> BitVector {};//自适应阈值
     // std::vector<int> BitVector1 {};
