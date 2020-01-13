@@ -23,61 +23,63 @@ Mat imgPoint;
 // -----------------------------------【Get_coordinate()函数】------------------------------------
 //     描述：灰度图像传入，定位计算
 // -----------------------------------------------------------------------------------------------
+
 geometry_msgs::Point Get_coordinate(cv::Mat img)
 // int main()
 // 1 2/3 4/5 6/7     9/10     11/12
 {
-    struct LED unkonwn, A, B, C, D, E, F;
-    geometry_msgs::Point Point;
-    struct position P1 = {  // LED 序号
-        1,  // ID_max,最大条纹数目
-        1,  // ID_min，最小条纹数目
-        -470,  // LED灯具的真实位置,x坐标
-        940,  // LED灯具的真实位置,y坐标
-    };
+	struct LED unkonwn,A,B,C,D,E,F;
+	// cout << "111" << '\n';
+	geometry_msgs::Point Point;
+	struct position P1 = {	// LED 序号  1k
+		5,		// ID_max,最大条纹数目 
+		2,		// ID_min，最小条纹数目
+		130,	// LED灯具的真实位置,x坐标
+		1590,	// LED灯具的真实位置,y坐标
+	};
 
-    struct position P2 = {  // LED 序号
-        10,  // ID_max,最大条纹数目
-        8,  // ID_min，最小条纹数目
-        -470,  // LED灯具的真实位置,x坐标
-        0,  // LED灯具的真实位置,y坐标
-        // -470,  // LED灯具的真实位置,x坐标
-        // 490,  // LED灯具的真实位置,y坐标
-    };
+	struct position P2 = {	// LED 序号   5k
+		25,		// ID_max,最大条纹数目 
+		11,		// ID_min，最小条纹数目
+		1590,	// LED灯具的真实位置,x坐标
+		130,   	// LED灯具的真实位置,y坐标
+		// -470,	// LED灯具的真实位置,x坐标
+		// 490,	// LED灯具的真实位置,y坐标
+	};
 
-    struct position P3 = {  // LED 序号
-        3,  // ID_max,最大条纹数目
-        2,  // ID_min，最小条纹数目
-        -470,  // LED灯具的真实位置,x坐标
-        -940,  // LED灯具的真实位置,y坐标
-        // -440,  // LED灯具的真实位置,x坐标
-        // -420,  // LED灯具的真实位置,y坐标
-    };
+	struct position P3 = {	// LED 序号  3k
+		9,		// ID_max,最大条纹数目 
+		6,		// ID_min，最小条纹数目
+		1590,	// LED灯具的真实位置,x坐标
+		1590,	// LED灯具的真实位置,y坐标
+		// -440,	// LED灯具的真实位置,x坐标
+		// -420,	// LED灯具的真实位置,y坐标
+	};
 
-    struct position P4 = {  // LED 序号
-        13,  // ID_max,最大条纹数目
-        11,  // ID_min，最小条纹数目
-        490,  // LED灯具的真实位置,x坐标
-        940,  // LED灯具的真实位置,y坐标
-    };
+	struct position P4 = {	// LED 序号  0
+		1,		// ID_max,最大条纹数目 
+		0,		// ID_min，最小条纹数目
+		3050,	// LED灯具的真实位置,x坐标
+		1590,	// LED灯具的真实位置,y坐标
+	};
 
-    struct position P5 = {  // LED 序号
-        7,  // ID_max,最大条纹数目
-        6,  // ID_min，最小条纹数目
-        470,  // LED灯具的真实位置,x坐标
-        0,  // LED灯具的真实位置,y坐标
-        // 460,  // LED灯具的真实位置,x坐标
-        // 500,  // LED灯具的真实位置,y坐标
-    };
+	struct position P5 = {	// LED 序号
+		700000,		// ID_max,最大条纹数目 
+		60000,		// ID_min，最小条纹数目
+		1590,	// LED灯具的真实位置,x坐标
+		130,	// LED灯具的真实位置,y坐标
+		// 460,	// LED灯具的真实位置,x坐标
+		// 500,	// LED灯具的真实位置,y坐标
+	};
 
-    struct position P6 = {  // LED 序号
-        5,  // ID_max,最大条纹数目
-        4,  // ID_min，最小条纹数目
-        470,  // LED灯具的真实位置,x坐标
-        -940,  // LED灯具的真实位置,y坐标
-        // 470,  // LED灯具的真实位置,x坐标
-        // -420,  // LED灯具的真实位置,y坐标
-    };
+	struct position P6 = {	//LED 序号
+		50000000,		// ID_max,最大条纹数目 
+		4000000,		// ID_min，最小条纹数目
+		470,	// LED灯具的真实位置,x坐标
+		-940,	// LED灯具的真实位置,y坐标
+		// 470,	// LED灯具的真实位置,x坐标
+		// -420,	// LED灯具的真实位置,y坐标
+	};
 
     // 获取图片尺寸与800之比值，用于识别过于靠近边缘的灯具。
     cv::Size s = img.size();
