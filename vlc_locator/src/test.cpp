@@ -7,7 +7,7 @@
 #include "positioningCalculation.hpp"
 using namespace cv;
 using namespace std;
-int which_threshold=0;//一个键位来定义到底用哪种方法
+int which_threshold=3;//一个键位来定义到底用哪种方法
 
 struct PxielPoint {
     double i;
@@ -50,7 +50,7 @@ Mat polyfit(vector<Point>& in_point, int n)
 // ID识别函数
 int main() {
 //**********************************先进行准确的ROI捕获******************************************
-    cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0015.jpg");
+    cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0010.jpg");
     // resize(imageLED1,imageLED1,Size(1280,960),0,0,INTER_NEAREST);
     //转换为灰度图
 	Mat grayImage;//定义灰度图
@@ -155,8 +155,8 @@ int main() {
     //提取ROI区域
     ///////////////////////*******************通过下面来选取某个ROI区域*******************//////////////////
     // cv::Mat imageLED=imageLED1(Rect(X1_min, Y1_min, X1_max - X1_min, Y1_max - Y1_min));
-    // cv::Mat imageLED=imageLED1(Rect(X2_min, Y2_min, X2_max - X2_min, Y2_max - Y2_min));
-    cv::Mat imageLED=imageLED1(Rect(X3_min, Y3_min, X3_max - X3_min, Y3_max - Y3_min));
+    cv::Mat imageLED=imageLED1(Rect(X2_min, Y2_min, X2_max - X2_min, Y2_max - Y2_min));
+    // cv::Mat imageLED=imageLED1(Rect(X3_min, Y3_min, X3_max - X3_min, Y3_max - Y3_min));
 
     imshow("select_ROI", imageLED);//输出对应的ROI区域
     cv::cvtColor(imageLED,imageLED,cv::COLOR_BGR2GRAY);//转换为黑白
@@ -168,7 +168,7 @@ int main() {
     // std::cout << "col:" << imageLED.cols << std::endl;//列数目
     //定义一个空矩阵来存放
     cv::Mat msgDateoringal=imageLED.col(imageLED.size().height / 2);//中间列像素
-    std::cout << "中间列像素msgDate = "<< msgDateoringal.t() <<std::endl;//将消息输出出来
+    // std::cout << "中间列像素msgDate = "<< msgDateoringal.t() <<std::endl;//将消息输出出来
 
 //**************************对于每一行的像素值求和平均**********************************############
     //method1(old)
@@ -210,9 +210,9 @@ int main() {
 
     msgDate=msgDate.t();
     // cv::Mat msgDate = getMsgDate(imageLED);
-    std::cout << "取平均后选出的列像素msgDate = "<< msgDate.t() <<std::endl;//将消息输出出来
-    std::cout << "两者的差别 = "<< abs(msgDate.t()-msgDateoringal.t()) <<std::endl;//将消息输出出来
-    std::cout << "插值前信号数目 = "<< msgDate.rows <<std::endl;
+    // std::cout << "取平均后选出的列像素msgDate = "<< msgDate.t() <<std::endl;//将消息输出出来
+    // std::cout << "两者的差别 = "<< abs(msgDate.t()-msgDateoringal.t()) <<std::endl;//将消息输出出来
+    // std::cout << "插值前信号数目 = "<< msgDate.rows <<std::endl;
 //*******************************对于每一行的像素值求和平均**********************************############
 
     
@@ -224,7 +224,7 @@ int main() {
     // std::cout << "col:" << msgDate.cols << std::endl;
 
     cv::resize(msgDate,msgDate_resize,Size(1,msgDate.rows*3.9),INTER_CUBIC);
-    std::cout << "插值后信号数目 = "<< msgDate_resize.rows <<std::endl;
+    // std::cout << "插值后信号数目 = "<< msgDate_resize.rows <<std::endl;
     std::cout << "插值msgDate_resize= "<< msgDate_resize.t() <<std::endl;//将插值后的输出出来
     // std::cout << "123456= "<< msgDate_resize.size() <<std::endl;
 
@@ -246,27 +246,27 @@ int main() {
     int n = 3;//**************************n次拟合*************************
 	Mat mat_k = polyfit(in_point, n);
 
-    //计算结果可视化
-	Mat out(800, 800, CV_8UC3,Scalar::all(0));
- 	//画出原始散点
-	for (int i = 0; i < size(in_point); ++i)
-	{
-		Point ipt = in_point[i];
-		circle(out, ipt, 1, Scalar(0, 0, 255), -1);//https://www.cnblogs.com/skyfsm/p/6897313.html
-	}
+    // //计算结果可视化
+	// Mat out(800, 800, CV_8UC3,Scalar::all(0));
+ 	// //画出原始散点
+	// for (int i = 0; i < size(in_point); ++i)
+	// {
+	// 	Point ipt = in_point[i];
+	// 	circle(out, ipt, 1, Scalar(0, 0, 255), -1);//https://www.cnblogs.com/skyfsm/p/6897313.html
+	// }
 
-	//画出拟合曲线
-	for (int i = in_point[0].x; i < in_point[size(in_point)-1].x; ++i)
-	{
-		Point2d ipt;
-		ipt.x = i;
-		ipt.y = 0;
-		for (int j = 0; j < n + 1; ++j)
-		{
-			ipt.y += mat_k.at<double>(j, 0)*pow(i,j);
-		}
-		circle(out, ipt, 1, Scalar(255, 255, 255), CV_FILLED, CV_AA);
-	}
+	// //画出拟合曲线
+	// for (int i = in_point[0].x; i < in_point[size(in_point)-1].x; ++i)
+	// {
+	// 	Point2d ipt;
+	// 	ipt.x = i;
+	// 	ipt.y = 0;
+	// 	for (int j = 0; j < n + 1; ++j)
+	// 	{
+	// 		ipt.y += mat_k.at<double>(j, 0)*pow(i,j);
+	// 	}
+	// 	circle(out, ipt, 1, Scalar(255, 255, 255), CV_FILLED, CV_AA);
+	// }
  
  
 	// imshow("n次拟合", out);
@@ -293,14 +293,19 @@ int main() {
     for(int i=0;i<=msgDate_resize.rows;i++)
     {
         int pixel_Y_min;
-        if (i>=radius)
+        if (i>radius/2 && msgDate_resize.rows-i>radius/2)
         {
-            pixel_Y_min=i-radius;
+            pixel_Y_min=i-radius/2;
         }
-        else
+        else if (i<=radius/2)
         {
             pixel_Y_min=0;
         }
+        else if (msgDate_resize.rows-i<=radius/2)
+        {
+            pixel_Y_min=msgDate_resize.rows-radius;
+        }
+        
         
         cv::Mat pixel_area=msgDate_resize(Rect(0, pixel_Y_min, 1, radius));
         eachpixel_threshold.push_back(getThreshVal_Otsu_8u(pixel_area));
@@ -312,6 +317,13 @@ int main() {
 
 
 
+///////////////////////////////////////////////方法四:局部自适应阈值############################################
+    cv::Mat binRowOfPxiel;
+    cv::adaptiveThreshold(msgDate_resize, binRowOfPxiel,255, cv::ADAPTIVE_THRESH_MEAN_C,cv::THRESH_BINARY, 45, 0);
+
+    std::cout << "binRowOfPxiel= "<< binRowOfPxiel.t()<<std::endl;
+///////////////////////////////////////////////方法四:局部自适应阈值############################################
+
 
 
 //////////////////////////////**************************采样*****************************************
@@ -320,16 +332,18 @@ int main() {
 
     sample_again: std::cout << "******************sample_again***************"<<std::endl;
 
-    std::vector<int> BitVector {};
+    std::vector<int> BitVector {};//自适应阈值
     // std::vector<int> BitVector1 {};
     std::vector<int> polysample {};//多项式阈值的采样
     std::vector<int> eachpixel_sample {};//小范围的自适应阈值采样
+    std::vector<int> adaptive_threshold {};//局部自适应阈值
 
     double pxielFlag;
     for(int i=sample_point;i<=msgDate_resize.rows;i=i+9)
     {
         BitVector.push_back(msgDate_resize.at<uchar>(i));//数据采样
         eachpixel_sample.push_back(eachpixel_threshold[i]);//小范围的自适应阈值采样
+        adaptive_threshold.push_back(binRowOfPxiel.at<uchar>(i));//局部自适应阈值采样
        
        //多项式阈值的采样
         Point2d ipt;
@@ -343,40 +357,41 @@ int main() {
 
     }
 
-	//画出采样点
-	for (int i = sample_point; i <= size(in_point); i=i+9)
-	{
-		Point ipt = in_point[i];
-		circle(out, ipt, 2, Scalar(0, 255, 0), CV_FILLED, CV_AA);//https://blog.csdn.net/yangfengman/article/details/52768862
-	}
+	// //画出采样点
+	// for (int i = sample_point; i <= size(in_point); i=i+9)
+	// {
+	// 	Point ipt = in_point[i];
+	// 	circle(out, ipt, 2, Scalar(0, 255, 0), CV_FILLED, CV_AA);//https://blog.csdn.net/yangfengman/article/details/52768862
+	// }
 
-    //画出多项式阈值点
-	for (int i=0,b=0;i<=size(polysample);i++,b=b+9)
-	{
-		// Point2d ipt;
-		// ipt.x = i;
-		// ipt.y = 0;
-		// for (int j = 0; j < n + 1; ++j)
-		// {
-		// 	ipt.y += mat_k.at<double>(j, 0)*pow(i,j);
-		// }
-        Point2d ipt;    
-        ipt.x = in_point[b].x;
-		ipt.y = polysample[i];
-		circle(out, ipt, 2, Scalar(255, 0, 0), CV_FILLED, CV_AA);//https://blog.csdn.net/yangfengman/article/details/52768862
-	}
+    // //画出多项式阈值点
+	// for (int i=0,b=0;i<=size(polysample);i++,b=b+9)
+	// {
+	// 	// Point2d ipt;
+	// 	// ipt.x = i;
+	// 	// ipt.y = 0;
+	// 	// for (int j = 0; j < n + 1; ++j)
+	// 	// {
+	// 	// 	ipt.y += mat_k.at<double>(j, 0)*pow(i,j);
+	// 	// }
+    //     Point2d ipt;    
+    //     ipt.x = in_point[b].x;
+	// 	ipt.y = polysample[i];
+	// 	circle(out, ipt, 2, Scalar(255, 0, 0), CV_FILLED, CV_AA);//https://blog.csdn.net/yangfengman/article/details/52768862
+	// }
  
 	//imshow("n次拟合", out);//opencv的坐标使得其上下是反转的。
 
 
     // Mat BitVector_Mat = Mat(BitVector, true).t();
-    std::vector<int> BitVector_ploy =BitVector;
     // std::cout << "msgDate_resize= "<< Mat(BitVector, true).t()<<std::endl;//将采样后的输出出来
     // std::cout << "m_threshold2= "<< Mat(m_threshold2, true).t()<<std::endl;//将采样后的输出出来
-    std::cout << "判决前= "<< endl <<Mat(BitVector_ploy, true).t()<<std::endl;
-    std::cout << "多项式阈值= "<< endl<<Mat(polysample, true).t()<<std::endl;
+    // std::cout << "判决前= "<< endl <<Mat(BitVector_ploy, true).t()<<std::endl;
+    // std::cout << "多项式阈值= "<< endl<<Mat(polysample, true).t()<<std::endl;
 
-    //方法1：多项式阈值判决polysample
+    ///////////////////////////////////方法1：多项式阈值判决polysample************************************
+    std::vector<int> BitVector_ploy =BitVector;
+
     for (int i=0;i!=BitVector_ploy.size();i++)
     {
         if (BitVector_ploy[i]<=polysample[i])
@@ -389,12 +404,13 @@ int main() {
         }
         
     }
-    std::cout << "多项式阈值判决结果= "<<endl<< Mat(BitVector_ploy, true).t()<<std::endl;
+    // std::cout << "多项式阈值判决结果= "<<endl<< Mat(BitVector_ploy, true).t()<<std::endl;
     //方法1：多项式阈值判决polysample
+   ///////////////////////////////////方法1：多项式阈值判决polysample************************************
 
 
-    ////////////////////////////////////方法2：小范围的自适应阈值判决*********************************
-    eachpixel_sample;
+
+     ////////////////////////////////////方法2：小范围的自适应阈值判决*********************************
     std::vector<int> BitVector_eachpixel_ =BitVector;
 
     for (int i=0;i!=BitVector.size();i++)
@@ -409,9 +425,33 @@ int main() {
         }
         
     }
-    std::cout << "pixel区域阈值判决= "<< Mat(BitVector_eachpixel_, true).t()<<std::endl;
+    // std::cout << "pixel区域阈值判决= "<< Mat(BitVector_eachpixel_, true).t()<<std::endl;
     ////////////////////////////////////方法2：小范围的自适应阈值判决*********************************
+
+
+
+    ////////////////////////////////////方法4：局部自适应阈值判决*********************************
     
+    std::vector<int> BitVector_adaptive_threshold_ =adaptive_threshold;//出来的矩阵已经判决了的
+
+    for (int i=0;i!=BitVector.size();i++)
+    {
+        if (BitVector_adaptive_threshold_[i]<255)
+        {
+            BitVector_adaptive_threshold_[i]=0;
+        }
+        else
+        {
+            BitVector_adaptive_threshold_[i]=1;
+        }
+        
+    }
+    std::cout << "局部自适应阈值判决= "<< Mat(BitVector_adaptive_threshold_, true).t()<<std::endl;
+    ////////////////////////////////////方法4：局部自适应阈值判决*********************************
+
+
+
+
 
 ////////////////////////////////////////方法0：自适应阈值##########################################
     double m_threshold1 = getThreshVal_Otsu_8u(msgDate_resize);  // 获取自动阈值
@@ -432,7 +472,7 @@ int main() {
         }
         
     }
-    std::cout << "固定阈值判决（自适应）= "<< Mat(BitVector, true).t()<<std::endl;
+    // std::cout << "固定阈值判决（自适应）= "<< Mat(BitVector, true).t()<<std::endl;
 ////////////////////////////////////////方法0：自适应阈值##########################################
     // cv::Mat msgDataVector=Mat(BitVector, true).t();
 
@@ -454,6 +494,10 @@ int main() {
     {
         msgDataVector=Mat(BitVector_eachpixel_, true).t();//小范围的自适应阈值判决的结果
     }
+    else if (which_threshold==3)
+    {
+        msgDataVector=Mat(BitVector_adaptive_threshold_, true).t();//小范围的自适应阈值判决的结果
+    }
     else
     {
         std::cout << "各种阈值都不行 "<< std::endl;
@@ -466,7 +510,7 @@ int main() {
     // std::cout << "多项式自适应阈值判决= "<< msgDataVector<<std::endl;
 
     // // 用模板匹配寻找数据位中的消息头
-    cv::Mat Header = (cv::Mat_<uchar>(1, 5) <<  1, 0, 1,0,1);//字节头
+    cv::Mat Header = (cv::Mat_<uchar>(1, 5) <<  1, 0, 1, 0, 1);//字节头###########################################################################################################
     cv::Mat result(msgDataVector.rows - Header.rows + 1, msgDataVector.cols-Header.cols + 1, CV_8U);//创建模板匹配法输出结果的矩阵
     cv::matchTemplate(msgDataVector, Header, result, CV_TM_CCOEFF_NORMED);
     //关于这个函数可以参考http://www.opencv.org.cn/opencvdoc/2.3.2/html/doc/tutorials/imgproc/histograms/template_matching/template_matching.html#id2
@@ -539,9 +583,19 @@ int main() {
             sample_point=-1;
             which_threshold++;
         }
+        if (which_threshold==3)
+        {
+            sample_point++;
+            if (sample_point<=9)
+            {
+                goto sample_again;
+            }
+            sample_point=-1;
+            which_threshold++;
+        }
     }
 
-    std::cout << "LED_IDhahahah="<<LED_ID << std::endl;
+    std::cout << "LED_ID="<<LED_ID << std::endl;
 
     switch (which_threshold)
     {
@@ -553,6 +607,9 @@ int main() {
         break;
         case 2:
         std::cout << "小区域自适应阈值判断成功" << std::endl;
+        break;
+        case 3:
+        std::cout << "局部自适应阈值判断成功" << std::endl;
         break;
     }
 
