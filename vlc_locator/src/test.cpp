@@ -7,7 +7,7 @@
 #include "positioningCalculation.hpp"
 using namespace cv;
 using namespace std;
-int which_threshold=0;
+int which_threshold=0;//一个键位来定义到底用哪种方法
 
 struct PxielPoint {
     double i;
@@ -228,7 +228,11 @@ int main() {
     std::cout << "插值msgDate_resize= "<< msgDate_resize.t() <<std::endl;//将插值后的输出出来
     // std::cout << "123456= "<< msgDate_resize.size() <<std::endl;
 
-//////////////////////////////////////////多项式拟合*******************************************************
+//////////////////////////////////////////各种阈值设置的方法
+
+
+
+//////////////////////////////////////////方法一：多项式拟合*******************************************************
     vector<Point> in_point {};//（x,y）x就是第几个像素，y就是对应像素值
 
     for(int i=0; i<=msgDate_resize.rows; i++)
@@ -271,18 +275,19 @@ int main() {
 
 
 
- /////////////////////////////////////////EVA algorithm///////////////////////////////////////////////   
+ /////////////////////////////////////////方法二：EVA algorithm///////////////////////////////////////////////   
     // double minVal, maxVal;//最大与最小的像素
     // int minIdx[2] = {}, maxIdx[2] = {};	//对应的坐标
     // minMaxIdx(msgDate_resize, &minVal, &maxVal, minIdx, maxIdx);//https://blog.csdn.net/qq_29796317/article/details/73136083
     // std::cout << "最大像素= "<< maxVal <<std::endl;
     // std::cout << "最大像素坐标= "<< maxIdx[0] <<std::endl;
     // std::cout << "最大像素123= "<< in_point[maxIdx[0]].y <<std::endl;
-    
 
-/////////////////////////////////////////EVA algorithm/////////////////////////////////////////////// 
+/////////////////////////////////////////方法二：EVA algorithm/////////////////////////////////////////////// 
 
-///////////////////////////////////////******小范围的自适应阈值********//////////////////////////////////////////////////
+
+
+//////////////////////////////////////////方法三：小范围的自适应阈值//////////////////////////////////////////////////
     int radius=40;
     std::vector<int> eachpixel_threshold {};
     for(int i=0;i<=msgDate_resize.rows;i++)
@@ -301,6 +306,12 @@ int main() {
         eachpixel_threshold.push_back(getThreshVal_Otsu_8u(pixel_area));
     }
     // std::cout << "每一个pixel的局部阈值eachpixel_threshold= "<< Mat(eachpixel_threshold, true).t() <<std::endl;//将插值后的输出出来
+//////////////////////////////////////////方法三：小范围的自适应阈值///////////////////////////////////////////////
+
+
+
+
+
 
 
 //////////////////////////////**************************采样*****************************************
@@ -312,14 +323,15 @@ int main() {
     std::vector<int> BitVector {};
     // std::vector<int> BitVector1 {};
     std::vector<int> polysample {};//多项式阈值的采样
-    std::vector<int> eachpixel_sample {};//pixel阈值的采样
+    std::vector<int> eachpixel_sample {};//小范围的自适应阈值采样
 
     double pxielFlag;
     for(int i=sample_point;i<=msgDate_resize.rows;i=i+9)
     {
         BitVector.push_back(msgDate_resize.at<uchar>(i));//数据采样
-        eachpixel_sample.push_back(eachpixel_threshold[i]);
+        eachpixel_sample.push_back(eachpixel_threshold[i]);//小范围的自适应阈值采样
        
+       //多项式阈值的采样
         Point2d ipt;
 		ipt.x = i;
 		ipt.y = 0;
@@ -354,7 +366,7 @@ int main() {
 		circle(out, ipt, 2, Scalar(255, 0, 0), CV_FILLED, CV_AA);//https://blog.csdn.net/yangfengman/article/details/52768862
 	}
  
-	imshow("n次拟合", out);//opencv的坐标使得其上下是反转的。
+	//imshow("n次拟合", out);//opencv的坐标使得其上下是反转的。
 
 
     // Mat BitVector_Mat = Mat(BitVector, true).t();
@@ -364,7 +376,7 @@ int main() {
     std::cout << "判决前= "<< endl <<Mat(BitVector_ploy, true).t()<<std::endl;
     std::cout << "多项式阈值= "<< endl<<Mat(polysample, true).t()<<std::endl;
 
-    //多项式阈值判决polysample
+    //方法1：多项式阈值判决polysample
     for (int i=0;i!=BitVector_ploy.size();i++)
     {
         if (BitVector_ploy[i]<=polysample[i])
@@ -378,9 +390,10 @@ int main() {
         
     }
     std::cout << "多项式阈值判决结果= "<<endl<< Mat(BitVector_ploy, true).t()<<std::endl;
+    //方法1：多项式阈值判决polysample
 
 
-    ////////////////////////////////////pixel区域阈值判决*********************************
+    ////////////////////////////////////方法2：小范围的自适应阈值判决*********************************
     eachpixel_sample;
     std::vector<int> BitVector_eachpixel_ =BitVector;
 
@@ -397,12 +410,10 @@ int main() {
         
     }
     std::cout << "pixel区域阈值判决= "<< Mat(BitVector_eachpixel_, true).t()<<std::endl;
-
+    ////////////////////////////////////方法2：小范围的自适应阈值判决*********************************
     
 
-///////////////////////////////////////////////////////////////***************************************8
-
-    //固定阈值判断
+////////////////////////////////////////方法0：自适应阈值##########################################
     double m_threshold1 = getThreshVal_Otsu_8u(msgDate_resize);  // 获取自动阈值
 
     // double m_threshold1 = m_threshold;
@@ -422,7 +433,7 @@ int main() {
         
     }
     std::cout << "固定阈值判决（自适应）= "<< Mat(BitVector, true).t()<<std::endl;
-
+////////////////////////////////////////方法0：自适应阈值##########################################
     // cv::Mat msgDataVector=Mat(BitVector, true).t();
 
 
@@ -431,17 +442,17 @@ int main() {
 //寻找header
 ///////////////////////////////////********************************################################
     cv::Mat msgDataVector;
-    if (which_threshold==0)
+    if (which_threshold==1)
     {
         msgDataVector=Mat(BitVector_ploy, true).t();//多项式阈值判断的结果
     }
-    else if (which_threshold==1)
+    else if (which_threshold==0)
     {
-        msgDataVector=Mat(BitVector, true).t();
+        msgDataVector=Mat(BitVector, true).t();//自适应阈值判断的结果
     }
     else if (which_threshold==2)
     {
-        msgDataVector=Mat(BitVector_eachpixel_, true).t();
+        msgDataVector=Mat(BitVector_eachpixel_, true).t();//小范围的自适应阈值判决的结果
     }
     else
     {
@@ -502,9 +513,9 @@ int main() {
             sample_point++;
             if (sample_point<=9)
             {
-                goto sample_again;
+                goto sample_again;//重新采样
             }
-            sample_point=-1;
+            sample_point=-1;//由于下面循环先进入++，而采样范围为0～9
             which_threshold++;
         }
         if (which_threshold==1)//采用第二种方法
