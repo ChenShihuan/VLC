@@ -7,7 +7,7 @@
 #include "positioningCalculation.hpp"
 using namespace cv;
 using namespace std;
-int which_threshold=0;//一个键位来定义到底用哪种方法
+int which_threshold=3;//一个键位来定义到底用哪种方法
 
 struct PxielPoint {
     double i;
@@ -50,7 +50,7 @@ Mat polyfit(vector<Point>& in_point, int n)
 // ID识别函数
 int main() {
 //**********************************先进行准确的ROI捕获******************************************
-    cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0010.jpg");
+    cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0015.jpg");
     // resize(imageLED1,imageLED1,Size(1280,960),0,0,INTER_NEAREST);
     //转换为灰度图
 	Mat grayImage;//定义灰度图
@@ -321,7 +321,7 @@ int main() {
     cv::Mat binRowOfPxiel;
     cv::adaptiveThreshold(msgDate_resize, binRowOfPxiel,255, cv::ADAPTIVE_THRESH_MEAN_C,cv::THRESH_BINARY, 45, 0);
 
-    std::cout << "binRowOfPxiel= "<< binRowOfPxiel.t()<<std::endl;
+    // std::cout << "binRowOfPxiel= "<< binRowOfPxiel.t()<<std::endl;
 ///////////////////////////////////////////////方法四:局部自适应阈值############################################
 
 
@@ -510,7 +510,16 @@ int main() {
     // std::cout << "多项式自适应阈值判决= "<< msgDataVector<<std::endl;
 
     // // 用模板匹配寻找数据位中的消息头
-    cv::Mat Header = (cv::Mat_<uchar>(1, 5) <<  1, 0, 1, 0, 1);//字节头###########################################################################################################
+    // cv::Mat Header;//字节头###########################################################################################################
+    // if (which_threshold==0 || 1)
+    // {
+    //     Header = (cv::Mat_<uchar>(1, 5) <<  1, 0, 1, 0, 1);
+    // }
+    // else if (which_threshold==2 || 3)
+    // {
+    //     Header = (cv::Mat_<uchar>(1, 5) <<  0, 1, 0,1,0);
+    // }
+    cv::Mat Header = (cv::Mat_<uchar>(1, 5) <<  1, 0, 1, 0, 1);
     cv::Mat result(msgDataVector.rows - Header.rows + 1, msgDataVector.cols-Header.cols + 1, CV_8U);//创建模板匹配法输出结果的矩阵
     cv::matchTemplate(msgDataVector, Header, result, CV_TM_CCOEFF_NORMED);
     //关于这个函数可以参考http://www.opencv.org.cn/opencvdoc/2.3.2/html/doc/tutorials/imgproc/histograms/template_matching/template_matching.html#id2
@@ -596,6 +605,7 @@ int main() {
     }
 
     std::cout << "LED_ID="<<LED_ID << std::endl;
+    // std::cout << "which_threshold="<<which_threshold << std::endl;
 
     switch (which_threshold)
     {
@@ -603,7 +613,7 @@ int main() {
         std::cout << "自适应阈值判断成功" << std::endl;
         break;
         case 1:
-        std::cout << "多项式断成功" << std::endl;
+        std::cout << "多项式判断成功" << std::endl;
         break;
         case 2:
         std::cout << "小区域自适应阈值判断成功" << std::endl;
