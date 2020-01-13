@@ -154,9 +154,9 @@ int main() {
     // imshow("imageLED1", imageLED1);
     //提取ROI区域
     ///////////////////////*******************通过下面来选取某个ROI区域*******************//////////////////
-    cv::Mat imageLED=imageLED1(Rect(X1_min, Y1_min, X1_max - X1_min, Y1_max - Y1_min));
+    // cv::Mat imageLED=imageLED1(Rect(X1_min, Y1_min, X1_max - X1_min, Y1_max - Y1_min));
     // cv::Mat imageLED=imageLED1(Rect(X2_min, Y2_min, X2_max - X2_min, Y2_max - Y2_min));
-    // cv::Mat imageLED=imageLED1(Rect(X3_min, Y3_min, X3_max - X3_min, Y3_max - Y3_min));
+    cv::Mat imageLED=imageLED1(Rect(X3_min, Y3_min, X3_max - X3_min, Y3_max - Y3_min));
 
     imshow("select_ROI", imageLED);//输出对应的ROI区域
     cv::cvtColor(imageLED,imageLED,cv::COLOR_BGR2GRAY);//转换为黑白
@@ -542,6 +542,19 @@ int main() {
     }
 
     std::cout << "LED_IDhahahah="<<LED_ID << std::endl;
+
+    switch (which_threshold)
+    {
+        case 0:
+        std::cout << "自适应阈值判断成功" << std::endl;
+        break;
+        case 1:
+        std::cout << "多项式断成功" << std::endl;
+        break;
+        case 2:
+        std::cout << "小区域自适应阈值判断成功" << std::endl;
+        break;
+    }
 
     
     
