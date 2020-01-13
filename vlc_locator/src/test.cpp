@@ -49,11 +49,11 @@ Mat polyfit(vector<Point>& in_point, int n)
 
 // ID识别函数
 int main() {
-    //准确的ROI捕获
+//**********************************先进行准确的ROI捕获******************************************
     cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0015.jpg");
     // resize(imageLED1,imageLED1,Size(1280,960),0,0,INTER_NEAREST);
     //转换为灰度图
-	Mat grayImage;//�Ҷ�ͼ
+	Mat grayImage;//定义灰度图
 	cv::cvtColor(imageLED1, grayImage, cv::COLOR_BGR2GRAY);
 	//imshow("grayImage", grayImage);
     ///二值化
@@ -148,18 +148,15 @@ int main() {
 			break;
 		}
 	}
+//**********************************先进行准确的ROI捕获******************************************
 
 
-
-
-
-///////////////////////**************************************//////////////////
     // imshow("imageLED1", imageLED1);
     //提取ROI区域
+    ///////////////////////*******************通过下面来选取某个ROI区域*******************//////////////////
     cv::Mat imageLED=imageLED1(Rect(X1_min, Y1_min, X1_max - X1_min, Y1_max - Y1_min));
     // cv::Mat imageLED=imageLED1(Rect(X2_min, Y2_min, X2_max - X2_min, Y2_max - Y2_min));
     // cv::Mat imageLED=imageLED1(Rect(X3_min, Y3_min, X3_max - X3_min, Y3_max - Y3_min));
-    // double m_threshold1 = getThreshVal_Otsu_8u(imageLED);
 
     imshow("select_ROI", imageLED);//输出对应的ROI区域
     cv::cvtColor(imageLED,imageLED,cv::COLOR_BGR2GRAY);//转换为黑白
@@ -172,7 +169,9 @@ int main() {
     //定义一个空矩阵来存放
     cv::Mat msgDateoringal=imageLED.col(imageLED.size().height / 2);//中间列像素
     std::cout << "中间列像素msgDate = "<< msgDateoringal.t() <<std::endl;//将消息输出出来
-    //****************对于每一行的像素值求和平均
+
+//**************************对于每一行的像素值求和平均**********************************############
+    //method1(old)
     // for (int i=0;i!=imageLED.rows;i++)
     // {
     //     double sum1=0.0;
@@ -190,6 +189,7 @@ int main() {
     // }
 
 
+    //method2(new)
     // 创建掩模，用于均值运算。
     int backgroundThreshold=20; //设置20为阈值
     cv::Mat maskOfimgLED;
@@ -213,9 +213,10 @@ int main() {
     std::cout << "取平均后选出的列像素msgDate = "<< msgDate.t() <<std::endl;//将消息输出出来
     std::cout << "两者的差别 = "<< abs(msgDate.t()-msgDateoringal.t()) <<std::endl;//将消息输出出来
     std::cout << "插值前信号数目 = "<< msgDate.rows <<std::endl;
+//**************************对于每一行的像素值求和平均**********************************############
+
     
-    
-////////////////////////////////插值///*************采用插值的方法******************************************
+/////////***********************采用插值的方法，对信号进行插值处理******************************************
     //关于插值，可以参考https://blog.csdn.net/guyuealian/article/details/85097633
     cv::Mat msgDate_resize;
     // std::cout << "size:" << msgDate.size() << std::endl;
