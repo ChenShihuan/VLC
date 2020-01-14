@@ -376,7 +376,7 @@ void thinImage(cv::Mat &srcimage)// 单通道、二值化后的图像
 /* -------------------【 LED图像预处理 】----------------
 功能：
     LED图像预处理，从原LED图像计算每行非0像素均值（理论上非0像素，实际上是某个阈值以上，目的是排除背景）
-    统计为列矩阵，并二值化处理为可供解码的像素列
+    统计为列矩阵，并进行插值3.9倍处理
 输入数据类型：
     cv::Mat imgLED 切割出来的LED图像
     int threshold 背景阈值
@@ -384,18 +384,19 @@ void thinImage(cv::Mat &srcimage)// 单通道、二值化后的图像
     cv::Mat row 已由列矩阵转置为行矩阵的数位，由vector通过Mat(BitVector, true).t()生成
 ------------------------------------------------------------*/
 cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
-    cv::cvtColor(imgLED,imgLED,cv::COLOR_BGR2GRAY);
+    // cv::cvtColor(imgLED,imgLED,cv::COLOR_BGR2GRAY);
     // 创建掩模，用于均值运算。
     cv::Mat maskOfimgLED;
     cv::threshold(imgLED, maskOfimgLED, backgroundThreshold, 255, cv::THRESH_BINARY);
     cv::imshow("maskOfimgLED", maskOfimgLED);
+    imgLED.convertTo(imgLED, CV_32F);
 
     // 取阈值以上值的均值，逻辑是运用掩模，其中的数值为0或者1，为1的地方，计算出image中所有元素的均值，为0的地方，不计算
-    cv::Mat meanRowOfPxiel = imgLED.col(0).t();
-    int meanOfPxielRow;  //.val[0]表示第一个通道的均值
-    cv::MatIterator_<uchar> it, end;
+    cv::Mat meanRowOfPxiel(imgLED.col(0).t().size(),CV_32FC1);
+    double meanOfPxielRow;  //.val[0]表示第一个通道的均值
+    cv::MatIterator_<float> it, end;
     int RowOfimgLED = 0;
-    for( it = meanRowOfPxiel.begin<uchar>(), end = meanRowOfPxiel.end<uchar>(); it != end; it++) {
+    for( it = meanRowOfPxiel.begin<float>(), end = meanRowOfPxiel.end<float>(); it != end; it++) {
         meanOfPxielRow = cv::mean(imgLED.row(RowOfimgLED), maskOfimgLED.row(RowOfimgLED)).val[0];
         RowOfimgLED ++;
         std::cout << "值 = "<< meanOfPxielRow <<std::endl;
@@ -406,22 +407,81 @@ cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
 
     // 插值
     cv::resize(meanRowOfPxiel, meanRowOfPxiel, cv::Size(meanRowOfPxiel.cols*3.9, 1), cv::INTER_CUBIC);
-    std::cout << "插值后 = "<< meanRowOfPxiel <<std::endl;
+    std::cout << "插值 = "<< meanRowOfPxiel <<std::endl;
+    cv::Mat meanShow(meanRowOfPxiel.size(),CV_32FC1);
+    cv::resize(meanRowOfPxiel, meanShow, cv::Size(meanRowOfPxiel.cols, 100), cv::INTER_CUBIC);
+    meanShow.convertTo(meanShow, CV_8U);
+    cv::imshow("meanRowOfPxiel", meanShow);
 
-    // 局部自适应阈值二值化
-    cv::Mat binRowOfPxiel;
-    cv::adaptiveThreshold(meanRowOfPxiel, binRowOfPxiel,
-                            1, cv::ADAPTIVE_THRESH_GAUSSIAN_C,
-                            cv::THRESH_BINARY, 21, 0);
-    std::cout << "插值后 = "<< binRowOfPxiel.t() <<std::endl;
-    cv::Mat binShow;
-    threshold(binRowOfPxiel, binShow, 0, 255, cv::THRESH_BINARY);
-    cv::resize(binRowOfPxiel, binShow, cv::Size(binRowOfPxiel.cols, 100), cv::INTER_CUBIC);
-    cv::imshow("binShow", binShow);
-    return binRowOfPxiel;
-    // return {};
+    return meanRowOfPxiel;
+ }
+
+/* -------------------【 平移处理 】----------------
+功能：
+    图像平移处理，移动后暴露的部分以0填充
+// 输入数据类型：
+    cv::Mat frame 已由列矩阵转置为行矩阵的像素列
+    int shiftCol 列的平移值，+右-左
+    int shiftRow 行平移，+下-上
+输出数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的数位
+------------------------------------------------------------*/
+cv::Mat matShift(cv::Mat frame, int shiftCol, int shiftRow) {
+    using namespace cv;
+    // std::cout << "平移前 = "<< frame <<std::endl;
+    cv::Mat out = cv::Mat::zeros(frame.size(), frame.type());
+    cv::Rect source = cv::Rect(max(0,-shiftCol),max(0,-shiftRow), frame.cols-abs(shiftCol),frame.rows-abs(shiftRow));
+    cv::Rect target = cv::Rect(max(0,shiftCol),max(0,shiftRow),frame.cols-abs(shiftCol),frame.rows-abs(shiftRow));
+    frame(source).copyTo(out(target));
+    // std::cout << "平移后 = "<< out <<std::endl;
+    return out;
 }
 
+/* -------------------【 二值化处理 】----------------
+功能：
+    二值化处理
+输入数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的像素列
+输出数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的数位
+------------------------------------------------------------*/
+cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
+    // 输入的行矩阵向右移一位
+    std::cout << "原图 = "<< imgRow <<std::endl;
+
+    cv::Mat imgRowRightShift = matShift(imgRow, 1, 0);
+    std::cout << "右移 = "<< imgRowRightShift <<std::endl;
+
+    cv::Mat difference = imgRow - imgRowRightShift;
+    std::cout << "差值 = "<< difference <<std::endl;
+
+    cv::threshold(difference, difference, 0, 255, cv::THRESH_BINARY);
+    std::cout << "差值 = "<< difference <<std::endl;
+
+    cv::Mat differenceLeftShift = matShift(difference, -1, 0);
+    std::cout << "左移 = "<< differenceLeftShift <<std::endl;
+
+    cv::Mat CrestsTroughs;
+    cv::bitwise_xor(difference, differenceLeftShift, CrestsTroughs);
+    std::cout << "异或 = "<< CrestsTroughs <<std::endl;
+
+    cv::Mat CrestsTroughsShow;
+    cv::resize(CrestsTroughs, CrestsTroughsShow, cv::Size(CrestsTroughs.cols, 100), cv::INTER_CUBIC);
+    cv::imshow("CrestsTroughsShow", CrestsTroughsShow);
+    return imgRow;
+}
+// 局部自适应阈值二值化
+// cv::Mat binRowOfPxiel;
+// cv::adaptiveThreshold(meanRowOfPxiel, binRowOfPxiel,
+//                         255, cv::ADAPTIVE_THRESH_GAUSSIAN_C,
+//                         cv::THRESH_BINARY, 85, 0);
+// std::cout << "插值后 = "<< binRowOfPxiel.t() <<std::endl;
+// cv::Mat binShow;
+// threshold(binRowOfPxiel, binShow, 0.5, 255, cv::THRESH_BINARY);
+// cv::resize(binRowOfPxiel, binShow, cv::Size(binRowOfPxiel.cols, 100), cv::INTER_CUBIC);
+// cv::imshow("binShow", binShow);
+// return binRowOfPxiel;
+// // return {};
 
 /* -------------------【 将像素列解码为数位 】----------------
 功能：
@@ -455,7 +515,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     // 获取转义数组中的最小值，即为一个字节所对应的像素
     int bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
     std::cout << "bit = "<< bit <<std::endl;
-
+    bit = 10;
     // 将转义数组再转为数据位数组
     std::vector<int> BitVector {};
     pxielCount = 0;
@@ -470,7 +530,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     }
 
     for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount++) {
-        sameBitRaneg = SamePxielCount.at(pxielCount) / bit;
+        sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
         for (int bitCount = 0; bitCount < sameBitRaneg; bitCount ++) {
             BitVector.push_back(pxielFlag);
             // 在Bit末尾插入sameBitRaneg个数的像素，像素数值由pxielFlag决定
@@ -499,7 +559,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
         处理第一种异常会通过goto迭代继续检测后面的部分直到越界成为第二种情况；处理第二种异
         常直接返回输出报错0矩阵。
         异常输出示例 msgDate = [  0]
---------------------------------------------------------*/ 
+--------------------------------------------------------*/
 cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
 // cv::Mat getMsgDate(const cv::Mat imageLED) {
     // https://stackoverflow.com/questions/32737420/multiple-results-in-opencvsharp3-matchtemplate
@@ -548,7 +608,7 @@ cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
         // const char* err_msg = e.what();
         // std::cout << "exception caught: " << err_msg << std::endl;
         std::cout << "正常现象，切勿惊慌" << std::endl;
-        goto getROI;        
+        goto getROI;
     } catch ( std::out_of_range& e ) {  // 异常处理
         std::cout << "此LED图像ID无法识别" << std::endl;
         return cv::Mat_<uchar>(1, 1) << 0;
