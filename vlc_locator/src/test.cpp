@@ -296,7 +296,7 @@ int main() {
         double average_gobal_maxmin;//存放阈值
         if (Flag_minmax % 2 == 0)//若为偶数，则执行下面，求############极小值##############
         {
-            for (int n=2;i+n*9<=msgDate_resize.rows;n++)
+            for (int n=2;i+(n+1)*9<=msgDate_resize.rows;n++)
             {
                 double minVal1, maxVal1;//最大与最小的像素
                 double minVal2, maxVal2;//最大与最小的像素
@@ -318,7 +318,7 @@ int main() {
                     next_point=minIdx1[0];
                     break;//跳出当前循环   break语句对if-else的条件语句不起作用。只跳出for
                 }//否则，即当前（i+9, n*9)区域的为最小值。n++,下一个区域计算，与当前区域比较
-                if (i+n*9==msgDate_resize.rows)//假如一直都是下一个区域是最小值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
+                if (i+(n+1)*9==msgDate_resize.rows)//假如一直都是下一个区域是最小值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
                 {
                     value=in_point[minIdx2[0]].y;//当前值为最小值，将其赋予value
                     average_gobal_maxmin=(maxminVal+value)/2;
@@ -339,7 +339,7 @@ int main() {
         } 
         else //若为奇数，则执行下面，求#########极大值############
         {
-            for (int n=2;i+n*9<=msgDate_resize.rows;n++)
+            for (int n=2;i+(n+1)*9<=msgDate_resize.rows;n++)
             {
                 double minVal1, maxVal1;//最大与最小的像素
                 double minVal2, maxVal2;//最大与最小的像素
@@ -361,7 +361,7 @@ int main() {
                     next_point=minIdx1[0];
                     break;//跳出当前循环   break语句对if-else的条件语句不起作用。只跳出for
                 }//否则，即当前（i+9, n*9)区域的为最大值。n++,下一个区域计算，与当前区域比较
-                if (i+n*9==msgDate_resize.rows)//假如一直都是下一个区域是最大值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
+                if (i+(n+1)*9==msgDate_resize.rows)//假如一直都是下一个区域是最大值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
                 {
                     value=in_point[maxIdx2[0]].y;//当前值为最大值，将其赋予value
                     average_gobal_maxmin=(maxminVal+value)/2;
@@ -392,21 +392,21 @@ int main() {
         double average_gobal_maxmin;//存放阈值
         if (Flag_minmax % 2 == 0)//若为偶数，则执行下面，求############极小值##############
         {
-            for (int n=2;i-n*9>=0;n++)
+            for (int n=2;i-(n+1)*9>=0;n++)
             {
                 double minVal1, maxVal1;//最大与最小的像素
                 double minVal2, maxVal2;//最大与最小的像素
                 int minIdx1[2] = {}, maxIdx1[2] = {};	//对应的坐标
                 int minIdx2[2] = {}, maxIdx2[2] = {};	//对应的坐标
                 Mat maxmin_ROI1=msgDate_resize(Rect(0, i-n*9, 1, (n-1)*9));
-                Mat maxmin_ROI2=msgDate_resize(Rect(0, i+9, 1, n*9));
+                Mat maxmin_ROI2=msgDate_resize(Rect(0, i-(n+1)*9, 1, n*9));
                 minMaxIdx(maxmin_ROI1, &minVal1, &maxVal1, minIdx1, maxIdx1);
                 minMaxIdx(maxmin_ROI2, &minVal2, &maxVal2, minIdx2, maxIdx2);
                 if (in_point[minIdx1[0]].x== in_point[minIdx2[0]].x)//如果第二个区域与第一个区域的最小值是同一个点，则（i+9, (n-1)*9)区域找到最小值
                 {
                     value=in_point[minIdx1[0]].y;//当前值为最小值，将其赋予value
                     average_gobal_maxmin=(maxminVal+value)/2;
-                    for (int j=i;j<=i+(n-1)*9;j++)
+                    for (int j=i;j>=i-(n-1)*9;j--)
                     {
                         local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
                     }
@@ -414,7 +414,7 @@ int main() {
                     next_point=minIdx1[0];
                     break;//跳出当前循环   break语句对if-else的条件语句不起作用。只跳出for
                 }//否则，即当前（i+9, n*9)区域的为最小值。n++,下一个区域计算，与当前区域比较
-                if (i+n*9==msgDate_resize.rows)//假如一直都是下一个区域是最小值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
+                if (i-(n+1)*9==0)//假如一直都是下一个区域是最小值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
                 {
                     value=in_point[minIdx2[0]].y;//当前值为最小值，将其赋予value
                     average_gobal_maxmin=(maxminVal+value)/2;
@@ -427,7 +427,7 @@ int main() {
             }  
             maxminVal=value;//求完极小值，将当前的极小值赋值，用于求下一个极大值
             //加判断语句看是否已经到达边缘
-            if (i+(next_point-maxIdx[0])+2*9>=msgDate_resize.rows)//当前的点是否已经不支持下一次判决，一判决就会溢出
+            if (i-(maxIdx[0]-next_point)-2*9<=0)//当前的点是否已经不支持下一次判决，一判决就会溢出
             {
                 break;//跳出循环
             }
@@ -435,21 +435,21 @@ int main() {
         } 
         else //若为奇数，则执行下面，求#########极大值############
         {
-            for (int n=2;i+n*9<=msgDate_resize.rows;n++)
+            for  (int n=2;i-(n+1)*9>=0;n++)
             {
                 double minVal1, maxVal1;//最大与最小的像素
                 double minVal2, maxVal2;//最大与最小的像素
                 int minIdx1[2] = {}, maxIdx1[2] = {};	//对应的坐标
                 int minIdx2[2] = {}, maxIdx2[2] = {};	//对应的坐标
-                Mat maxmin_ROI1=msgDate_resize(Rect(0, i+9, 1, (n-1)*9));
-                Mat maxmin_ROI2=msgDate_resize(Rect(0, i+9, 1, n*9));
+                Mat maxmin_ROI1=msgDate_resize(Rect(0, i-n*9, 1, (n-1)*9));
+                Mat maxmin_ROI2=msgDate_resize(Rect(0, i-(n+1)*9, 1, n*9));
                 minMaxIdx(maxmin_ROI1, &minVal1, &maxVal1, minIdx1, maxIdx1);
                 minMaxIdx(maxmin_ROI2, &minVal2, &maxVal2, minIdx2, maxIdx2);
                 if (in_point[maxIdx1[0]].x== in_point[maxIdx2[0]].x)//如果第二个区域与第一个区域的最大值是同一个点，则（i+9, (n-1)*9)区域找到最大值
                 {
                     value=in_point[maxIdx1[0]].y;//（i+9, (n-1)*9)区域的值为最大值，将其赋予value
                     average_gobal_maxmin=(maxminVal+value)/2;
-                    for (int j=i;j<=i+(n-1)*9;j++)
+                    for  (int j=i;j>=i-(n-1)*9;j--)
                     {
                         local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
                     }
@@ -457,7 +457,7 @@ int main() {
                     next_point=minIdx1[0];
                     break;//跳出当前循环   break语句对if-else的条件语句不起作用。只跳出for
                 }//否则，即当前（i+9, n*9)区域的为最大值。n++,下一个区域计算，与当前区域比较
-                if (i+n*9==msgDate_resize.rows)//假如一直都是下一个区域是最大值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
+                if (i-(n+1)*9==0)//假如一直都是下一个区域是最大值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
                 {
                     value=in_point[maxIdx2[0]].y;//当前值为最大值，将其赋予value
                     average_gobal_maxmin=(maxminVal+value)/2;
@@ -470,7 +470,7 @@ int main() {
             }  
             maxminVal=value;//求完极小值，将当前的极小值赋值，用于求下一个极大值
             //加判断语句看是否已经到达边缘
-            if (i+(next_point-maxIdx[0])+2*9>=msgDate_resize.rows)//当前的点是否已经不支持下一次判决，一判决就会溢出
+            if (i-(maxIdx[0]-next_point)-2*9<=0)//当前的点是否已经不支持下一次判决，一判决就会溢出
             {
                 break;//跳出循环
             }
