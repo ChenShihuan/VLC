@@ -446,16 +446,17 @@ cv::Mat matShift(cv::Mat frame, int shiftCol, int shiftRow) {
 输出数据类型：
     cv::Mat row 已由列矩阵转置为行矩阵的数位
 ------------------------------------------------------------*/
-cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
+cv::Mat LEDMeanRowThreshold(const cv::Mat imgRow) {
     // 寻找所有的极大极小值（也就是波峰和波谷）
-
+    cv::Mat imgRowBlur;
+    
     // 平滑，均值滤波，作用是消除曲线上小的抖动
-    cv::blur(imgRow, imgRow, cv::Size(15,1));
+    cv::blur(imgRow, imgRowBlur, cv::Size(15,1));
 
-    cv::Mat imgRowRightShift = matShift(imgRow, 1, 0);
+    cv::Mat imgRowRightShift = matShift(imgRowBlur, 1, 0);
     // std::cout << "右移 = "<< imgRowRightShift <<std::endl;
 
-    cv::Mat difference = imgRow - imgRowRightShift;
+    cv::Mat difference = imgRowBlur - imgRowRightShift;
     // std::cout << "计算差值 = "<< difference <<std::endl;
 
     cv::threshold(difference, difference, 0, 255, cv::THRESH_BINARY);
