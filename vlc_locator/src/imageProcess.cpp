@@ -393,7 +393,7 @@ cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
 
     // 取阈值以上值的均值，逻辑是运用掩模，其中的数值为0或者1，为1的地方，计算出image中所有元素的均值，为0的地方，不计算
     cv::Mat meanRowOfPxiel(imgLED.col(0).t().size(),CV_32FC1);
-    double meanOfPxielRow;  //.val[0]表示第一个通道的均值
+    int meanOfPxielRow;  //.val[0]表示第一个通道的均值
     cv::MatIterator_<float> it, end;
     int RowOfimgLED = 0;
     for( it = meanRowOfPxiel.begin<float>(), end = meanRowOfPxiel.end<float>(); it != end; it++) {
@@ -406,8 +406,17 @@ cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
     std::cout << "meanRowOfPxiel.rows = "<< meanRowOfPxiel.cols <<std::endl;
 
     // 插值
-    cv::resize(meanRowOfPxiel, meanRowOfPxiel, cv::Size(meanRowOfPxiel.cols*3.9, 1), cv::INTER_CUBIC);
+    cv::resize(meanRowOfPxiel, meanRowOfPxiel, cv::Size(meanRowOfPxiel.cols*4, 1), cv::INTER_CUBIC);
     std::cout << "插值 = "<< meanRowOfPxiel <<std::endl;
+
+    // RowOfimgLED = 0;
+    // for( it = meanRowOfPxiel.begin<float>(), end = meanRowOfPxiel.end<float>(); it != end; it = it+4) {
+        
+    //     RowOfimgLED ++;
+    //     *it = meanOfPxielRow;
+    // }
+
+    
     cv::Mat meanShow(meanRowOfPxiel.size(),CV_32FC1);
     cv::resize(meanRowOfPxiel, meanShow, cv::Size(meanRowOfPxiel.cols, 100), cv::INTER_CUBIC);
     meanShow.convertTo(meanShow, CV_8U);
@@ -454,9 +463,14 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
 
     cv::Mat difference = imgRow - imgRowRightShift;
     std::cout << "差值 = "<< difference <<std::endl;
+    cv::Mat differenceShow;
+    cv::resize(difference, differenceShow, cv::Size(difference.cols, 100), cv::INTER_CUBIC);
+    cv::imshow("difference", differenceShow);
 
     cv::threshold(difference, difference, 0, 255, cv::THRESH_BINARY);
     std::cout << "差值 = "<< difference <<std::endl;
+    cv::resize(difference, differenceShow, cv::Size(difference.cols, 100), cv::INTER_CUBIC);
+    cv::imshow("difference", differenceShow);
 
     cv::Mat differenceLeftShift = matShift(difference, -1, 0);
     std::cout << "左移 = "<< differenceLeftShift <<std::endl;
