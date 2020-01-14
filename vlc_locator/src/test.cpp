@@ -7,7 +7,7 @@
 #include "positioningCalculation.hpp"
 using namespace cv;
 using namespace std;
-int which_threshold=0;//一个键位来定义到底用哪种方法
+int which_threshold=2;//一个键位来定义到底用哪种方法
 
 struct PxielPoint {
     double i;
@@ -47,7 +47,7 @@ Mat polyfit(vector<Point>& in_point, int n)
 
 
 
-// ID识别函数
+// ID识别主函数
 int main() {
 //**********************************先进行准确的ROI捕获******************************************
     cv::Mat imageLED1 = imread("/home/kwanwaipang/桌面/123/test2048/frame0013.jpg");
@@ -271,25 +271,224 @@ int main() {
  
  
 	// imshow("n次拟合", out);
- //////////////////////////////////////////多项式拟合*******************************************************
+ //////////////////////////////////////////方法一：多项式拟合*******************************************************
 
 
 
 
  /////////////////////////////////////////方法二：EVA algorithm///////////////////////////////////////////////   
-    // double minVal, maxVal;//最大与最小的像素
-    // int minIdx[2] = {}, maxIdx[2] = {};	//对应的坐标
-    // minMaxIdx(msgDate_resize, &minVal, &maxVal, minIdx, maxIdx);//https://blog.csdn.net/qq_29796317/article/details/73136083
-    // std::cout << "最大像素= "<< maxVal <<std::endl;
-    // std::cout << "最大像素坐标= "<< maxIdx[0] <<std::endl;
-    // std::cout << "最大像素123= "<< in_point[maxIdx[0]].y <<std::endl;
+    double minVal, maxVal;//最大与最小的像素
+    int minIdx[2] = {}, maxIdx[2] = {};	//对应的坐标
+    minMaxIdx(msgDate_resize, &minVal, &maxVal, minIdx, maxIdx);//https://blog.csdn.net/qq_29796317/article/details/73136083
+    //https://blog.csdn.net/fangyan90617/article/details/100540020
+    std::cout << "最大像素= "<< maxVal <<std::endl;
+    std::cout << "最大像素坐标= "<< maxIdx[0] <<std::endl;//由于是一个一维的矩阵，经测试，0为索引
+    std::cout << "最大像素123= "<< in_point[maxIdx[0]].y <<std::endl;//in_point为（x,y）x就是第几个像素，y就是对应像素值
+    std::vector<Point> local_maxmin_threshold {};//（x,y）x就是第几个像素，y就是对应像的阈值
+
+    int Flag_minmax=2;////用于奇偶判断
+    double maxminVal=maxVal;
+    int next_point=0;
+    //先向右寻找
+    for (int i=maxIdx[0];i<=msgDate_resize.rows;i=i+(next_point-maxIdx[0]))//由于是极值点下一个开始寻找
+    {
+        double value=0;//存放下一个极小值
+        double average_gobal_maxmin;//存放阈值
+        if (Flag_minmax % 2 == 0)//若为偶数，则执行下面，求############极小值##############
+        {
+            for (int n=2;i+n*9<=msgDate_resize.rows;n++)
+            {
+                double minVal1, maxVal1;//最大与最小的像素
+                double minVal2, maxVal2;//最大与最小的像素
+                int minIdx1[2] = {}, maxIdx1[2] = {};	//对应的坐标
+                int minIdx2[2] = {}, maxIdx2[2] = {};	//对应的坐标
+                Mat maxmin_ROI1=msgDate_resize(Rect(0, i+9, 1, (n-1)*9));
+                Mat maxmin_ROI2=msgDate_resize(Rect(0, i+9, 1, n*9));
+                minMaxIdx(maxmin_ROI1, &minVal1, &maxVal1, minIdx1, maxIdx1);
+                minMaxIdx(maxmin_ROI2, &minVal2, &maxVal2, minIdx2, maxIdx2);
+                if (in_point[minIdx1[0]].x== in_point[minIdx2[0]].x)//如果第二个区域与第一个区域的最小值是同一个点，则（i+9, (n-1)*9)区域找到最小值
+                {
+                    value=in_point[minIdx1[0]].y;//当前值为最小值，将其赋予value
+                    average_gobal_maxmin=(maxminVal+value)/2;
+                    for (int j=i;j<=i+(n-1)*9;j++)
+                    {
+                        local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
+                    }
+                    Flag_minmax++;//用于奇偶判断，此循环是偶数才进行，加了后变成奇数，进入求极大值的循环
+                    next_point=minIdx1[0];
+                    break;//跳出当前循环   break语句对if-else的条件语句不起作用。只跳出for
+                }//否则，即当前（i+9, n*9)区域的为最小值。n++,下一个区域计算，与当前区域比较
+                if (i+n*9==msgDate_resize.rows)//假如一直都是下一个区域是最小值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
+                {
+                    value=in_point[minIdx2[0]].y;//当前值为最小值，将其赋予value
+                    average_gobal_maxmin=(maxminVal+value)/2;
+                    for (int j=i;j<=i+n*9;j++)
+                    {
+                        local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
+                    }
+                    next_point=minIdx2[0];
+                }
+            }  
+            maxminVal=value;//求完极小值，将当前的极小值赋值，用于求下一个极大值
+            //加判断语句看是否已经到达边缘
+            if (i+(next_point-maxIdx[0])+2*9>=msgDate_resize.rows)//当前的点是否已经不支持下一次判决，一判决就会溢出
+            {
+                break;//跳出循环
+            }
+            continue; //结束当前循环，进入下一次  
+        } 
+        else //若为奇数，则执行下面，求#########极大值############
+        {
+            for (int n=2;i+n*9<=msgDate_resize.rows;n++)
+            {
+                double minVal1, maxVal1;//最大与最小的像素
+                double minVal2, maxVal2;//最大与最小的像素
+                int minIdx1[2] = {}, maxIdx1[2] = {};	//对应的坐标
+                int minIdx2[2] = {}, maxIdx2[2] = {};	//对应的坐标
+                Mat maxmin_ROI1=msgDate_resize(Rect(0, i+9, 1, (n-1)*9));
+                Mat maxmin_ROI2=msgDate_resize(Rect(0, i+9, 1, n*9));
+                minMaxIdx(maxmin_ROI1, &minVal1, &maxVal1, minIdx1, maxIdx1);
+                minMaxIdx(maxmin_ROI2, &minVal2, &maxVal2, minIdx2, maxIdx2);
+                if (in_point[maxIdx1[0]].x== in_point[maxIdx2[0]].x)//如果第二个区域与第一个区域的最大值是同一个点，则（i+9, (n-1)*9)区域找到最大值
+                {
+                    value=in_point[maxIdx1[0]].y;//（i+9, (n-1)*9)区域的值为最大值，将其赋予value
+                    average_gobal_maxmin=(maxminVal+value)/2;
+                    for (int j=i;j<=i+(n-1)*9;j++)
+                    {
+                        local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
+                    }
+                    Flag_minmax++;//用于奇偶判断，此循环是偶数才进行，加了后变成奇数，进入求极大值的循环
+                    next_point=minIdx1[0];
+                    break;//跳出当前循环   break语句对if-else的条件语句不起作用。只跳出for
+                }//否则，即当前（i+9, n*9)区域的为最大值。n++,下一个区域计算，与当前区域比较
+                if (i+n*9==msgDate_resize.rows)//假如一直都是下一个区域是最大值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
+                {
+                    value=in_point[maxIdx2[0]].y;//当前值为最大值，将其赋予value
+                    average_gobal_maxmin=(maxminVal+value)/2;
+                    for (int j=i;j<=i+n*9;j++)
+                    {
+                        local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
+                    }
+                    next_point=minIdx2[0];
+                }
+            }  
+            maxminVal=value;//求完极小值，将当前的极小值赋值，用于求下一个极大值
+            //加判断语句看是否已经到达边缘
+            if (i+(next_point-maxIdx[0])+2*9>=msgDate_resize.rows)//当前的点是否已经不支持下一次判决，一判决就会溢出
+            {
+                break;//跳出循环
+            }
+            continue; //结束当前循环，进入下一次  
+        }
+    }
+    //再向左寻找
+    //标志位重新赋值
+    Flag_minmax=2;////用于奇偶判断
+    maxminVal=maxVal;
+    next_point=0;
+    for (int i=maxIdx[0];i>=0;i=i-(maxIdx[0]-next_point))//由于是极值点下一个开始寻找
+    {
+        double value=0;//存放下一个极小值
+        double average_gobal_maxmin;//存放阈值
+        if (Flag_minmax % 2 == 0)//若为偶数，则执行下面，求############极小值##############
+        {
+            for (int n=2;i-n*9>=0;n++)
+            {
+                double minVal1, maxVal1;//最大与最小的像素
+                double minVal2, maxVal2;//最大与最小的像素
+                int minIdx1[2] = {}, maxIdx1[2] = {};	//对应的坐标
+                int minIdx2[2] = {}, maxIdx2[2] = {};	//对应的坐标
+                Mat maxmin_ROI1=msgDate_resize(Rect(0, i-n*9, 1, (n-1)*9));
+                Mat maxmin_ROI2=msgDate_resize(Rect(0, i+9, 1, n*9));
+                minMaxIdx(maxmin_ROI1, &minVal1, &maxVal1, minIdx1, maxIdx1);
+                minMaxIdx(maxmin_ROI2, &minVal2, &maxVal2, minIdx2, maxIdx2);
+                if (in_point[minIdx1[0]].x== in_point[minIdx2[0]].x)//如果第二个区域与第一个区域的最小值是同一个点，则（i+9, (n-1)*9)区域找到最小值
+                {
+                    value=in_point[minIdx1[0]].y;//当前值为最小值，将其赋予value
+                    average_gobal_maxmin=(maxminVal+value)/2;
+                    for (int j=i;j<=i+(n-1)*9;j++)
+                    {
+                        local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
+                    }
+                    Flag_minmax++;//用于奇偶判断，此循环是偶数才进行，加了后变成奇数，进入求极大值的循环
+                    next_point=minIdx1[0];
+                    break;//跳出当前循环   break语句对if-else的条件语句不起作用。只跳出for
+                }//否则，即当前（i+9, n*9)区域的为最小值。n++,下一个区域计算，与当前区域比较
+                if (i+n*9==msgDate_resize.rows)//假如一直都是下一个区域是最小值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
+                {
+                    value=in_point[minIdx2[0]].y;//当前值为最小值，将其赋予value
+                    average_gobal_maxmin=(maxminVal+value)/2;
+                    for (int j=i;j<=i+n*9;j++)
+                    {
+                        local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
+                    }
+                    next_point=minIdx2[0];
+                }
+            }  
+            maxminVal=value;//求完极小值，将当前的极小值赋值，用于求下一个极大值
+            //加判断语句看是否已经到达边缘
+            if (i+(next_point-maxIdx[0])+2*9>=msgDate_resize.rows)//当前的点是否已经不支持下一次判决，一判决就会溢出
+            {
+                break;//跳出循环
+            }
+            continue; //结束当前循环，进入下一次  
+        } 
+        else //若为奇数，则执行下面，求#########极大值############
+        {
+            for (int n=2;i+n*9<=msgDate_resize.rows;n++)
+            {
+                double minVal1, maxVal1;//最大与最小的像素
+                double minVal2, maxVal2;//最大与最小的像素
+                int minIdx1[2] = {}, maxIdx1[2] = {};	//对应的坐标
+                int minIdx2[2] = {}, maxIdx2[2] = {};	//对应的坐标
+                Mat maxmin_ROI1=msgDate_resize(Rect(0, i+9, 1, (n-1)*9));
+                Mat maxmin_ROI2=msgDate_resize(Rect(0, i+9, 1, n*9));
+                minMaxIdx(maxmin_ROI1, &minVal1, &maxVal1, minIdx1, maxIdx1);
+                minMaxIdx(maxmin_ROI2, &minVal2, &maxVal2, minIdx2, maxIdx2);
+                if (in_point[maxIdx1[0]].x== in_point[maxIdx2[0]].x)//如果第二个区域与第一个区域的最大值是同一个点，则（i+9, (n-1)*9)区域找到最大值
+                {
+                    value=in_point[maxIdx1[0]].y;//（i+9, (n-1)*9)区域的值为最大值，将其赋予value
+                    average_gobal_maxmin=(maxminVal+value)/2;
+                    for (int j=i;j<=i+(n-1)*9;j++)
+                    {
+                        local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
+                    }
+                    Flag_minmax++;//用于奇偶判断，此循环是偶数才进行，加了后变成奇数，进入求极大值的循环
+                    next_point=minIdx1[0];
+                    break;//跳出当前循环   break语句对if-else的条件语句不起作用。只跳出for
+                }//否则，即当前（i+9, n*9)区域的为最大值。n++,下一个区域计算，与当前区域比较
+                if (i+n*9==msgDate_resize.rows)//假如一直都是下一个区域是最大值，那么这个循环可以一直运行到最后，而在最后的时候，条件满足，进入当前条件语句。那么最后一个也可以保留出来
+                {
+                    value=in_point[maxIdx2[0]].y;//当前值为最大值，将其赋予value
+                    average_gobal_maxmin=(maxminVal+value)/2;
+                    for (int j=i;j<=i+n*9;j++)
+                    {
+                        local_maxmin_threshold.push_back(Point(j,average_gobal_maxmin));
+                    }
+                    next_point=minIdx2[0];
+                }
+            }  
+            maxminVal=value;//求完极小值，将当前的极小值赋值，用于求下一个极大值
+            //加判断语句看是否已经到达边缘
+            if (i+(next_point-maxIdx[0])+2*9>=msgDate_resize.rows)//当前的点是否已经不支持下一次判决，一判决就会溢出
+            {
+                break;//跳出循环
+            }
+            continue; //结束当前循环，进入下一次  
+        }
+    }
+
 
 /////////////////////////////////////////方法二：EVA algorithm/////////////////////////////////////////////// 
 
 
 
+
+
+
+
 //////////////////////////////////////////方法三：小范围的自适应阈值//////////////////////////////////////////////////
-    int radius=40;
+    int radius=30;
     std::vector<int> eachpixel_threshold {};
     for(int i=0;i<=msgDate_resize.rows;i++)
     {
@@ -563,67 +762,67 @@ int main() {
     } catch ( std::out_of_range& e ) {  // 异常处理
         std::cout << "此LED图像ID无法识别" << std::endl;
         std::cout << "sample_point="<<sample_point << std::endl;
-        if (which_threshold==0)//采用第一种方法
-        {
-            sample_point++;
-            if (sample_point<=sample_interval)
-            {
-                goto sample_again;//重新采样
-            }
-            sample_point=-1;//由于下面循环先进入++，而采样范围为0～9
-            which_threshold++;
-        }
-        if (which_threshold==1)//采用第二种方法
-        {
+        // if (which_threshold==0)//采用第一种方法
+        // {
+        //     sample_point++;
+        //     if (sample_point<=sample_interval)
+        //     {
+        //         goto sample_again;//重新采样
+        //     }
+        //     sample_point=-1;//由于下面循环先进入++，而采样范围为0～9
+        //     which_threshold++;
+        // }
+        // if (which_threshold==1)//采用第二种方法
+        // {
             
-            sample_point++;
-            if (sample_point<=sample_interval)
-            {
-                goto sample_again;
-            }
-            sample_point=-1;
-            which_threshold++;
-        }
-        if (which_threshold==2)
-        {
-            sample_point++;
-            if (sample_point<=sample_interval)
-            {
-                goto sample_again;
-            }
-            sample_point=-1;
-            which_threshold++;
-        }
-        if (which_threshold==3)
-        {
-            sample_point++;
-            if (sample_point<=sample_interval)
-            {
-                goto sample_again;
-            }
-            sample_point=-1;
-            which_threshold++;
-        }
+        //     sample_point++;
+        //     if (sample_point<=sample_interval)
+        //     {
+        //         goto sample_again;
+        //     }
+        //     sample_point=-1;
+        //     which_threshold++;
+        // }
+        // if (which_threshold==2)
+        // {
+        //     sample_point++;
+        //     if (sample_point<=sample_interval)
+        //     {
+        //         goto sample_again;
+        //     }
+        //     sample_point=-1;
+        //     which_threshold++;
+        // }
+        // if (which_threshold==3)
+        // {
+        //     sample_point++;
+        //     if (sample_point<=sample_interval)
+        //     {
+        //         goto sample_again;
+        //     }
+        //     sample_point=-1;
+        //     which_threshold++;
+        // }
     }
 
     std::cout << "LED_ID="<<LED_ID << std::endl;
     // std::cout << "which_threshold="<<which_threshold << std::endl;
 
-    switch (which_threshold)
-    {
-        case 0:
-        std::cout << "自适应阈值判断成功" << std::endl;
-        break;
-        case 1:
-        std::cout << "多项式判断成功" << std::endl;
-        break;
-        case 2:
-        std::cout << "小区域自适应阈值判断成功" << std::endl;
-        break;
-        case 3:
-        std::cout << "局部自适应阈值判断成功" << std::endl;
-        break;
-    }
+    // switch (which_threshold)
+    // {
+    //     case 0:
+    //     std::cout << "自适应阈值判断成功" << std::endl;
+    //     break;
+    //     case 1:
+    //     std::cout << "多项式判断成功" << std::endl;
+    //     break;
+    //     case 2:
+    //     std::cout << "小区域自适应阈值判断成功" << std::endl;
+    //     break;
+    //     case 3:
+    //     std::cout << "局部自适应阈值判断成功" << std::endl;
+    //     break;
+    // }
 
     
     
