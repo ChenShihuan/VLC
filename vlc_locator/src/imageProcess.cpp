@@ -408,15 +408,7 @@ cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
     // 插值
     cv::resize(meanRowOfPxiel, meanRowOfPxiel, cv::Size(meanRowOfPxiel.cols*4, 1), cv::INTER_CUBIC);
     std::cout << "插值 = "<< meanRowOfPxiel <<std::endl;
-
-    // RowOfimgLED = 0;
-    // for( it = meanRowOfPxiel.begin<float>(), end = meanRowOfPxiel.end<float>(); it != end; it = it+4) {
-        
-    //     RowOfimgLED ++;
-    //     *it = meanOfPxielRow;
-    // }
-
-    
+  
     cv::Mat meanShow(meanRowOfPxiel.size(),CV_32FC1);
     cv::resize(meanRowOfPxiel, meanShow, cv::Size(meanRowOfPxiel.cols, 100), cv::INTER_CUBIC);
     meanShow.convertTo(meanShow, CV_8U);
@@ -455,29 +447,26 @@ cv::Mat matShift(cv::Mat frame, int shiftCol, int shiftRow) {
     cv::Mat row 已由列矩阵转置为行矩阵的数位
 ------------------------------------------------------------*/
 cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
-    // 输入的行矩阵向右移一位
-    std::cout << "原图 = "<< imgRow <<std::endl;
+    // 寻找所有的极大极小值（也就是波峰和波谷）
+
+    // 平滑，均值滤波，作用是消除曲线上小的抖动
+    cv::blur(imgRow, imgRow, cv::Size(15,1));
 
     cv::Mat imgRowRightShift = matShift(imgRow, 1, 0);
-    std::cout << "右移 = "<< imgRowRightShift <<std::endl;
+    // std::cout << "右移 = "<< imgRowRightShift <<std::endl;
 
     cv::Mat difference = imgRow - imgRowRightShift;
-    std::cout << "差值 = "<< difference <<std::endl;
-    cv::Mat differenceShow;
-    cv::resize(difference, differenceShow, cv::Size(difference.cols, 100), cv::INTER_CUBIC);
-    cv::imshow("difference", differenceShow);
+    // std::cout << "计算差值 = "<< difference <<std::endl;
 
     cv::threshold(difference, difference, 0, 255, cv::THRESH_BINARY);
-    std::cout << "差值 = "<< difference <<std::endl;
-    cv::resize(difference, differenceShow, cv::Size(difference.cols, 100), cv::INTER_CUBIC);
-    cv::imshow("difference", differenceShow);
+    // std::cout << "二值化差值 = "<< difference <<std::endl;
 
     cv::Mat differenceLeftShift = matShift(difference, -1, 0);
-    std::cout << "左移 = "<< differenceLeftShift <<std::endl;
+    // std::cout << "二值化差值左移 = "<< differenceLeftShift <<std::endl;
 
     cv::Mat CrestsTroughs;
     cv::bitwise_xor(difference, differenceLeftShift, CrestsTroughs);
-    std::cout << "异或 = "<< CrestsTroughs <<std::endl;
+    // std::cout << "异或 = "<< CrestsTroughs <<std::endl;
 
     cv::Mat CrestsTroughsShow;
     cv::resize(CrestsTroughs, CrestsTroughsShow, cv::Size(CrestsTroughs.cols, 100), cv::INTER_CUBIC);
