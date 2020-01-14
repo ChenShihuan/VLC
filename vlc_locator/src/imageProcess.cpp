@@ -459,6 +459,7 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
     // std::cout << "计算差值 = "<< difference <<std::endl;
 
     cv::threshold(difference, difference, 0, 255, cv::THRESH_BINARY);
+    difference.convertTo(difference, CV_8U);
     // std::cout << "二值化差值 = "<< difference <<std::endl;
 
     cv::Mat differenceLeftShift = matShift(difference, -1, 0);
@@ -471,6 +472,12 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
     cv::Mat CrestsTroughsShow;
     cv::resize(CrestsTroughs, CrestsTroughsShow, cv::Size(CrestsTroughs.cols, 100), cv::INTER_CUBIC);
     cv::imshow("CrestsTroughsShow", CrestsTroughsShow);
+
+    cv::Mat NonZero_Locations;
+    NonZero_Locations.create(CrestsTroughs.rows, CrestsTroughs.cols, CV_32SC1);
+    cv::findNonZero(CrestsTroughs, NonZero_Locations);
+    std::cout << "Non-Zero Locations = " << NonZero_Locations << std::endl;
+
     return imgRow;
 }
 // 局部自适应阈值二值化
