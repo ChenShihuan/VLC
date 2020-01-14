@@ -233,7 +233,7 @@ geometry_msgs::Point Get_coordinate(cv::Mat img) {
         }
     }
     // 将非0的第一个与第二个灯(以及第三个灯)代入执行定位
-    vlp::Point PointByVLP;
+    vlc::Point PointByVLP;
         Point = PointByVLP.VLPbyLED(f, Center_X, Center_Y, Hight_of_LED, Pixel_Size,
                             LEDs[NonZeroID[0]],
                             LEDs[NonZeroID[1]]);

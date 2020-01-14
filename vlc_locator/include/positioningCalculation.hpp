@@ -21,7 +21,7 @@
 
 cv::Mat pointOnMap(cv::Mat imgPoint,geometry_msgs::Point point);
 
-namespace vlp {
+namespace vlc {
     class Point {
     private:
         geometry_msgs::Point point;

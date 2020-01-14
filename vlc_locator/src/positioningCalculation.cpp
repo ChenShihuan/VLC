@@ -24,10 +24,10 @@ cv::Mat pointOnMap(cv::Mat imgPoint, geometry_msgs::Point point) {
     return imgPoint;
 }
 
-vlp::Point::Point() {
+vlc::Point::Point() {
 }
 
-vlp::Point::~Point() {
+vlc::Point::~Point() {
 }
 /* -------------------【geometry_msgs::Point VLPbyLED】----------------
 @Overload
@@ -43,7 +43,7 @@ vlp::Point::~Point() {
 输出数据类型
     geometry_msgs::Point point ROS的geometry_msgs::Point格式描述的点
 -------------------------------------------------------------------------- */
-geometry_msgs::Point vlp::Point::VLPbyLED (const double & f,
+geometry_msgs::Point vlc::Point::VLPbyLED (const double & f,
                                 const double & Center_X,
                                 const double & Center_Y,
                                 const double & Hight_of_LED,
@@ -206,7 +206,7 @@ geometry_msgs::Point vlp::Point::VLPbyLED (const double & f,
     return point;
 }
 
-/* --------------【struct vlp::Point::poseOfDoubleLED VLPbyLED】--------------
+/* --------------【struct vlc::Point::poseOfDoubleLED VLPbyLED】--------------
 @Overload
 功能：带姿态角度的双灯定位计算
 注意：本函数的姿态角度尚未处理完成，两个方向会返回一样的角度，要结合ABCD判断来处理
@@ -220,11 +220,11 @@ geometry_msgs::Point vlp::Point::VLPbyLED (const double & f,
     const struct LED D1, 第一个灯的信息
     const struct LED D2  第二个灯的信息
 输出数据类型
-    struct vlp::Point::poseOfDoubleLED 数据类型，包含了
+    struct vlc::Point::poseOfDoubleLED 数据类型，包含了
         point ROS的geometry_msgs::Point格式描述的点，
         alpha 姿态角度
 -------------------------------------------------------------------------- */
-struct vlp::Point::poseOfDoubleLED vlp::Point::VLPbyLED(
+struct vlc::Point::poseOfDoubleLED vlc::Point::VLPbyLED(
                                 const std::string& poseFlag,
                                 const double & f,
                                 const double & Center_X,
@@ -393,7 +393,7 @@ struct vlp::Point::poseOfDoubleLED vlp::Point::VLPbyLED(
 
     return pose;
 }
-/* ------------【geometry_msgs::Point vlp::Point::VLPbyLED】---------------
+/* ------------【geometry_msgs::Point vlc::Point::VLPbyLED】---------------
 @Overload
 功能：三灯定位计算
 输入数据类型：
@@ -408,7 +408,7 @@ struct vlp::Point::poseOfDoubleLED vlp::Point::VLPbyLED(
 输出数据类型
     geometry_msgs::Point point ROS的geometry_msgs::Point格式描述的点
 --------------------------------------------------------------------------*/
-geometry_msgs::Point vlp::Point::VLPbyLED (const double & f,
+geometry_msgs::Point vlc::Point::VLPbyLED (const double & f,
                                 const double & Center_X,
                                 const double & Center_Y,
                                 const double & Hight_of_LED,
