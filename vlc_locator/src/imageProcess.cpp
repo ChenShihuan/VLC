@@ -381,7 +381,7 @@ void thinImage(cv::Mat &srcimage)// 单通道、二值化后的图像
     cv::Mat imgLED 切割出来的LED图像
     int threshold 背景阈值
 输出数据类型：
-    cv::Mat row 已由列矩阵转置为行矩阵的数位，由vector通过Mat(BitVector, true).t()生成
+    cv::Mat meanRowOfPxiel 由每行均值组成的行矩阵，float数据类型
 ------------------------------------------------------------*/
 cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
     // cv::cvtColor(imgLED,imgLED,cv::COLOR_BGR2GRAY);
@@ -408,7 +408,7 @@ cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
     // 插值
     cv::resize(meanRowOfPxiel, meanRowOfPxiel, cv::Size(meanRowOfPxiel.cols*4, 1), cv::INTER_CUBIC);
     std::cout << "插值 = "<< meanRowOfPxiel <<std::endl;
-  
+
     cv::Mat meanShow(meanRowOfPxiel.size(),CV_32FC1);
     cv::resize(meanRowOfPxiel, meanShow, cv::Size(meanRowOfPxiel.cols, 100), cv::INTER_CUBIC);
     meanShow.convertTo(meanShow, CV_8U);
@@ -438,18 +438,18 @@ cv::Mat matShift(cv::Mat frame, int shiftCol, int shiftRow) {
     return out;
 }
 
-/* -------------------【 二值化处理 】----------------
+/* -------------------【 寻找波峰波谷处理 】----------------
 功能：
-    二值化处理
+    寻找LED行均值的波峰波谷
 输入数据类型：
-    cv::Mat row 已由列矩阵转置为行矩阵的像素列
+    cv::Mat imgRow 已由列矩阵转置为行矩阵的像素列，注意，必须要float类型！
 输出数据类型：
-    cv::Mat row 已由列矩阵转置为行矩阵的数位
+    cv::Mat NonZeroLocations 波峰波谷所在的坐标
 ------------------------------------------------------------*/
-cv::Mat LEDMeanRowThreshold(const cv::Mat imgRow) {
+cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow) {
     // 寻找所有的极大极小值（也就是波峰和波谷）
     cv::Mat imgRowBlur;
-    
+
     // 平滑，均值滤波，作用是消除曲线上小的抖动
     cv::blur(imgRow, imgRowBlur, cv::Size(15,1));
 
@@ -474,13 +474,49 @@ cv::Mat LEDMeanRowThreshold(const cv::Mat imgRow) {
     cv::resize(CrestsTroughs, CrestsTroughsShow, cv::Size(CrestsTroughs.cols, 100), cv::INTER_CUBIC);
     cv::imshow("CrestsTroughsShow", CrestsTroughsShow);
 
-    cv::Mat NonZero_Locations;
-    NonZero_Locations.create(CrestsTroughs.rows, CrestsTroughs.cols, CV_32SC1);
-    cv::findNonZero(CrestsTroughs, NonZero_Locations);
-    std::cout << "Non-Zero Locations = " << NonZero_Locations << std::endl;
+    cv::Mat NonZeroLocations;
+    NonZeroLocations.create(CrestsTroughs.rows, CrestsTroughs.cols, CV_32SC1);
+    cv::findNonZero(CrestsTroughs, NonZeroLocations);
+    std::cout << "Non-Zero Locations = " << NonZeroLocations << std::endl;
 
-    return imgRow;
+    return NonZeroLocations;
 }
+
+/* -------------------【 二值化处理 】----------------
+功能：
+    二值化处理
+输入数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的像素列
+输出数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的数位
+------------------------------------------------------------*/
+cv::Mat LEDMeanRowThreshold(const cv::Mat imgRow) {
+    // 获取波峰波谷
+    cv::Mat NonZeroLocations;
+    NonZeroLocations = LEDMeanRowCrestsTroughs(imgRow);
+
+    cv::Mat frame;
+    cv::MatIterator_<float> frameStart, frameIt;
+    frameStart = frame.begin<float>();
+    frameIt = frame.begin<float>();
+    cv::Mat out = cv::Mat::zeros(frame.size(), frame.type());
+    cv::Rect source;
+    cv::Rect target;
+    frame(source).copyTo(out(target));
+
+    cv::MatIterator_<float> start, it, end;
+    for( it = NonZeroLocations.begin<float>(), end = NonZeroLocations.end<float>(), start = it; ;it++) {
+        *it;
+        // source = cv::Rect(max(0,-shiftCol),max(0,-shiftRow), frame.cols-abs(shiftCol),frame.rows-abs(shiftRow));
+        // target = cv::Rect(max(0,shiftCol),max(0,shiftRow),frame.cols-abs(shiftCol),frame.rows-abs(shiftRow));
+        frame(source).copyTo(out(target));
+        if (it != end)
+            break;
+    }
+
+
+}
+
 // 局部自适应阈值二值化
 // cv::Mat binRowOfPxiel;
 // cv::adaptiveThreshold(meanRowOfPxiel, binRowOfPxiel,

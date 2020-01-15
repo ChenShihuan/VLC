@@ -7,13 +7,13 @@
 #include "positioningCalculation.hpp"
 
 int main() {
-    cv::Mat imageLED = cv::imread("/media/chen/Data-SSD/8kTest2048/frame0015-1.jpg");
+    cv::Mat imageLED = cv::imread("/media/chen/Data-SSD/8kTest2048/frame0015-2.jpg");
     cv::cvtColor(imageLED,imageLED,cv::COLOR_BGR2GRAY);
     imshow("input", imageLED);
     // cv::Mat imageLED = (cv::Mat_<uchar>(7, 1) << 0,   0,  21,  22,  30,  74, 146);
 
     imageLED = ImagePreProcessing(imageLED, 20);
-    LEDMeanRowThreshold(imageLED);
+    LEDMeanRowCrestsTroughs(imageLED);
     // cv::Mat bit;
     // bit = ImagePreProcessing(imageLED, 20);
     // std::cout << "Bit = "<< bit <<std::endl;
