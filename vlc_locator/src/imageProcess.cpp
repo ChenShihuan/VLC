@@ -452,6 +452,7 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow) {
 
     // 平滑，均值滤波，作用是消除曲线上小的抖动
     cv::blur(imgRow, imgRowBlur, cv::Size(15,1));
+    // std::cout << "平滑 = "<< imgRowBlur <<std::endl;
 
     cv::Mat imgRowRightShift = matShift(imgRowBlur, 1, 0);
     // std::cout << "右移 = "<< imgRowRightShift <<std::endl;
@@ -490,31 +491,65 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow) {
 输出数据类型：
     cv::Mat row 已由列矩阵转置为行矩阵的数位
 ------------------------------------------------------------*/
-cv::Mat LEDMeanRowThreshold(const cv::Mat imgRow) {
+cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
     // 获取波峰波谷
     cv::Mat NonZeroLocations;
     NonZeroLocations = LEDMeanRowCrestsTroughs(imgRow);
 
-    cv::Mat frame;
-    cv::MatIterator_<float> frameStart, frameIt;
-    frameStart = frame.begin<float>();
-    frameIt = frame.begin<float>();
-    cv::Mat out = cv::Mat::zeros(frame.size(), frame.type());
-    cv::Rect source;
-    cv::Rect target;
-    frame(source).copyTo(out(target));
+    cv::Mat ROI;
+    cv::Rect roiRange;
+    int roiThreshold;
+    int roiStart, roiEnd;
+    roiStart = 0;
+    for (int i = 0; i < NonZeroLocations.size().height; i++){
+        // 逐个读取NonZeroLocations数据库
+        cv::Point pnt = NonZeroLocations.at<cv::Point>(i);
+        roiEnd = pnt.x;
+        // std::cout << "roiEnd = " << roiEnd << std::endl;
 
-    cv::MatIterator_<float> start, it, end;
-    for( it = NonZeroLocations.begin<float>(), end = NonZeroLocations.end<float>(), start = it; ;it++) {
-        *it;
-        // source = cv::Rect(max(0,-shiftCol),max(0,-shiftRow), frame.cols-abs(shiftCol),frame.rows-abs(shiftRow));
-        // target = cv::Rect(max(0,shiftCol),max(0,shiftRow),frame.cols-abs(shiftCol),frame.rows-abs(shiftRow));
-        frame(source).copyTo(out(target));
-        if (it != end)
-            break;
+        // 根据读取结果划定本次二值化的ROI区域
+        roiRange = cv::Rect(roiStart, 0, (roiEnd - roiStart), 1);
+        ROI = imgRow(roiRange);
+        // std::cout << "ROI_1 = "<< ROI <<std::endl;
+
+        float leftCrests = imgRow.at<float>(0, roiStart);
+        float rightCrests = imgRow.at<float>(0, roiEnd);
+        std::cout << "*leftCrests = "<< leftCrests <<std::endl;
+        std::cout << "*rightCrests = "<< rightCrests <<std::endl;
+        roiThreshold = (leftCrests + rightCrests) / 2;
+        // std::cout << "roiThreshold = "<< roiThreshold <<std::endl;
+
+        cv::threshold(ROI, ROI, roiThreshold, 255, cv::THRESH_BINARY);
+        // std::cout << "ROI_2 = "<< ROI <<std::endl;
+
+        ROI.copyTo(imgRow(roiRange));
+
+        roiStart = roiEnd;
     }
+        roiEnd = imgRow.cols;
+        // 根据读取结果划定本次二值化的ROI区域
+        roiRange = cv::Rect(roiStart, 0, (roiEnd - roiStart), 1);
+        ROI = imgRow(roiRange);
+        // std::cout << "ROI_1 = "<< ROI <<std::endl;
 
+        float leftCrests = imgRow.at<float>(0, roiStart);
+        float rightCrests = imgRow.at<float>(0, roiEnd);
+        std::cout << "*leftCrests = "<< leftCrests <<std::endl;
+        std::cout << "*rightCrests = "<< rightCrests <<std::endl;
+        roiThreshold = (leftCrests + rightCrests) / 2;
+        // std::cout << "roiThreshold = "<< roiThreshold <<std::endl;
 
+        cv::threshold(ROI, ROI, roiThreshold, 255, cv::THRESH_BINARY);
+        // std::cout << "ROI_2 = "<< ROI <<std::endl;
+
+        ROI.copyTo(imgRow(roiRange));
+
+    imgRow.convertTo(imgRow, CV_8U);
+    cv::Mat imgRowShow;
+    cv::resize(imgRow, imgRowShow, cv::Size(imgRow.cols, 100), cv::INTER_CUBIC);
+    cv::imshow("LEDMeanRowThreshold", imgRowShow);
+    std::cout << "imgRow = "<< imgRow <<std::endl;
+    return imgRow;
 }
 
 // 局部自适应阈值二值化
@@ -607,11 +642,14 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
         常直接返回输出报错0矩阵。
         异常输出示例 msgDate = [  0]
 --------------------------------------------------------*/
-cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp) {
+cv::Mat getMsgDate(cv::Mat imageLED, cv::Mat headerStamp) {
 // cv::Mat getMsgDate(const cv::Mat imageLED) {
     // https://stackoverflow.com/questions/32737420/multiple-results-in-opencvsharp3-matchtemplate
     // 将获取的数据位矩阵作为待匹配矩阵
-    cv::Mat col = ImagePreProcessing(imageLED, 20);
+    // cv::Mat col = ImagePreProcessing(imageLED, 20);
+    imageLED = ImagePreProcessing(imageLED, 20);
+    // LEDMeanRowCrestsTroughs(imageLED);
+    cv::Mat col =  LEDMeanRowThreshold(imageLED);
     // col = col.t();  // 转置为行矩阵
     std::cout << "col = "<< col <<std::endl;
     cv::Mat ref = convertPxielRowToBit(col);
