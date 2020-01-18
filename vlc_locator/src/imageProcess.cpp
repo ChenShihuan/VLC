@@ -412,7 +412,10 @@ cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
     // 创建掩模，用于均值运算。
     cv::Mat maskOfimgLED;
     cv::threshold(imgLED, maskOfimgLED, backgroundThreshold, 255, cv::THRESH_BINARY);
+
+    // 用作显示，不参与函数功能
     cv::imshow("maskOfimgLED", maskOfimgLED);
+
     imgLED.convertTo(imgLED, CV_32F);
 
     // 取阈值以上值的均值，逻辑是运用掩模，其中的数值为0或者1，为1的地方，计算出image中所有元素的均值，为0的地方，不计算
@@ -433,6 +436,7 @@ cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
     cv::resize(meanRowOfPxiel, meanRowOfPxiel, cv::Size(meanRowOfPxiel.cols*4, 1), cv::INTER_CUBIC);
     std::cout << "插值 = "<< meanRowOfPxiel <<std::endl;
 
+    // 用作显示，不参与函数功能
     cv::Mat meanShow(meanRowOfPxiel.size(),CV_32FC1);
     cv::resize(meanRowOfPxiel, meanShow, cv::Size(meanRowOfPxiel.cols, 100), cv::INTER_CUBIC);
     meanShow.convertTo(meanShow, CV_8U);
@@ -479,6 +483,8 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow) {
     // cv::GaussianBlur(imgRow, imgRowBlur, cv::Size(21,1), 0, 0 );
     cv::blur(imgRow, imgRowBlur, cv::Size(15,1));
     // std::cout << "平滑 = "<< imgRowBlur <<std::endl;
+
+    // 用作显示，不参与函数功能
     cv::Mat imgRowBlurShow;
     cv::resize(imgRowBlur, imgRowBlurShow, cv::Size(imgRowBlur.cols, 100), cv::INTER_CUBIC);
     imgRowBlurShow.convertTo(imgRowBlurShow, CV_8U);
@@ -508,6 +514,7 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow) {
     CrestsTroughs = CrestsTroughs.t();
     // std::cout << "异或 = "<< CrestsTroughs <<std::endl;
 
+    // 用作显示，不参与函数功能
     cv::Mat CrestsTroughsShow;
     cv::resize(CrestsTroughs, CrestsTroughsShow, cv::Size(CrestsTroughs.cols, 100), cv::INTER_CUBIC);
     cv::imshow("CrestsTroughsShow", CrestsTroughsShow);
@@ -575,10 +582,13 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
     // 二值化的部分由于已经是0和255，因而不受影响
     cv::threshold(imgRow, imgRow, 40, 255, cv::THRESH_BINARY);
     imgRow.convertTo(imgRow, CV_8U);
+
+    // 用作显示，不参与函数功能
     cv::Mat imgRowShow;
     cv::resize(imgRow, imgRowShow, cv::Size(imgRow.cols, 100), cv::INTER_CUBIC);
     cv::imshow("LEDMeanRowThreshold", imgRowShow);
     std::cout << "imgRow = "<< imgRow <<std::endl;
+
     return imgRow;
 }
 
@@ -611,12 +621,19 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     }
     // 对最后一个像素特殊处理，因为不能适用前面的条件判断
     pxielCount++;
+    std::cout << "pxielCount = "<< pxielCount <<std::endl;
     SamePxielCount.push_back(pxielCount);
 
-    // 获取转义数组中的最小值，即为一个字节所对应的像素
-    int bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
+    int bit;
+    // 对SamePxielCount成员进行排序，排除较小的异常值
+    std::vector<int> SamePxielCountCopy = SamePxielCount;
+    std::sort(SamePxielCountCopy.begin(), SamePxielCountCopy.end());
+    bit = SamePxielCountCopy.at(5);
+    // // 获取转义数组中的最小值，即为一个字节所对应的像素
+    // bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
+    bit = 10;
     std::cout << "bit = "<< bit <<std::endl;
-    // bit = 10;
+
     // 将转义数组再转为数据位数组
     std::vector<int> BitVector {};
     pxielCount = 0;
@@ -665,11 +682,12 @@ cv::Mat getMsgDate(cv::Mat imageLED, cv::Mat headerStamp) {
 // cv::Mat getMsgDate(const cv::Mat imageLED) {
     // https://stackoverflow.com/questions/32737420/multiple-results-in-opencvsharp3-matchtemplate
     // 将获取的数据位矩阵作为待匹配矩阵
-    // cv::Mat col = ImagePreProcessing(imageLED, 20);
+    // 图像预处理，获取图像每行均值并插值，以行矩阵输出
     imageLED = ImagePreProcessing(imageLED, 20);
-    // LEDMeanRowCrestsTroughs(imageLED);
+
+    // 将获取的图像每行均值进行二值化，以行矩阵输出
     cv::Mat col =  LEDMeanRowThreshold(imageLED);
-    // col = col.t();  // 转置为行矩阵
+
     std::cout << "col = "<< col <<std::endl;
     cv::Mat ref = convertPxielRowToBit(col);
     ref.convertTo(ref, CV_8U);
@@ -697,11 +715,10 @@ cv::Mat getMsgDate(cv::Mat imageLED, cv::Mat headerStamp) {
             break;
         }
     }
+    // 对HeaderStamp成员进行排序，否则可能出现顺序倒挂进而影响数据识别
+    std::sort(HeaderStamp.begin(), HeaderStamp.end());
 
     // 在两个消息头之间提取ROI区域，即位ID信息
-    // cv::Mat MsgData;
-    // MsgData = ref.colRange(HeaderStamp.at(0) + headerStamp.size().width, HeaderStamp.at(1));
-    // cout << "MsgData = "<< MsgData <<endl;
     int ptrHeaderStamp = 0;
     getROI:
     try {
