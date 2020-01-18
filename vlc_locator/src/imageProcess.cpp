@@ -373,6 +373,30 @@ void thinImage(cv::Mat &srcimage)// 单通道、二值化后的图像
     }
 }
 
+
+std::string type2str(int type) {
+  std::string r;
+
+  uchar depth = type & CV_MAT_DEPTH_MASK;
+  uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+  switch ( depth ) {
+    case CV_8U:  r = "8U"; break;
+    case CV_8S:  r = "8S"; break;
+    case CV_16U: r = "16U"; break;
+    case CV_16S: r = "16S"; break;
+    case CV_32S: r = "32S"; break;
+    case CV_32F: r = "32F"; break;
+    case CV_64F: r = "64F"; break;
+    default:     r = "User"; break;
+  }
+
+  r += "C";
+  r += (chans+'0');
+
+  return r;
+}
+
 /* -------------------【 LED图像预处理 】----------------
 功能：
     LED图像预处理，从原LED图像计算每行非0像素均值（理论上非0像素，实际上是某个阈值以上，目的是排除背景）
@@ -438,6 +462,7 @@ cv::Mat matShift(cv::Mat frame, int shiftCol, int shiftRow) {
     return out;
 }
 
+
 /* -------------------【 寻找波峰波谷处理 】----------------
 功能：
     寻找LED行均值的波峰波谷
@@ -451,13 +476,19 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow) {
     cv::Mat imgRowBlur;
 
     // 平滑，均值滤波，作用是消除曲线上小的抖动
+    // cv::GaussianBlur(imgRow, imgRowBlur, cv::Size(21,1), 0, 0 );
     cv::blur(imgRow, imgRowBlur, cv::Size(15,1));
     // std::cout << "平滑 = "<< imgRowBlur <<std::endl;
+    cv::Mat imgRowBlurShow;
+    cv::resize(imgRowBlur, imgRowBlurShow, cv::Size(imgRowBlur.cols, 100), cv::INTER_CUBIC);
+    imgRowBlurShow.convertTo(imgRowBlurShow, CV_8U);
+    cv::imshow("imgRowBlurShow", imgRowBlurShow);
 
     cv::Mat imgRowRightShift = matShift(imgRowBlur, 1, 0);
     // std::cout << "右移 = "<< imgRowRightShift <<std::endl;
 
-    cv::Mat difference = imgRowBlur - imgRowRightShift;
+    cv::Mat difference;
+    cv::subtract(imgRowBlur, imgRowRightShift, difference);
     // std::cout << "计算差值 = "<< difference <<std::endl;
 
     cv::threshold(difference, difference, 0, 255, cv::THRESH_BINARY);
@@ -469,14 +500,20 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow) {
 
     cv::Mat CrestsTroughs;
     cv::bitwise_xor(difference, differenceLeftShift, CrestsTroughs);
+
+    // 为末尾加上一个峰值标记，以便无需改动二值化处理的逻辑而不要漏掉最后一个区域
+    CrestsTroughs = CrestsTroughs.t();
+    cv::Mat endRow = (cv::Mat_<uchar>(1, 1) << 255);
+    CrestsTroughs.push_back(endRow);
+    CrestsTroughs = CrestsTroughs.t();
     // std::cout << "异或 = "<< CrestsTroughs <<std::endl;
 
     cv::Mat CrestsTroughsShow;
     cv::resize(CrestsTroughs, CrestsTroughsShow, cv::Size(CrestsTroughs.cols, 100), cv::INTER_CUBIC);
     cv::imshow("CrestsTroughsShow", CrestsTroughsShow);
 
+    // 寻找并返回非0元素的位置，即为波峰波谷
     cv::Mat NonZeroLocations;
-    NonZeroLocations.create(CrestsTroughs.rows, CrestsTroughs.cols, CV_32SC1);
     cv::findNonZero(CrestsTroughs, NonZeroLocations);
     std::cout << "Non-Zero Locations = " << NonZeroLocations << std::endl;
 
@@ -500,6 +537,7 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
     cv::Rect roiRange;
     int roiThreshold;
     int roiStart, roiEnd;
+    double minVal, maxVal;
     roiStart = 0;
     for (int i = 0; i < NonZeroLocations.size().height; i++){
         // 逐个读取NonZeroLocations数据库
@@ -512,38 +550,30 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
         ROI = imgRow(roiRange);
         // std::cout << "ROI_1 = "<< ROI <<std::endl;
 
-        float leftCrests = imgRow.at<float>(0, roiStart);
-        float rightCrests = imgRow.at<float>(0, roiEnd);
-        std::cout << "*leftCrests = "<< leftCrests <<std::endl;
-        std::cout << "*rightCrests = "<< rightCrests <<std::endl;
-        roiThreshold = (leftCrests + rightCrests) / 2;
-        // std::cout << "roiThreshold = "<< roiThreshold <<std::endl;
+        // 获取每个区间的最大最小值
+        cv::minMaxIdx(ROI, &minVal, &maxVal);
+        std::cout << "minVal = "<< minVal <<std::endl;
+        std::cout << "maxVal = "<< maxVal <<std::endl;
 
-        cv::threshold(ROI, ROI, roiThreshold, 255, cv::THRESH_BINARY);
-        // std::cout << "ROI_2 = "<< ROI <<std::endl;
+        // 为了应对宽条纹中间没有被平滑掉的起伏，只有在判断区间极值大于此阈值时才会执行二值化
+        if ((maxVal - minVal) > 30) {
+            roiThreshold = (minVal + maxVal) / 2;
+            // std::cout << "roiThreshold = "<< roiThreshold <<std::endl;
 
+            cv::threshold(ROI, ROI, roiThreshold, 255, cv::THRESH_BINARY);
+            // std::cout << "ROI_2 = "<< ROI <<std::endl;
+        } 
+
+        // 将此区域二值化结果复制回原图中
         ROI.copyTo(imgRow(roiRange));
 
         roiStart = roiEnd;
     }
-        roiEnd = imgRow.cols;
-        // 根据读取结果划定本次二值化的ROI区域
-        roiRange = cv::Rect(roiStart, 0, (roiEnd - roiStart), 1);
-        ROI = imgRow(roiRange);
-        // std::cout << "ROI_1 = "<< ROI <<std::endl;
 
-        float leftCrests = imgRow.at<float>(0, roiStart);
-        float rightCrests = imgRow.at<float>(0, roiEnd);
-        std::cout << "*leftCrests = "<< leftCrests <<std::endl;
-        std::cout << "*rightCrests = "<< rightCrests <<std::endl;
-        roiThreshold = (leftCrests + rightCrests) / 2;
-        // std::cout << "roiThreshold = "<< roiThreshold <<std::endl;
-
-        cv::threshold(ROI, ROI, roiThreshold, 255, cv::THRESH_BINARY);
-        // std::cout << "ROI_2 = "<< ROI <<std::endl;
-
-        ROI.copyTo(imgRow(roiRange));
-
+    // 将上面循环中没有处理的部分统一处理，因为没有平滑掉的起伏只位于宽条纹中间，
+    // 因此对应暗部和亮部的未处理值差别比较大，大致取中间值进行二值化即可，而已完成
+    // 二值化的部分由于已经是0和255，因而不受影响
+    cv::threshold(imgRow, imgRow, 40, 255, cv::THRESH_BINARY);
     imgRow.convertTo(imgRow, CV_8U);
     cv::Mat imgRowShow;
     cv::resize(imgRow, imgRowShow, cv::Size(imgRow.cols, 100), cv::INTER_CUBIC);
@@ -552,18 +582,6 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
     return imgRow;
 }
 
-// 局部自适应阈值二值化
-// cv::Mat binRowOfPxiel;
-// cv::adaptiveThreshold(meanRowOfPxiel, binRowOfPxiel,
-//                         255, cv::ADAPTIVE_THRESH_GAUSSIAN_C,
-//                         cv::THRESH_BINARY, 85, 0);
-// std::cout << "插值后 = "<< binRowOfPxiel.t() <<std::endl;
-// cv::Mat binShow;
-// threshold(binRowOfPxiel, binShow, 0.5, 255, cv::THRESH_BINARY);
-// cv::resize(binRowOfPxiel, binShow, cv::Size(binRowOfPxiel.cols, 100), cv::INTER_CUBIC);
-// cv::imshow("binShow", binShow);
-// return binRowOfPxiel;
-// // return {};
 
 /* -------------------【 将像素列解码为数位 】----------------
 功能：
@@ -583,6 +601,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     cv::MatIterator_<uchar> start, it, end;
     for( it = row.begin<uchar>(), end = row.end<uchar>(), start = it; it != end; it++) {
         if (*start != *it) {
+            std::cout << "pxielCount = "<< pxielCount <<std::endl;
             SamePxielCount.push_back(pxielCount);
             pxielCount = 1;
             start = it;
@@ -597,7 +616,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     // 获取转义数组中的最小值，即为一个字节所对应的像素
     int bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
     std::cout << "bit = "<< bit <<std::endl;
-    bit = 10;
+    // bit = 10;
     // 将转义数组再转为数据位数组
     std::vector<int> BitVector {};
     pxielCount = 0;
