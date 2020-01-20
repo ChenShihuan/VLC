@@ -29,5 +29,6 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow);
 cv::Mat LEDMeanRowThreshold(const cv::Mat imgRow);
 cv::Mat convertPxielRowToBit(cv::Mat col);
 cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp);
+cv::Mat MsgProcess(cv::Mat imageLED, cv::Mat headerStamp);
 
 #endif

@@ -469,7 +469,7 @@ cv::Mat matShift(cv::Mat frame, int shiftCol, int shiftRow) {
 
 /* -------------------【 寻找波峰波谷处理 】----------------
 功能：
-    寻找LED行均值的波峰波谷
+    寻找LED行均值的波峰波谷位置坐标
 输入数据类型：
     cv::Mat imgRow 已由列矩阵转置为行矩阵的像素列，注意，必须要float类型！
 输出数据类型：
@@ -532,18 +532,14 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow) {
     二值化处理
 输入数据类型：
     cv::Mat row 已由列矩阵转置为行矩阵的像素列
+    cv::Mat NonZeroLocations LED行均值的波峰波谷位置坐标
 输出数据类型：
     cv::Mat row 已由列矩阵转置为行矩阵的数位
 ------------------------------------------------------------*/
-cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
-    // 获取波峰波谷
-    cv::Mat NonZeroLocations;
-    NonZeroLocations = LEDMeanRowCrestsTroughs(imgRow);
-
+cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations) {
     cv::Mat ROI;
     cv::Rect roiRange;
-    int roiThreshold;
-    int roiStart, roiEnd;
+    int roiThreshold, roiStart, roiEnd;
     double minVal, maxVal;
     roiStart = 0;
     for (int i = 0; i < NonZeroLocations.size().height; i++){
@@ -564,12 +560,12 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
 
         // 为了应对宽条纹中间没有被平滑掉的起伏，只有在判断区间极值大于此阈值时才会执行二值化
         if ((maxVal - minVal) > 30) {
-            roiThreshold = (minVal + maxVal) / 2;
+            roiThreshold = ((minVal + maxVal) / 2) + 5;
             // std::cout << "roiThreshold = "<< roiThreshold <<std::endl;
 
             cv::threshold(ROI, ROI, roiThreshold, 255, cv::THRESH_BINARY);
             // std::cout << "ROI_2 = "<< ROI <<std::endl;
-        } 
+        }
 
         // 将此区域二值化结果复制回原图中
         ROI.copyTo(imgRow(roiRange));
@@ -592,6 +588,65 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow) {
     return imgRow;
 }
 
+/* -------------------【 将像素列解码为数位 】----------------
+功能：
+    将输入的已由列矩阵转置为行矩阵的像素列解码为数位
+输入数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的像素列
+    int samplePoint  // 采样点起始位置
+输出数据类型：
+    cv::Mat row 已由列矩阵转置为行矩阵的数位，由vector通过Mat(BitVector, true).t()生成
+------------------------------------------------------------*/
+cv::Mat convertPxielRowToBitBySample(cv::Mat row, int samplePoint) {
+
+    // 将中间列像素计数连续相同像素，并转义，例如001100001111转义为2244
+    std::vector<int> SamePxielCount {};
+    int pxielCount = 0;
+    cv::MatIterator_<uchar> start, it, end;
+    for( it = row.begin<uchar>(), end = row.end<uchar>(), start = it; it != end; it++) {
+        if (*start != *it) {
+            std::cout << "pxielCount = "<< pxielCount <<std::endl;
+            SamePxielCount.push_back(pxielCount);
+            pxielCount = 1;
+            start = it;
+        } else {
+            pxielCount++;
+        }
+    }
+    // 对最后一个像素特殊处理，因为不能适用前面的条件判断
+    pxielCount++;
+    std::cout << "pxielCount = "<< pxielCount <<std::endl;
+    SamePxielCount.push_back(pxielCount);
+
+    // if (SamePxielCount.at(0) < 7 || SamePxielCount.at(1) < 15) {
+    //     samplePoint = SamePxielCount.at(0) + (SamePxielCount.at(1) / 2);
+    // } else if (SamePxielCount.at(0) >= 7 || SamePxielCount.at(0) < 15) {
+    //     samplePoint = SamePxielCount.at(0) / 2;
+    // } else if (SamePxielCount.at(0) < 7 || SamePxielCount.at(1) >= 15) { 
+    //     samplePoint = SamePxielCount.at(0) + 5;
+    // } else {
+    //     samplePoint = SamePxielCount.at(0) / 2;
+    // }
+    samplePoint = SamePxielCount.at(0) / 2;
+    std::cout << "samplePoint = "<< samplePoint <<std::endl;
+    // int samplePoint = 5;  // 采样点（0～9）
+    int sampleInterval = 10;  // 采样间隔
+
+    // sample_again: std::cout << "******sample_again   "<<sample_point<<"   次"<<std::endl;
+
+    std::vector<int> BitVector {};
+    int pxielVal;
+    for(int i = samplePoint; i <= row.cols; i = i + sampleInterval) {
+        pxielVal = row.at<uchar>(i);
+        if (pxielVal == 255) {
+            pxielVal = 1;
+        }
+        // std::cout << "pxielVal= "<< pxielVal <<std::endl;
+        BitVector.push_back(pxielVal);//数据采样
+    }
+
+    return  cv::Mat(BitVector, true).t();  // 根据文档这里是一列n行，所以进行转置
+}
 
 /* -------------------【 将像素列解码为数位 】----------------
 功能：
@@ -663,7 +718,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
 
 /* -------------------【 消息数据获取 】----------------
 功能：
-    输入待识别的LED灯图像和字节头矩阵，输出数据节矩阵，例如：
+    输入待识别的已解码LED灯数位和字节头矩阵，输出数据节矩阵，例如：
     cv::Mat msgDate = getMsgDate(imageLED, msgHeaderStampTest);
 输入数据类型：
     const cv::Mat imageLED 待识别的LED灯图像
@@ -678,18 +733,19 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
         常直接返回输出报错0矩阵。
         异常输出示例 msgDate = [  0]
 --------------------------------------------------------*/
-cv::Mat getMsgDate(cv::Mat imageLED, cv::Mat headerStamp) {
+cv::Mat getMsgDate(cv::Mat imgRow, cv::Mat headerStamp) {
 // cv::Mat getMsgDate(const cv::Mat imageLED) {
     // https://stackoverflow.com/questions/32737420/multiple-results-in-opencvsharp3-matchtemplate
     // 将获取的数据位矩阵作为待匹配矩阵
-    // 图像预处理，获取图像每行均值并插值，以行矩阵输出
-    imageLED = ImagePreProcessing(imageLED, 20);
+    // // 图像预处理，获取图像每行均值并插值，以行矩阵输出
+    // imageLED = ImagePreProcessing(imageLED, 20);
 
-    // 将获取的图像每行均值进行二值化，以行矩阵输出
-    cv::Mat col =  LEDMeanRowThreshold(imageLED);
+    // // 将获取的图像每行均值进行二值化，以行矩阵输出
+    // cv::Mat row =  LEDMeanRowThreshold(imageLED);
 
-    std::cout << "col = "<< col <<std::endl;
-    cv::Mat ref = convertPxielRowToBit(col);
+    // std::cout << "imgRow = "<< imgRow <<std::endl;
+    // cv::Mat ref = convertPxielRowToBitBySample(imgRow);
+    cv::Mat ref = imgRow;
     ref.convertTo(ref, CV_8U);
     std::cout << "Bit = "<< ref.t() <<std::endl;
 
@@ -736,3 +792,42 @@ cv::Mat getMsgDate(cv::Mat imageLED, cv::Mat headerStamp) {
     }
 }
 
+
+/* -------------------【 消息数据获取 】----------------
+功能：
+    输入待识别的LED灯图像和字节头矩阵，输出数据节矩阵，例如：
+    cv::Mat msgDate = getMsgDate(imageLED, msgHeaderStampTest);
+输入数据类型：
+    const cv::Mat imageLED 待识别的LED灯图像
+    cv::Mat headerStamp 字节头矩阵，注意，此参数仅接收CV_8U格式的cv::Mat_<uchar>(i, j)的一维矩阵，
+        输入示例 cv::Mat msgHeaderStampTest = (cv::Mat_<uchar>(1, 5) <<  0, 1, 0, 1, 0);
+输出数据类型：
+    正常情况 CV_8U格式的行矩阵
+        正常输出示例 msgDate = [  0,   0,   1,   1,   0,   0,   1,   0,   1,   1,   1]
+    异常情况 0矩阵，引发异常的原因包括：检测到的消息头区域重叠造成colRange提取消息区域出错；
+        检测到最后一个消息头区域或者没有检测到消息头区域造成vector.at出现数组越界出错。
+        处理第一种异常会通过goto迭代继续检测后面的部分直到越界成为第二种情况；处理第二种异
+        常直接返回输出报错0矩阵。
+        异常输出示例 msgDate = [  0]
+--------------------------------------------------------*/
+cv::Mat MsgProcess(cv::Mat imageLED, cv::Mat headerStamp) {
+    // 图像预处理，获取图像每行均值并插值，以行矩阵输出
+    imageLED = ImagePreProcessing(imageLED, 20);
+
+    // 获取波峰波谷
+    cv::Mat NonZeroLocations = LEDMeanRowCrestsTroughs(imageLED);
+
+    // 将获取的图像每行均值进行二值化，以行矩阵输出
+    cv::Mat imgRow =  LEDMeanRowThreshold(imageLED, NonZeroLocations);
+
+    // 以第二个极值的位置作为采样起始偏移，因为第一个可能是图像最左侧，第二个可以保证在条纹中间。
+    // cv::Point pnt = NonZeroLocations.at<cv::Point>(1);
+    // int samplePoint = pnt.x;
+    // cv::Mat ref = convertPxielRowToBitBySample(imgRow, samplePoint);
+
+    cv::Mat ref = convertPxielRowToBit(imgRow);
+    // 将待识别矩阵作为模板匹配算法的待匹配模板
+    cv::Mat msgDate = getMsgDate(ref, headerStamp);
+
+    return msgDate;
+}

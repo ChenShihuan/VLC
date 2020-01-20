@@ -74,7 +74,7 @@
 
 int main() {
     using namespace cv;
-    cv::Mat img = cv::imread("vlc_locator/test image/frame0010.jpg");
+    cv::Mat img = cv::imread("vlc_locator/test image/frame0015.jpg");
     cv::cvtColor(img,img,cv::COLOR_BGR2GRAY);
     // int main() {
     // 1 2/3 4/5 6/7     9/10     11/12
@@ -163,7 +163,7 @@ int main() {
         unkonwn.imgCut = grayImage(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
 
         cv::Mat msgHeaderStampTest = (cv::Mat_<uchar>(1, 5) <<  1, 0, 1, 0, 1);
-        cv::Mat msgDate = getMsgDate(unkonwn.imgCut, msgHeaderStampTest);
+        cv::Mat msgDate = MsgProcess(unkonwn.imgCut, msgHeaderStampTest);
 
         std::cout << "msgDate = "<< msgDate <<std::endl;
 
