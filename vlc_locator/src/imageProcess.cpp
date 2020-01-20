@@ -597,8 +597,8 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations) {
 输出数据类型：
     cv::Mat row 已由列矩阵转置为行矩阵的数位，由vector通过Mat(BitVector, true).t()生成
 ------------------------------------------------------------*/
-cv::Mat convertPxielRowToBitBySample(cv::Mat row, int samplePoint) {
-
+cv::Mat convertPxielRowToBitBySample(cv::Mat row) {
+     int samplePoint;
     // 将中间列像素计数连续相同像素，并转义，例如001100001111转义为2244
     std::vector<int> SamePxielCount {};
     int pxielCount = 0;
@@ -627,10 +627,16 @@ cv::Mat convertPxielRowToBitBySample(cv::Mat row, int samplePoint) {
     // } else {
     //     samplePoint = SamePxielCount.at(0) / 2;
     // }
-    samplePoint = SamePxielCount.at(0) / 2;
+    if (SamePxielCount.at(0) >= 5){
+    samplePoint = SamePxielCount.at(0) - 5;        
+    } else {
+        samplePoint = SamePxielCount.at(0) + 5;
+    }
+    
+
     std::cout << "samplePoint = "<< samplePoint <<std::endl;
     // int samplePoint = 5;  // 采样点（0～9）
-    int sampleInterval = 10;  // 采样间隔
+    int sampleInterval = 9;  // 采样间隔
 
     // sample_again: std::cout << "******sample_again   "<<sample_point<<"   次"<<std::endl;
 
@@ -821,11 +827,12 @@ cv::Mat MsgProcess(cv::Mat imageLED, cv::Mat headerStamp) {
     cv::Mat imgRow =  LEDMeanRowThreshold(imageLED, NonZeroLocations);
 
     // 以第二个极值的位置作为采样起始偏移，因为第一个可能是图像最左侧，第二个可以保证在条纹中间。
-    // cv::Point pnt = NonZeroLocations.at<cv::Point>(1);
-    // int samplePoint = pnt.x;
-    // cv::Mat ref = convertPxielRowToBitBySample(imgRow, samplePoint);
+    // 以采样法获得待匹配数据序列
+    // cv::Mat ref = convertPxielRowToBitBySample(imgRow);
 
+    // 以bit宽度法计算待匹配数据序列
     cv::Mat ref = convertPxielRowToBit(imgRow);
+    
     // 将待识别矩阵作为模板匹配算法的待匹配模板
     cv::Mat msgDate = getMsgDate(ref, headerStamp);
 
