@@ -534,10 +534,17 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow, int BlurSize) {
 输入数据类型：
     cv::Mat row 已由列矩阵转置为行矩阵的像素列
     cv::Mat NonZeroLocations LED行均值的波峰波谷位置坐标
+    int backgroundThreshold 背景阈值
+    int backgroundCompensation 背景补偿值
+        为了补偿宽条纹处最小值为0所造成的二值化阈值偏低，故在此进行调节。
+        此种最小值应该指定为何值，根据观察进行配置，一般的指导规则是大于去除背景
+        的阈值（即ImagePreProcessing函数中的backgroundThreshold参数），
+        小于或等于其它未被去除背景的区间的最小值。例如本用例中backgroundThreshold
+        为20，其他未被去除背景的区间的最小值在90以上，故在此经过检验后确定取40
 输出数据类型：
     cv::Mat row 已由列矩阵转置为行矩阵的数位
 ------------------------------------------------------------*/
-cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations) {
+cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations, int backgroundThreshold, int backgroundCompensation) {
     cv::Mat ROI;
     cv::Rect roiRange;
     int roiThreshold, roiStart, roiEnd;
@@ -556,6 +563,15 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations) {
 
         // 获取每个区间的最大最小值
         cv::minMaxIdx(ROI, &minVal, &maxVal);
+
+        // 为了补偿宽条纹处最小值为0所造成的二值化阈值偏低，故在此进行调节
+        // 此种最小值应该指定为何值，根据观察进行配置，一般的指导规则是大于去除背景
+        // 的阈值（即ImagePreProcessing函数中的backgroundThreshold参数），
+        // 小于或等于其它未被去除背景的区间的最小值。例如本用例中backgroundThreshold
+        // 为20，其他未被去除背景的区间的最小值在90以上，故在此经过检验后确定取40
+        if (minVal < backgroundThreshold){
+            minVal = backgroundCompensation;
+        }
         std::cout << "minVal = "<< minVal <<std::endl;
         std::cout << "maxVal = "<< maxVal <<std::endl;
 
@@ -680,13 +696,17 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     int bit;
     // 对SamePxielCount成员进行排序，排除较小的异常值
     std::vector<int> SamePxielCountCopy = SamePxielCount;
+
+    // 对转义数组进行排序
     std::sort(SamePxielCountCopy.begin(), SamePxielCountCopy.end());
+    // 获取转义数组中的第五小的值，因为最小的前几个值均可能是不完整条纹，以中庸之道，取这个值
     bit = SamePxielCountCopy.at(4);
     std::cout << "bit = "<< bit <<std::endl;
+
     // // 获取转义数组中的最小值，即为一个字节所对应的像素
     // bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
     // bit = 10;
-    std::cout << "bit = "<< bit <<std::endl;
+    // std::cout << "bit = "<< bit <<std::endl;
 
     // 将转义数组再转为数据位数组
     std::vector<int> BitVector {};
@@ -703,11 +723,6 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
 
     for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount++) {
 
-        // if (SamePxielCount.at(pxielCount) > 40 && pxielFlag == 0) {
-        //     sameBitRaneg = round(SamePxielCount.at(pxielCount) / bit) + 1;
-        // } else {
-        //     sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
-        // }
         sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
         for (int bitCount = 0; bitCount < sameBitRaneg; bitCount ++) {
             BitVector.push_back(pxielFlag);
@@ -824,7 +839,12 @@ cv::Mat MsgProcess(cv::Mat imageLED, cv::Mat headerStamp) {
     cv::Mat NonZeroLocations = LEDMeanRowCrestsTroughs(imageLED, 15);
 
     // 将获取的图像每行均值进行二值化，以行矩阵输出
-    cv::Mat imgRow =  LEDMeanRowThreshold(imageLED, NonZeroLocations);
+    //     为了补偿宽条纹处最小值为0所造成的二值化阈值偏低，故在此进行调节。
+    // 此种最小值应该指定为何值，根据观察进行配置，一般的指导规则是大于去除背景
+    // 的阈值（即ImagePreProcessing函数中的backgroundThreshold参数），
+    // 小于或等于其它未被去除背景的区间的最小值。例如本用例中backgroundThreshold
+    // 为20，其他未被去除背景的区间的最小值在90以上，故在此经过检验后确定取40
+    cv::Mat imgRow =  LEDMeanRowThreshold(imageLED, NonZeroLocations, 20, 40);
 
     // 以采样法获得待匹配数据序列
     // cv::Mat ref = convertPxielRowToBitBySample(imgRow);
