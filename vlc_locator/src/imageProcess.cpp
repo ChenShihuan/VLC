@@ -702,7 +702,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
 
     for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount++) {
 
-        if (pxielFlag == 0 && SamePxielCount.at(pxielCount) > 40) {
+        if (SamePxielCount.at(pxielCount) > 40 && pxielFlag == 0) {
             sameBitRaneg = round(SamePxielCount.at(pxielCount) / bit) + 1;
         } else {
             sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
