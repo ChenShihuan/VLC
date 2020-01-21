@@ -703,12 +703,12 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
 
     for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount++) {
 
-        if (SamePxielCount.at(pxielCount) > 40 && pxielFlag == 0) {
-            sameBitRaneg = round(SamePxielCount.at(pxielCount) / bit) + 1;
-        } else {
-            sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
-        }
-
+        // if (SamePxielCount.at(pxielCount) > 40 && pxielFlag == 0) {
+        //     sameBitRaneg = round(SamePxielCount.at(pxielCount) / bit) + 1;
+        // } else {
+        //     sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
+        // }
+        sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
         for (int bitCount = 0; bitCount < sameBitRaneg; bitCount ++) {
             BitVector.push_back(pxielFlag);
             // 在Bit末尾插入sameBitRaneg个数的像素，像素数值由pxielFlag决定
