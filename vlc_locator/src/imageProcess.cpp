@@ -618,15 +618,6 @@ cv::Mat convertPxielRowToBitBySample(cv::Mat row) {
     std::cout << "pxielCount = "<< pxielCount <<std::endl;
     SamePxielCount.push_back(pxielCount);
 
-    // if (SamePxielCount.at(0) < 7 || SamePxielCount.at(1) < 15) {
-    //     samplePoint = SamePxielCount.at(0) + (SamePxielCount.at(1) / 2);
-    // } else if (SamePxielCount.at(0) >= 7 || SamePxielCount.at(0) < 15) {
-    //     samplePoint = SamePxielCount.at(0) / 2;
-    // } else if (SamePxielCount.at(0) < 7 || SamePxielCount.at(1) >= 15) { 
-    //     samplePoint = SamePxielCount.at(0) + 5;
-    // } else {
-    //     samplePoint = SamePxielCount.at(0) / 2;
-    // }
     if (SamePxielCount.at(0) >= 5){
     samplePoint = SamePxielCount.at(0) - 5;        
     } else {
@@ -710,7 +701,13 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     }
 
     for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount++) {
-        sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
+
+        if (pxielFlag == 0 && SamePxielCount.at(pxielCount) > 40) {
+            sameBitRaneg = round(SamePxielCount.at(pxielCount) / bit) + 1;
+        } else {
+            sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
+        }
+
         for (int bitCount = 0; bitCount < sameBitRaneg; bitCount ++) {
             BitVector.push_back(pxielFlag);
             // 在Bit末尾插入sameBitRaneg个数的像素，像素数值由pxielFlag决定
