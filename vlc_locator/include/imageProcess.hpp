@@ -25,7 +25,7 @@ void ls_LED(const cv::Mat& _img, int& X_min, int& X_max, int& Y_min, int& Y_max,
 void bwareaopen(cv::Mat &data, int n);
 void thinImage(cv::Mat &srcimage);
 cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold);
-cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow);
+cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow, int BlurSize);
 cv::Mat LEDMeanRowThreshold(const cv::Mat imgRow);
 cv::Mat convertPxielRowToBit(cv::Mat col);
 cv::Mat getMsgDate(const cv::Mat imageLED, cv::Mat headerStamp);

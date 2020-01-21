@@ -475,13 +475,14 @@ cv::Mat matShift(cv::Mat frame, int shiftCol, int shiftRow) {
 输出数据类型：
     cv::Mat NonZeroLocations 波峰波谷所在的坐标
 ------------------------------------------------------------*/
-cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow) {
+cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow, int BlurSize) {
     // 寻找所有的极大极小值（也就是波峰和波谷）
     cv::Mat imgRowBlur;
 
     // 平滑，均值滤波，作用是消除曲线上小的抖动
     // cv::GaussianBlur(imgRow, imgRowBlur, cv::Size(21,1), 0, 0 );
-    cv::blur(imgRow, imgRowBlur, cv::Size(15,1));
+    // 对于2048图像，BlurSize取15
+    cv::blur(imgRow, imgRowBlur, cv::Size(BlurSize,1));
     // std::cout << "平滑 = "<< imgRowBlur <<std::endl;
 
     // 用作显示，不参与函数功能
@@ -684,7 +685,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     std::cout << "bit = "<< bit <<std::endl;
     // // 获取转义数组中的最小值，即为一个字节所对应的像素
     // bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
-    bit = 10;
+    // bit = 10;
     std::cout << "bit = "<< bit <<std::endl;
 
     // 将转义数组再转为数据位数组
@@ -819,12 +820,12 @@ cv::Mat MsgProcess(cv::Mat imageLED, cv::Mat headerStamp) {
     imageLED = ImagePreProcessing(imageLED, 20);
 
     // 获取波峰波谷
-    cv::Mat NonZeroLocations = LEDMeanRowCrestsTroughs(imageLED);
+    // 对于2048图像，BlurSize取15
+    cv::Mat NonZeroLocations = LEDMeanRowCrestsTroughs(imageLED, 15);
 
     // 将获取的图像每行均值进行二值化，以行矩阵输出
     cv::Mat imgRow =  LEDMeanRowThreshold(imageLED, NonZeroLocations);
 
-    // 以第二个极值的位置作为采样起始偏移，因为第一个可能是图像最左侧，第二个可以保证在条纹中间。
     // 以采样法获得待匹配数据序列
     // cv::Mat ref = convertPxielRowToBitBySample(imgRow);
 
