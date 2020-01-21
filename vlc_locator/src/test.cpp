@@ -46,9 +46,9 @@
 //     imageLED = (Mat_ < float >(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
 //     cv::Mat col = imageLED.col(imageLED.size().height / 2);
 //     col = col.t();  // 转置为行矩阵
-//     col =  (cv::Mat_<double>(1, 13) << 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1); 
+//     col =  (cv::Mat_<double>(1, 13) << 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1);
 
-//     cv::Mat col =  (cv::Mat_<uchar>(1, 18) << 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0); 
+//     cv::Mat col =  (cv::Mat_<uchar>(1, 18) << 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0);
 //     resize(col,imageLED,Size(18,30),0,0,INTER_NEAREST);
 //     imageLED = imageLED.t();
 //     cv::cvtColor(imageLED,imageLED,cv::COLOR_BGR2GRAY);
@@ -74,7 +74,7 @@
 
 int main() {
     using namespace cv;
-    cv::Mat img = cv::imread("vlc_locator/test image/frame0011.jpg");
+    cv::Mat img = cv::imread("vlc_locator/test image/frame0010.jpg");
     cv::cvtColor(img,img,cv::COLOR_BGR2GRAY);
     // int main() {
     // 1 2/3 4/5 6/7     9/10     11/12

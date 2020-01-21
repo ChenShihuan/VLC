@@ -560,7 +560,7 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations) {
 
         // 为了应对宽条纹中间没有被平滑掉的起伏，只有在判断区间极值大于此阈值时才会执行二值化
         if ((maxVal - minVal) > 30) {
-            roiThreshold = ((minVal + maxVal) / 2) + 5;
+            roiThreshold = ((minVal + maxVal) / 2);
             // std::cout << "roiThreshold = "<< roiThreshold <<std::endl;
 
             cv::threshold(ROI, ROI, roiThreshold, 255, cv::THRESH_BINARY);
@@ -689,7 +689,8 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     // 对SamePxielCount成员进行排序，排除较小的异常值
     std::vector<int> SamePxielCountCopy = SamePxielCount;
     std::sort(SamePxielCountCopy.begin(), SamePxielCountCopy.end());
-    bit = SamePxielCountCopy.at(5);
+    bit = SamePxielCountCopy.at(4);
+    std::cout << "bit = "<< bit <<std::endl;
     // // 获取转义数组中的最小值，即为一个字节所对应的像素
     // bit = *std::min_element(SamePxielCount.begin(), SamePxielCount.end());
     bit = 10;
