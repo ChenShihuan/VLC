@@ -161,7 +161,7 @@ int main() {
         // 对二值化的图进行的复制
         // imshow("matBinary_threshold", matBinary_threshold);
         unkonwn.imgCut = grayImage(Rect(unkonwn.X_min, unkonwn.Y_min, unkonwn.X_max - unkonwn.X_min, unkonwn.Y_max - unkonwn.Y_min));
-
+        imshow("input", unkonwn.imgCut);
         cv::Mat msgHeaderStampTest = (cv::Mat_<uchar>(1, 5) <<  1, 0, 1, 0, 1);
         cv::Mat msgDate = MsgProcess(unkonwn.imgCut, msgHeaderStampTest);
 
