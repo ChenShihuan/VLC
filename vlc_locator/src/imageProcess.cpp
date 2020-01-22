@@ -575,10 +575,11 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations,
         // 为20，其他未被去除背景的区间的最小值在90以上，故在此经过检验后确定取40
         if (minVal < backgroundThreshold){
             minVal = backgroundCompensation;
+            if (maxVal < minVal){
+                maxVal = minVal;
+            }
         }
-        if (maxVal < minVal){
-            maxVal = minVal;
-        }
+
         std::cout << "minVal = "<< minVal <<std::endl;
         std::cout << "maxVal = "<< maxVal <<std::endl;
 
