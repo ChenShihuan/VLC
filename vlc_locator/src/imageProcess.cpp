@@ -403,11 +403,12 @@ std::string type2str(int type) {
     统计为列矩阵，并进行插值3.9倍处理
 输入数据类型：
     cv::Mat imgLED 切割出来的LED图像
-    int threshold 背景阈值
+    int threshold 背景阈值，用于蒙版处理，以提取出LED的形状
 输出数据类型：
     cv::Mat meanRowOfPxiel 由每行均值组成的行矩阵，float数据类型
+        因为要为了平滑的效果，需要更高精度的数据类型
 ------------------------------------------------------------*/
-cv::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
+cv::Mat_<float>::Mat ImagePreProcessing(cv::Mat imgLED, int backgroundThreshold) {
     // cv::cvtColor(imgLED,imgLED,cv::COLOR_BGR2GRAY);
     // 创建掩模，用于均值运算。
     cv::Mat maskOfimgLED;
@@ -472,10 +473,11 @@ cv::Mat matShift(cv::Mat frame, int shiftCol, int shiftRow) {
     寻找LED行均值的波峰波谷位置坐标
 输入数据类型：
     cv::Mat imgRow 已由列矩阵转置为行矩阵的像素列，注意，必须要float类型！
+        因为要为了平滑的效果，需要更高精度的数据类型
 输出数据类型：
     cv::Mat NonZeroLocations 波峰波谷所在的坐标
 ------------------------------------------------------------*/
-cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow, int BlurSize) {
+cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat_<float>::Mat imgRow, int BlurSize) {
     // 寻找所有的极大极小值（也就是波峰和波谷）
     cv::Mat imgRowBlur;
 
@@ -544,7 +546,9 @@ cv::Mat LEDMeanRowCrestsTroughs(const cv::Mat imgRow, int BlurSize) {
 输出数据类型：
     cv::Mat row 已由列矩阵转置为行矩阵的数位
 ------------------------------------------------------------*/
-cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations, int backgroundThreshold, int backgroundCompensation) {
+cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations, 
+                            int backgroundThreshold, 
+                            int backgroundCompensation) {
     cv::Mat ROI;
     cv::Rect roiRange;
     int roiThreshold, roiStart, roiEnd;
@@ -571,6 +575,9 @@ cv::Mat LEDMeanRowThreshold(cv::Mat imgRow, cv::Mat NonZeroLocations, int backgr
         // 为20，其他未被去除背景的区间的最小值在90以上，故在此经过检验后确定取40
         if (minVal < backgroundThreshold){
             minVal = backgroundCompensation;
+        }
+        if (maxVal < minVal){
+            maxVal = minVal;
         }
         std::cout << "minVal = "<< minVal <<std::endl;
         std::cout << "maxVal = "<< maxVal <<std::endl;
@@ -813,7 +820,7 @@ cv::Mat getMsgDate(cv::Mat imgRow, cv::Mat headerStamp) {
 }
 
 
-/* -------------------【 消息数据获取 】----------------
+/* -------------------【 消息处理 】----------------
 功能：
     输入待识别的LED灯图像和字节头矩阵，输出数据节矩阵，例如：
     cv::Mat msgDate = getMsgDate(imageLED, msgHeaderStampTest);
