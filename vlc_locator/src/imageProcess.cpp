@@ -719,7 +719,7 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
     // 将转义数组再转为数据位数组
     std::vector<int> BitVector {};
     pxielCount = 0;
-    int sameBitRaneg;
+    int sameBitRange;
 
     // 识别图像第一个像素的高低电平，转化为数据位，高电平即位1
     int pxielFlag;
@@ -731,8 +731,8 @@ cv::Mat convertPxielRowToBit(cv::Mat row) {
 
     for (pxielCount = 0; pxielCount < SamePxielCount.size(); pxielCount++) {
 
-        sameBitRaneg = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
-        for (int bitCount = 0; bitCount < sameBitRaneg; bitCount ++) {
+        sameBitRange = round(static_cast<double>(SamePxielCount.at(pxielCount)) / bit);
+        for (int bitCount = 0; bitCount < sameBitRange; bitCount ++) {
             BitVector.push_back(pxielFlag);
             // 在Bit末尾插入sameBitRaneg个数的像素，像素数值由pxielFlag决定
         }
