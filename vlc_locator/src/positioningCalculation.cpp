@@ -27,168 +27,353 @@ cv::Mat pointOnMap(cv::Mat imgPoint, geometry_msgs::Point point) {
 // ---------------------------【geometry_msgs::Point double_LED函数】----------------------------
 //     描述：双灯定位计算
 // -----------------------------------------------------------------------------------------------
-geometry_msgs::Point double_LED(const double f,
-                               const double Center_X,
-                               const double Center_Y,
-                               const double Hight_of_LED,
-                               const double Pixel_Size,
-                               const struct LED D1,
-                               const struct LED D2) {
+
+geometry_msgs::Point double_LED(double f,double Center_X, double Center_Y, struct LED D1,struct LED D2)
+
+{
+
     double ImgX1;
+
     double ImgY1;
+
     double ImgX2;
+
     double ImgY2;
+
     double x1;
+
     double y1;
+
     double x2;
+
     double y2;
-    double distance = 500; //需要的定位中心距离工业相机的中心距离为500mm
+
+
+
 
 
     // cout << "D1="<< D1.ID << '\n';
+
     // cout << "D2="<< D2.ID << '\n';
+
     // 计算角度
+
     double alpha;
-    if ( D1.X == D2.X ) {
-        if (D1.Y < D2.Y) {
+
+    if (D1.X == D2.X ){
+
+        if (D1.Y<D2.Y){
+
             ImgX1 = D1.imgLocalX;
+
             ImgY1 = D1.imgLocalY;
+
             ImgX2 = D2.imgLocalX;
+
             ImgY2 = D2.imgLocalY;
+
             x1 = D1.X;
+
             y1 = D1.Y;
+
             x2 = D2.X;
+
             y2 = D2.Y;
-        } else {
-            ImgX1 = D2.imgLocalX;
-            ImgY1 = D2.imgLocalY;
-            ImgX2 = D1.imgLocalX;
-            ImgY2 = D1.imgLocalY;
-            x1 = D2.X;
-            y1 = D2.Y;
-            x2 = D1.X;
-            y2 = D1.Y;
+
         }
+
+
+
+        else
+
+        {
+
+            ImgX1 = D2.imgLocalX;
+
+            ImgY1 = D2.imgLocalY;
+
+            ImgX2 = D1.imgLocalX;
+
+            ImgY2 = D1.imgLocalY;
+
+            x1 = D2.X;
+
+            y1 = D2.Y;
+
+            x2 = D1.X;
+
+            y2 = D1.Y;
+
+        }
+
         alpha = (pi/2);
+
         // if (y1<y2){
-        // alpha = (pi/4)+(pi/4);
+
+        // 	alpha = (pi/4)+(pi/4);
+
         // }
+
+
 
         // else{
-        // alpha = (3*pi/4)-(pi/4);
+
+        // 	alpha = (3*pi/4)-(pi/4);
+
         // }
 
-    } else if (D1.Y == D2.Y) {
-        if (D1.X < D2.X) {
+
+
+    }
+
+    else if (D1.Y == D2.Y){
+
+        if (D1.X<D2.X){
+
             ImgX1 = D1.imgLocalX;
+
             ImgY1 = D1.imgLocalY;
+
             ImgX2 = D2.imgLocalX;
+
             ImgY2 = D2.imgLocalY;
+
             x1 = D1.X;
+
             y1 = D1.Y;
+
             x2 = D2.X;
+
             y2 = D2.Y;
-        } else {
-            ImgX1 = D2.imgLocalX;
-            ImgY1 = D2.imgLocalY;
-            ImgX2 = D1.imgLocalX;
-            ImgY2 = D1.imgLocalY;
-            x1 = D2.X;
-            y1 = D2.Y;
-            x2 = D1.X;
-            y2 = D1.Y;
+
         }
+
+
+
+        else
+
+        {
+
+            ImgX1 = D2.imgLocalX;
+
+            ImgY1 = D2.imgLocalY;
+
+            ImgX2 = D1.imgLocalX;
+
+            ImgY2 = D1.imgLocalY;
+
+            x1 = D2.X;
+
+            y1 = D2.Y;
+
+            x2 = D1.X;
+
+            y2 = D1.Y;
+
+        }
+
         alpha = 0;
+
         // if (x1<x2){
-        // alpha = (pi/4)-(pi/4);
+
+        // 	alpha = (pi/4)-(pi/4);
+
         // }
 
+
+
         // else{
-        // alpha = (3*pi/4)+(pi/4);
+
+        // 	alpha = (3*pi/4)+(pi/4);
+
         // }
-    } else {
-        if (D1.X < D2.X) {
+
+
+
+    }
+
+    else{
+
+        if (D1.X<D2.X){
+
             ImgX1 = D1.imgLocalX;
+
             ImgY1 = D1.imgLocalY;
+
             ImgX2 = D2.imgLocalX;
+
             ImgY2 = D2.imgLocalY;
+
             x1 = D1.X;
+
             y1 = D1.Y;
+
             x2 = D2.X;
+
             y2 = D2.Y;
-        } else {
-            ImgX1 = D2.imgLocalX;
-            ImgY1 = D2.imgLocalY;
-            ImgX2 = D1.imgLocalX;
-            ImgY2 = D1.imgLocalY;
-            x1 = D2.X;
-            y1 = D2.Y;
-            x2 = D1.X;
-            y2 = D1.Y;
+
         }
+
+
+
+        else
+
+        {
+
+            ImgX1 = D2.imgLocalX;
+
+            ImgY1 = D2.imgLocalY;
+
+            ImgX2 = D1.imgLocalX;
+
+            ImgY2 = D1.imgLocalY;
+
+            x1 = D2.X;
+
+            y1 = D2.Y;
+
+            x2 = D1.X;
+
+            y2 = D1.Y;
+
+        }
+
+
 
         alpha = atan((D2.Y - D1.Y) / (D2.X - D1.X));
 
+
+
         // cout << "alpha=" << alpha / pi * 180 << '\n';
+
     }
+
+
+
 
 
     double angle;
-    if (ImgX2 == ImgX1) {
-        angle = (pi / 2);
-    } else {
-        angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+
+    if (ImgX2 == ImgX1){
+
+        angle = (pi/2);
+
     }
 
-    // cout << "angle1=" << angle / pi * 180 << '\n';
+    else{
 
-    // 由于对称性，要对角度做进一步处理
+        angle = atan((ImgY2 - ImgY1) / (ImgX2 - ImgX1));
+
+    }
+
+
+
+    //由于对称性，要对角度做进一步处理
+
     bool ABC = ImgY2 < ImgY1;
+
     bool EFG = ImgX2 > ImgX1;
+
     int ABCD = ABC * 2 + EFG;
-    // ABCD = 3;
+
+    //ABCD = 3;
+
     // cout << "ABCD=" << ABCD << '\n';
 
-    switch (ABCD) {
+    
+
+    switch (ABCD)
+
+    {
+
     case 0:
+
         angle = - angle + alpha;
+
         break;
+
     case 1:
+
         angle = pi - angle + alpha;
+
         break;
+
     case 2:
+
         angle = - angle + alpha;
+
         break;
+
     case 3:
+
         angle = pi - angle + alpha;
+
         break;
+
     }
 
-    double d_12 = sqrt(pow((ImgX1 - ImgX2), 2) + pow((ImgY1 - ImgY2), 2))*Pixel_Size;
-    double D_12 = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
+    
+
+    double angle1 = angle - (pi/2);
+
+    cout << "angle1=" << angle1 / pi * 180 << '\n';
+
+
+
+    double d_12 = sqrt(pow((ImgX1 - ImgX2),2) + pow((ImgY1 - ImgY2),2))*3.2e-3;
+
+    double D_12 = sqrt(pow((x1 - x2),2) + pow((y1 - y2),2));
+
     double H = D_12 / d_12*f;
-    double X_r = ((ImgX1 + ImgX2) / 2 - Center_X)*Pixel_Size*H / f;
-    double Y_r = ((ImgY1 + ImgY2) / 2 - Center_Y)*Pixel_Size*H / f;
+
+    double X_r = ((ImgX1 + ImgX2) / 2 - Center_X)*3.2e-3*H / f;
+
+    double Y_r = ((ImgY1 + ImgY2) / 2 - Center_Y)*3.2e-3*H / f;
+
     double X_c = (x1 + x2) / 2;
+
     double Y_c = (y1 + y2) / 2;
+
     double X = X_r;
+
     double Y = Y_r;
+
+
 
     // cout << "angle=" << angle / pi * 180 << '\n';
 
-    double XX = X*cos(angle) - Y*sin(angle);
-    double YY = X*sin(angle) + Y*cos(angle);
+
+
+    //dis乘以三角函数值，tf变换定位点
+
+    double XX = X*cos(angle) - Y*sin(angle) ;
+
+    double YY = X*sin(angle) + Y*cos(angle) ;
+
+
 
     XX = XX + X_c;
+
     YY = YY + Y_c;
 
+
+
     geometry_msgs::Point point;
-    // mm转化为m
-    point.x = (XX / 1000) - distance * cos(angle);
-    point.y = (YY / 1000) - distance * sin(angle);
-    point.z = (Hight_of_LED - H/100) / 1000;
+
+    //mm转化为m
+
+    point.x = XX / 1000;
+
+    point.y = YY / 1000;
+
+    point.z = (150 - H/100) / 1000;
+
+
 
     return point;
+
+
+
 }
 
 // ---------------------------【geometry_msgs::Point three_LED函数】----------------------------
